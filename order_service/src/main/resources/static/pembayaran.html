@@ -1,0 +1,444 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran Pesanan - TIKARA</title>
+    <meta name="description" content="Selesaikan pembayaran tiket konser Anda dengan aman melalui QRIS atau Virtual Account.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes slideUpIn { from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)} }
+        @keyframes pulseAmber { 0%,100%{color:#FBBF24}50%{color:#F59E0B} }
+        .payment-container { max-width:780px; margin:2.5rem auto; padding:0 1.5rem; }
+        .countdown-banner { background:linear-gradient(135deg,#1E1B4B 0%,#312E81 100%); border-radius:16px; padding:1.5rem 2rem; color:white; display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow-md); margin-bottom:1.5rem; }
+        .countdown-time { font-size:2rem; font-weight:800; font-family:'Courier New',monospace; color:#FBBF24; letter-spacing:2px; animation:pulseAmber 2s ease infinite; }
+        .tab-btn { flex:1; padding:0.9rem; border:1px solid var(--border-color); background:#F8FAFC; font-weight:700; font-size:0.95rem; cursor:pointer; transition:all .2s; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:0.5rem; }
+        .tab-btn.active { background:white; border-color:var(--primary-color); color:var(--primary-color); box-shadow:var(--shadow-sm); }
+        .va-box { background:#F8FAFC; border:1px solid var(--border-color); border-radius:12px; padding:1.25rem; display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; transition:border-color .2s; }
+        .va-box:hover { border-color:var(--primary-color); }
+        .qris-frame { background:white; border:2px solid var(--border-color); border-radius:16px; padding:1.5rem; display:inline-block; text-align:center; box-shadow:var(--shadow-sm); }
+        .confirm-modal-overlay { display:none; position:fixed; inset:0; background:rgba(15,23,42,.65); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:1rem; }
+        .confirm-modal-overlay.open { display:flex; }
+        .confirm-modal-card { background:white; border-radius:20px; padding:2rem; max-width:480px; width:100%; box-shadow:0 25px 60px rgba(0,0,0,.2); animation:slideUpIn .3s ease; }
+        .success-banner { background:linear-gradient(135deg,#064E3B,#065F46); border-radius:16px; padding:2rem; color:white; text-align:center; margin-bottom:1.5rem; display:none; }
+    </style>
+</head>
+<body>
+
+    <!-- Unified Responsive Header Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="http://localhost:8082/index.html" class="navbar-logo" id="navLogoLink" aria-label="TIKARA Beranda">
+                <i class="fa-solid fa-ticket"></i> TIKARA
+            </a>
+            <ul class="navbar-menu" id="mainNavbarMenu"></ul>
+            <div class="navbar-actions">
+                <a href="http://localhost:8086/notifications.html" class="nav-icon-btn" id="navNotifBtn" title="Notifikasi" style="display:none;">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="badge-count" id="navUnreadBadge" style="display:none;">0</span>
+                </a>
+                <div id="navUserBox"></div>
+                <button class="navbar-hamburger" id="navbarToggleBtn" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="navbarMobileDrawer">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <nav class="navbar-mobile-drawer" id="navbarMobileDrawer" aria-label="Menu navigasi mobile"></nav>
+    </header>
+
+    <main class="payment-container">
+        <!-- Success Banner (hidden by default) -->
+        <div class="success-banner" id="successBanner">
+            <div style="width:56px;height:56px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:1.6rem;">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h3 style="font-size:1.25rem;font-weight:800;margin-bottom:0.4rem;">Pembayaran Berhasil!</h3>
+            <p style="opacity:.85;font-size:.9rem;">E-Tiket Anda telah diterbitkan dan siap digunakan.</p>
+        </div>
+
+        <!-- Countdown Timer Banner -->
+        <div class="countdown-banner" id="countdownBox">
+            <div>
+                <span style="font-size:.8rem;text-transform:uppercase;letter-spacing:1px;opacity:.8;">Selesaikan Pembayaran Dalam</span>
+                <h4 style="font-size:1rem;font-weight:700;margin-top:.3rem;">Tenggat Waktu Reservasi Stok Tiket</h4>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:.7rem;opacity:.7;margin-bottom:.2rem;">SISA WAKTU</div>
+                <div class="countdown-time" id="countdownTimer">--:--</div>
+            </div>
+        </div>
+
+        <!-- Main Payment Card -->
+        <div class="profile-card" style="padding:2.25rem;margin-bottom:1.5rem;" id="mainPaymentBox">
+            <!-- Order Header -->
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--border-color);padding-bottom:1.25rem;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+                <div>
+                    <span class="role-badge" id="orderStatusBadge" style="background:#FEF3C7;color:#B45309;margin-bottom:.4rem;">MENUNGGU PEMBAYARAN</span>
+                    <h3 style="font-size:1.2rem;font-weight:800;color:var(--text-main);" id="orderNumberText">Memuat Pesanan...</h3>
+                    <p style="font-size:.8rem;color:var(--text-muted);margin-top:.25rem;" id="orderDateText"></p>
+                </div>
+                <div style="text-align:right;">
+                    <span style="font-size:.8rem;color:var(--text-muted);">Total Pembayaran</span>
+                    <h2 style="font-size:1.6rem;font-weight:800;color:var(--primary-color);" id="totalAmountText">Rp 0</h2>
+                </div>
+            </div>
+
+            <!-- Items & Fees Breakdown -->
+            <div style="background:#F8FAFC;border-radius:12px;padding:1.25rem;margin-bottom:1.75rem;" id="orderItemsSummary">
+                <p style="font-size:.85rem;color:var(--text-muted);">Memuat rincian transaksi...</p>
+            </div>
+
+            <!-- Payment Method Tabs -->
+            <h4 style="font-size:1rem;font-weight:800;color:var(--text-main);margin-bottom:.75rem;">
+                <i class="fa-solid fa-credit-card" style="color:var(--primary-color);margin-right:.4rem;"></i>
+                Pilih Metode Pembayaran
+            </h4>
+            <div style="display:flex;gap:.75rem;margin-bottom:1.5rem;">
+                <button class="tab-btn active" id="tabQrisBtn" onclick="switchTab('qris')">
+                    <i class="fa-solid fa-qrcode"></i> QRIS
+                </button>
+                <button class="tab-btn" id="tabVaBtn" onclick="switchTab('va')">
+                    <i class="fa-solid fa-building-columns"></i> Virtual Account
+                </button>
+            </div>
+
+            <!-- QRIS Content -->
+            <div id="qrisContent" style="text-align:center;padding:1rem 0;">
+                <div class="qris-frame" style="margin:0 auto;display:inline-block;">
+                    <div style="display:flex;justify-content:center;align-items:center;gap:.6rem;margin-bottom:1rem;">
+                        <span style="font-weight:800;font-size:1.1rem;color:#1e293b;">QRIS</span>
+                        <span style="font-size:.7rem;background:#1B365D;color:white;padding:.2rem .6rem;border-radius:4px;font-weight:700;">GPN</span>
+                    </div>
+                    <img id="qrisImage" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=TIKARA-PAY" alt="QR Code Pembayaran TIKARA" style="width:200px;height:200px;display:block;margin:0 auto;border-radius:8px;">
+                    <p style="font-size:.8rem;color:var(--text-muted);margin-top:1rem;max-width:240px;">Pindai dengan GoPay, OVO, Dana, ShopeePay, atau M-Banking</p>
+                    <div style="margin-top:1rem;padding:.6rem 1rem;background:#F0FDF4;border-radius:8px;font-size:.8rem;color:#166534;font-weight:600;">
+                        <i class="fa-solid fa-circle-check" style="margin-right:.3rem;"></i>
+                        Berlaku 1x transaksi &bull; Nominal sudah terisi otomatis
+                    </div>
+                </div>
+            </div>
+
+            <!-- Virtual Account Content -->
+            <div id="vaContent" style="display:none;">
+                <div class="va-box">
+                    <div>
+                        <strong style="color:var(--text-main);font-size:.9rem;display:block;margin-bottom:.3rem;">BCA Virtual Account</strong>
+                        <span style="font-family:'Courier New',monospace;font-size:1.2rem;font-weight:800;color:var(--primary-color);letter-spacing:2px;" id="bcaVaText">Memuat...</span>
+                    </div>
+                    <button class="btn btn-outline" style="width:auto;padding:.45rem 1rem;font-size:.85rem;white-space:nowrap;" onclick="copyToClipboard('bcaVaText','Nomor BCA VA berhasil disalin!')">
+                        <i class="fa-regular fa-copy"></i> Salin
+                    </button>
+                </div>
+                <div class="va-box">
+                    <div>
+                        <strong style="color:var(--text-main);font-size:.9rem;display:block;margin-bottom:.3rem;">Mandiri Virtual Account</strong>
+                        <span style="font-family:'Courier New',monospace;font-size:1.2rem;font-weight:800;color:var(--primary-color);letter-spacing:2px;" id="mandiriVaText">Memuat...</span>
+                    </div>
+                    <button class="btn btn-outline" style="width:auto;padding:.45rem 1rem;font-size:.85rem;white-space:nowrap;" onclick="copyToClipboard('mandiriVaText','Nomor Mandiri VA berhasil disalin!')">
+                        <i class="fa-regular fa-copy"></i> Salin
+                    </button>
+                </div>
+                <div class="va-box">
+                    <div>
+                        <strong style="color:var(--text-main);font-size:.9rem;display:block;margin-bottom:.3rem;">BRI Virtual Account (BRIVA)</strong>
+                        <span style="font-family:'Courier New',monospace;font-size:1.2rem;font-weight:800;color:var(--primary-color);letter-spacing:2px;" id="briVaText">Memuat...</span>
+                    </div>
+                    <button class="btn btn-outline" style="width:auto;padding:.45rem 1rem;font-size:.85rem;white-space:nowrap;" onclick="copyToClipboard('briVaText','Nomor BRI VA berhasil disalin!')">
+                        <i class="fa-regular fa-copy"></i> Salin
+                    </button>
+                </div>
+
+                <!-- Transfer Instructions -->
+                <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:1.25rem;margin-top:1rem;">
+                    <h5 style="font-size:.875rem;font-weight:800;color:#1D4ED8;margin-bottom:.75rem;">
+                        <i class="fa-solid fa-circle-info"></i> Cara Transfer Virtual Account
+                    </h5>
+                    <ol style="font-size:.825rem;color:#1E40AF;padding-left:1.25rem;line-height:2;margin:0;">
+                        <li>Buka aplikasi M-Banking atau ATM bank Anda</li>
+                        <li>Pilih menu <strong>Transfer</strong> &rarr; <strong>Virtual Account</strong></li>
+                        <li>Masukkan nomor VA sesuai bank yang dipilih di atas</li>
+                        <li>Pastikan nominal transfer <strong>tepat sesuai total pembayaran</strong></li>
+                        <li>Verifikasi dan konfirmasi transfer</li>
+                        <li>Kembali ke halaman ini dan klik <strong>"Konfirmasi Pembayaran"</strong></li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="margin-top:2rem;border-top:1px solid var(--border-color);padding-top:1.5rem;display:flex;flex-direction:column;gap:.75rem;" id="actionButtonsBox">
+                <button class="btn btn-accent" id="btnPaySimulation" style="width:100%;padding:1rem;font-size:1rem;font-weight:800;" onclick="showConfirmPayment()">
+                    <i class="fa-solid fa-shield-check" style="margin-right:.5rem;"></i> KONFIRMASI PEMBAYARAN
+                </button>
+                <div style="display:flex;gap:.75rem;">
+                    <a href="http://localhost:8084/my-orders.html" class="btn btn-outline" style="flex:1;text-align:center;padding:.75rem;font-size:.9rem;">
+                        <i class="fa-solid fa-list" style="margin-right:.3rem;"></i> Pesanan Saya
+                    </a>
+                    <button class="btn btn-outline" id="btnCancelOrder" style="flex:1;color:var(--danger-color);border-color:#FECACA;font-size:.9rem;" onclick="cancelMyOrder()">
+                        <i class="fa-solid fa-xmark" style="margin-right:.3rem;"></i> Batalkan
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trust Badges -->
+        <div style="display:flex;flex-wrap:wrap;gap:.75rem;justify-content:center;margin-bottom:3rem;font-size:.8rem;color:var(--text-muted);">
+            <span><i class="fa-solid fa-shield-halved" style="color:#15803D;"></i> Transaksi Terenkripsi SSL</span>
+            <span>&bull;</span>
+            <span><i class="fa-solid fa-lock" style="color:#1D4ED8;"></i> Pembayaran Aman TIKARA</span>
+            <span>&bull;</span>
+            <span><i class="fa-solid fa-headset" style="color:#9333EA;"></i> Bantuan 24/7</span>
+        </div>
+    </main>
+
+    <!-- Konfirmasi Pembayaran Modal -->
+    <div id="confirmPayModal" class="confirm-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+        <div class="confirm-modal-card">
+            <div style="text-align:center;margin-bottom:1.5rem;">
+                <div style="width:64px;height:64px;background:linear-gradient(135deg,#1B365D,#2563EB);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+                    <i class="fa-solid fa-shield-check" style="color:white;font-size:1.5rem;"></i>
+                </div>
+                <h3 id="confirmModalTitle" style="font-size:1.2rem;font-weight:800;color:#0F172A;margin-bottom:.4rem;">Konfirmasi Pembayaran</h3>
+                <p style="font-size:.875rem;color:#64748B;">Pastikan Anda telah menyelesaikan transfer sebelum mengonfirmasi.</p>
+            </div>
+            <div style="background:#F8FAFC;border-radius:12px;padding:1.25rem;margin-bottom:1.25rem;border:1px solid #E2E8F0;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:.6rem;font-size:.875rem;">
+                    <span style="color:#64748B;">Nomor Pesanan</span>
+                    <span style="font-weight:700;color:#0F172A;font-family:monospace;" id="confirmOrderNum">-</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;border-top:1px solid #E2E8F0;padding-top:.6rem;margin-top:.3rem;">
+                    <span style="color:#64748B;font-size:.875rem;">Total Transfer</span>
+                    <span style="font-weight:800;color:#FF5A5F;font-size:1.1rem;" id="confirmAmount">-</span>
+                </div>
+            </div>
+            <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:1rem;margin-bottom:1.5rem;font-size:.825rem;color:#92400E;display:flex;gap:.6rem;align-items:flex-start;">
+                <i class="fa-solid fa-triangle-exclamation" style="margin-top:.1rem;flex-shrink:0;"></i>
+                <span>Pastikan jumlah transfer <strong>tepat sesuai</strong> total di atas. Perbedaan nominal akan menyebabkan verifikasi otomatis gagal.</span>
+            </div>
+            <div style="display:flex;gap:.75rem;">
+                <button onclick="closeConfirmModal()" style="flex:1;padding:.9rem;border:2px solid #E2E8F0;background:white;border-radius:12px;font-weight:700;font-size:.9rem;cursor:pointer;color:#64748B;">
+                    <i class="fa-solid fa-arrow-left" style="margin-right:.3rem;"></i> Kembali
+                </button>
+                <button onclick="executePayment()" id="btnConfirmFinal" style="flex:2;padding:.9rem;background:linear-gradient(135deg,#1B365D,#2563EB);color:white;border:none;border-radius:12px;font-weight:800;font-size:.9rem;cursor:pointer;">
+                    <i class="fa-solid fa-check-circle" style="margin-right:.4rem;"></i> Sudah Transfer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/script.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('orderId');
+        let currentOrder = null;
+        let timerInterval = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!orderId) {
+                showToast('ID pesanan tidak ditemukan.', 'error');
+                setTimeout(() => window.location.href = 'http://localhost:8084/my-orders.html', 2000);
+                return;
+            }
+            loadOrderDetail();
+        });
+
+        async function loadOrderDetail() {
+            try {
+                const token = getJwtToken();
+                if (!token) {
+                    window.location.href = 'http://localhost:8081/login.html?redirect=' + encodeURIComponent(window.location.href);
+                    return;
+                }
+                const res = await fetch('http://localhost:8084/api/orders/' + orderId, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) throw new Error('Gagal memuat data pesanan');
+                currentOrder = await res.json();
+                renderOrder();
+            } catch (err) {
+                showToast(err.message || 'Gagal memuat pesanan', 'error');
+            }
+        }
+
+        function renderOrder() {
+            if (!currentOrder) return;
+            document.getElementById('orderNumberText').textContent = currentOrder.nomorPesanan || ('#ORD-' + String(orderId).padStart(8,'0'));
+            if (currentOrder.createdAt) {
+                document.getElementById('orderDateText').textContent = 'Dibuat: ' + new Date(currentOrder.createdAt).toLocaleString('id-ID', {dateStyle:'long', timeStyle:'short'});
+            }
+            document.getElementById('totalAmountText').textContent = formatRupiah(currentOrder.totalHarga);
+
+            // Item breakdown
+            let html = '';
+            if (currentOrder.items && currentOrder.items.length > 0) {
+                currentOrder.items.forEach(function(item) {
+                    html += '<div style="display:flex;justify-content:space-between;padding:.4rem 0;font-size:.875rem;">' +
+                        '<span>' + (item.namaKategori || 'Tiket') + ' &times; ' + item.jumlah + '</span>' +
+                        '<span style="font-weight:600;">' + formatRupiah(item.hargaSatuan * item.jumlah) + '</span></div>';
+                });
+            }
+            var subtotal = currentOrder.subtotal || currentOrder.totalHarga;
+            var layanan  = currentOrder.biayaLayanan || Math.round(subtotal * 0.02);
+            var admin    = currentOrder.biayaAdmin || 5000;
+            html += '<div style="border-top:1px dashed var(--border-color);margin-top:.75rem;padding-top:.75rem;">' +
+                '<div style="display:flex;justify-content:space-between;margin-bottom:.35rem;font-size:.83rem;color:var(--text-muted);">' +
+                    '<span>Subtotal Tiket</span><span style="font-weight:700;color:var(--text-main);">' + formatRupiah(subtotal) + '</span></div>' +
+                '<div style="display:flex;justify-content:space-between;margin-bottom:.35rem;font-size:.83rem;color:var(--text-muted);">' +
+                    '<span>Biaya Layanan Sistem (2%)</span><span style="font-weight:700;color:var(--text-main);">' + formatRupiah(layanan) + '</span></div>' +
+                '<div style="display:flex;justify-content:space-between;margin-bottom:.35rem;font-size:.83rem;color:var(--text-muted);">' +
+                    '<span>Biaya Jasa Penanganan Transaksi</span><span style="font-weight:700;color:var(--text-main);">' + formatRupiah(admin) + '</span></div>' +
+                '<div style="display:flex;justify-content:space-between;margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--border-color);font-size:.95rem;font-weight:800;color:var(--primary-color);">' +
+                    '<span>Total Pembayaran</span><span>' + formatRupiah(currentOrder.totalHarga) + '</span></div></div>';
+            document.getElementById('orderItemsSummary').innerHTML = html;
+
+            var badge     = document.getElementById('orderStatusBadge');
+            var btnPay    = document.getElementById('btnPaySimulation');
+            var btnCancel = document.getElementById('btnCancelOrder');
+
+            if (currentOrder.status === 'PAID') {
+                badge.style.cssText = 'background:#DCFCE7;color:#15803D;margin-bottom:.4rem;';
+                badge.textContent = 'LUNAS';
+                document.getElementById('countdownBox').style.display = 'none';
+                document.getElementById('successBanner').style.display = 'block';
+                btnPay.innerHTML = '<i class="fa-solid fa-ticket" style="margin-right:.4rem;"></i> LIHAT E-TIKET SAYA';
+                btnPay.className = 'btn btn-primary';
+                btnPay.style.width = '100%'; btnPay.style.padding = '1rem';
+                btnPay.onclick = function() { window.location.href = 'http://localhost:8083/my-tickets.html'; };
+                if (btnCancel) btnCancel.style.display = 'none';
+                return;
+            }
+
+            if (currentOrder.status === 'CANCELLED') {
+                badge.style.cssText = 'background:#FEE2E2;color:#B91C1C;margin-bottom:.4rem;';
+                badge.textContent = 'DIBATALKAN';
+                document.getElementById('countdownBox').style.display = 'none';
+                btnPay.disabled = true;
+                btnPay.innerHTML = '<i class="fa-solid fa-ban" style="margin-right:.4rem;"></i> PESANAN TELAH DIBATALKAN';
+                if (btnCancel) { btnCancel.disabled = true; btnCancel.style.opacity = '0.5'; }
+                return;
+            }
+
+            // Generate deterministic VA numbers from orderId
+            var padId = String(orderId).padStart(8,'0');
+            document.getElementById('bcaVaText').textContent     = formatVaNum('80881' + padId);
+            document.getElementById('mandiriVaText').textContent = formatVaNum('89101' + padId);
+            document.getElementById('briVaText').textContent     = formatVaNum('12340' + padId);
+
+            // Dynamic QRIS with order info
+            var qrisData = 'TIKARA-ORD-' + orderId + '-AMT-' + currentOrder.totalHarga;
+            document.getElementById('qrisImage').src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(qrisData) + '&color=1B365D&bgcolor=FFFFFF';
+
+            if (currentOrder.tenggatPembayaran) {
+                startCountdown(new Date(currentOrder.tenggatPembayaran));
+            }
+        }
+
+        function formatVaNum(raw) {
+            return raw.match(/.{1,4}/g).join(' ');
+        }
+
+        function formatRupiah(n) {
+            return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(n||0);
+        }
+
+        function startCountdown(deadline) {
+            if (timerInterval) clearInterval(timerInterval);
+            function tick() {
+                var dist = deadline.getTime() - Date.now();
+                if (dist <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('countdownTimer').textContent = '00:00';
+                    showToast('Waktu pembayaran telah habis. Pesanan otomatis dibatalkan.','error');
+                    setTimeout(function(){ window.location.reload(); }, 2000);
+                    return;
+                }
+                var m = Math.floor((dist%(1000*60*60))/(1000*60));
+                var s = Math.floor((dist%(1000*60))/1000);
+                var el = document.getElementById('countdownTimer');
+                el.textContent = String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+                el.style.color = dist < 120000 ? '#FF5A5F' : '#FBBF24';
+            }
+            tick();
+            timerInterval = setInterval(tick, 1000);
+        }
+
+        function switchTab(tab) {
+            var isQris = tab === 'qris';
+            document.getElementById('tabQrisBtn').classList.toggle('active', isQris);
+            document.getElementById('tabVaBtn').classList.toggle('active', !isQris);
+            document.getElementById('qrisContent').style.display = isQris ? 'block' : 'none';
+            document.getElementById('vaContent').style.display   = isQris ? 'none'  : 'block';
+        }
+
+        function copyToClipboard(elementId, msg) {
+            var raw = document.getElementById(elementId).textContent.replace(/\s+/g,'');
+            navigator.clipboard.writeText(raw)
+                .then(function(){ showToast(msg||'Berhasil disalin!','success'); })
+                .catch(function(){ showToast('Gagal menyalin teks','error'); });
+        }
+
+        function showConfirmPayment() {
+            if (!currentOrder) return;
+            document.getElementById('confirmOrderNum').textContent = currentOrder.nomorPesanan || ('#ORD-' + String(orderId).padStart(8,'0'));
+            document.getElementById('confirmAmount').textContent   = formatRupiah(currentOrder.totalHarga);
+            document.getElementById('confirmPayModal').classList.add('open');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmPayModal').classList.remove('open');
+        }
+
+        document.getElementById('confirmPayModal').addEventListener('click', function(e){
+            if (e.target === this) closeConfirmModal();
+        });
+
+        async function executePayment() {
+            var btnConfirm = document.getElementById('btnConfirmFinal');
+            var btnPay     = document.getElementById('btnPaySimulation');
+            btnConfirm.disabled = true;
+            btnConfirm.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi...';
+            try {
+                var token = getJwtToken();
+                var res = await fetch('http://localhost:8084/api/orders/' + orderId + '/pay-simulation', {
+                    method:'POST', headers:{'Authorization':'Bearer '+token}
+                });
+                var data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Pembayaran gagal diproses');
+                closeConfirmModal();
+                showToast('Pembayaran dikonfirmasi! E-Tiket Anda sedang diterbitkan...','success');
+                setTimeout(function(){ window.location.href = 'http://localhost:8083/my-tickets.html'; }, 1800);
+            } catch(err) {
+                showToast(err.message||'Gagal memproses pembayaran','error');
+                closeConfirmModal();
+                btnConfirm.disabled = false;
+                btnConfirm.innerHTML = '<i class="fa-solid fa-check-circle" style="margin-right:.4rem;"></i> Sudah Transfer';
+                if (btnPay) {
+                    btnPay.disabled = false;
+                    btnPay.innerHTML = '<i class="fa-solid fa-shield-check" style="margin-right:.5rem;"></i> KONFIRMASI PEMBAYARAN';
+                }
+            }
+        }
+
+        async function cancelMyOrder() {
+            if (!window.confirm('Apakah Anda yakin ingin membatalkan pesanan ini?\n\nStok tiket yang direservasi akan dilepaskan otomatis dan pesanan tidak dapat dipulihkan.')) return;
+            var btnCancel = document.getElementById('btnCancelOrder');
+            btnCancel.disabled = true;
+            btnCancel.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            try {
+                var token = getJwtToken();
+                var res = await fetch('http://localhost:8084/api/orders/' + orderId + '/cancel', {
+                    method:'POST', headers:{'Authorization':'Bearer '+token}
+                });
+                var data = await res.json();
+                if (!res.ok) throw new Error(data.message||'Gagal membatalkan pesanan');
+                showToast('Pesanan berhasil dibatalkan.','info');
+                setTimeout(function(){ window.location.reload(); }, 1500);
+            } catch(err) {
+                showToast(err.message||'Gagal membatalkan pesanan','error');
+                btnCancel.disabled = false;
+                btnCancel.innerHTML = '<i class="fa-solid fa-xmark" style="margin-right:.3rem;"></i> Batalkan';
+            }
+        }
+    </script>
+</body>
+</html>

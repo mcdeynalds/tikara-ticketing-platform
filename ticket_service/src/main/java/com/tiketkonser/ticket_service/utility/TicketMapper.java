@@ -33,8 +33,14 @@ public class TicketMapper {
 
     public TiketRes toTiketRes(Tiket entity) {
         if (entity == null) return null;
+        Long acaraId = null;
+        if (entity.getKategoriTiket() != null) {
+            acaraId = entity.getKategoriTiket().getAcaraId();
+        }
+
         return TiketRes.builder()
                 .id(entity.getId())
+                .acaraId(acaraId)
                 .kategoriTiketId(entity.getKategoriTiket() != null ? entity.getKategoriTiket().getId() : null)
                 .namaKategoriTiket(entity.getKategoriTiket() != null ? entity.getKategoriTiket().getNamaKategori() : null)
                 .detailPemesananId(entity.getDetailPemesananId())

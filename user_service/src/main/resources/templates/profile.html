@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil & Akun Saya - TIKARA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body style="background-color: #F8FAFC;">
+
+    <!-- Global Header Navbar (Dynamic Role-Based) -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="http://localhost:8082/index.html" class="navbar-logo" id="navLogoLink">
+                <i class="fa-solid fa-ticket"></i> TIKARA
+            </a>
+            <ul class="navbar-menu" id="mainNavbarMenu">
+                <!-- Dynamically rendered based on role by script.js -->
+            </ul>
+            <div class="navbar-actions">
+                <a href="http://localhost:8086/notifications.html" class="nav-icon-btn" id="navNotifBtn" title="Notifikasi">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="badge-count" id="navUnreadBadge" style="display:none;">0</span>
+                </a>
+                <div id="navUserBox"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Profile Layout Container -->
+    <div class="profile-page-wrapper">
+        <div class="profile-container-grid">
+            
+            <!-- Left Sidebar Navigation -->
+            <aside class="profile-sidebar-card">
+                <div class="sidebar-user-brief">
+                    <div class="sidebar-big-avatar" id="sidebarAvatar">U</div>
+                    <h3 class="sidebar-user-name" id="sidebarName">Memuat Pengguna...</h3>
+                    <p class="sidebar-user-email" id="sidebarEmail">user@domain.com</p>
+                    <span class="role-tag role-badge-buyer" id="sidebarRoleBadge">PEMBELI</span>
+                </div>
+
+                <div class="sidebar-menu-nav">
+                    <div class="sidebar-section-title">Pengaturan Akun</div>
+                    <button type="button" class="profile-nav-btn active" id="tabNavInfo" onclick="switchProfileTab('info')">
+                        <i class="fa-solid fa-user"></i>
+                        <span>Informasi Dasar</span>
+                    </button>
+                    <button type="button" class="profile-nav-btn" id="tabNavSecurity" onclick="switchProfileTab('security')">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>Pengaturan Keamanan</span>
+                    </button>
+
+                    <div class="sidebar-section-title" id="sidebarSectionTitle" style="margin-top: 0.5rem;">Aktivitas & Layanan</div>
+                    <div id="sidebarRoleLinks">
+                        <!-- Populated dynamically by JavaScript based on active role -->
+                    </div>
+
+                    <div style="border-top: 1px solid #F1F5F9; margin: 0.75rem 0.5rem;"></div>
+
+                    <button type="button" class="profile-nav-btn" onclick="handleLogout()" style="color: #EF4444;">
+                        <i class="fa-solid fa-arrow-right-from-bracket" style="color: #EF4444;"></i>
+                        <span>Keluar Akun</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Right Content Panels -->
+            <main class="profile-content-card">
+                
+                <!-- TAB 1: INFORMASI DASAR -->
+                <div class="profile-tab-pane active" id="tabPaneInfo">
+                    <div class="profile-content-header">
+                        <div class="profile-breadcrumb" id="breadcrumbInfo">
+                            <a href="http://localhost:8082/index.html">Beranda</a>
+                            <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
+                            <span>Akun Saya</span>
+                            <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
+                            <span style="color: var(--primary-color); font-weight: 600;">Informasi Dasar</span>
+                        </div>
+                        <h2 id="headerTitleInfo">Informasi Akun</h2>
+                        <p id="headerSubtitleInfo">Kelola data profil, nomor kontak, dan perbarui foto akun TIKARA Anda.</p>
+                    </div>
+
+                    <div id="profileAlert"></div>
+
+                    <!-- Avatar Edit Box -->
+                    <div class="avatar-edit-box">
+                        <div class="avatar-preview-wrapper">
+                            <div class="preview-avatar-img" id="previewAvatarImg">U</div>
+                        </div>
+                        <div class="avatar-edit-info">
+                            <h4>Foto Profil</h4>
+                            <p>Gunakan foto formal atau personal berformat JPG, PNG, atau WEBP. Maksimal ukuran file 2MB.</p>
+                            <div class="avatar-actions-btns">
+                                <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="handleAvatarUpload(event)">
+                                <button type="button" class="btn btn-outline" style="width:auto; padding:0.6rem 1.25rem; font-size:0.875rem; border-color:#CBD5E1; color:#334155;" onclick="document.getElementById('avatarFileInput').click()">
+                                    <i class="fa-solid fa-camera"></i> Ubah Foto Profil
+                                </button>
+                                <span id="avatarUploadStatus" style="font-size:0.825rem; color:#64748B; display:none;">
+                                    <i class="fa-solid fa-spinner fa-spin"></i> Mengunggah...
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Form -->
+                    <form id="formProfileInfo">
+                        <div class="profile-form-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="inputNamaLengkap">Nama Lengkap</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-user input-icon"></i>
+                                    <input type="text" id="inputNamaLengkap" class="form-input" placeholder="Masukkan nama lengkap Anda" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="inputEmail">Alamat Email</label>
+                                <div class="input-wrapper" style="position: relative;">
+                                    <i class="fa-solid fa-envelope input-icon"></i>
+                                    <input type="email" id="inputEmail" class="form-input" readonly style="background-color:#F8FAFC; color:#64748B; cursor:not-allowed;">
+                                    <span class="input-verified-badge">
+                                        <i class="fa-solid fa-circle-check"></i> Terverifikasi
+                                    </span>
+                                </div>
+                                <span style="font-size: 0.75rem; color: #94A3B8; margin-top: 0.35rem; display: block;">
+                                    <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> Email terdaftar tidak dapat diubah demi keamanan akun.
+                                </span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="inputTelepon">Nomor Telepon / WhatsApp</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-phone input-icon"></i>
+                                    <input type="tel" id="inputTelepon" class="form-input" placeholder="Contoh: 081234567890">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="inputPeran">Peran Pengguna</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-id-badge input-icon"></i>
+                                    <input type="text" id="inputPeran" class="form-input" readonly style="background-color:#F8FAFC; color:#64748B; cursor:not-allowed;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2rem; display: flex; align-items: center; justify-content: flex-start; gap: 1rem;">
+                            <button type="submit" class="btn btn-primary" id="btnSaveProfile" style="width:auto; padding:0.75rem 2.25rem;">
+                                <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- TAB 2: PENGATURAN KEAMANAN -->
+                <div class="profile-tab-pane" id="tabPaneSecurity">
+                    <div class="profile-content-header">
+                        <div class="profile-breadcrumb" id="breadcrumbSecurity">
+                            <a href="http://localhost:8082/index.html">Beranda</a>
+                            <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
+                            <span>Akun Saya</span>
+                            <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
+                            <span style="color: var(--primary-color); font-weight: 600;">Pengaturan Keamanan</span>
+                        </div>
+                        <h2 id="headerTitleSecurity">Keamanan Akun</h2>
+                        <p id="headerSubtitleSecurity">Perbarui kata sandi Anda secara berkala demi melindungi transaksi dan akses tiket Anda.</p>
+                    </div>
+
+                    <div id="securityAlert"></div>
+
+                    <form id="formChangePassword" style="max-width: 600px;">
+                        <div class="form-group">
+                            <label class="form-label" for="oldPassword">Kata Sandi Saat Ini</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input type="password" id="oldPassword" class="form-input" placeholder="Masukkan kata sandi saat ini" required>
+                                <i class="fa-solid fa-eye toggle-password" id="toggleOldPassword" onclick="togglePasswordVisibility('oldPassword', 'toggleOldPassword')"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="newPassword">Kata Sandi Baru</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-key input-icon"></i>
+                                <input type="password" id="newPassword" class="form-input" placeholder="Minimal 8 karakter baru" minlength="8" required>
+                                <i class="fa-solid fa-eye toggle-password" id="toggleNewPassword" onclick="togglePasswordVisibility('newPassword', 'toggleNewPassword')"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="confirmNewPassword">Konfirmasi Kata Sandi Baru</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-shield-halved input-icon"></i>
+                                <input type="password" id="confirmNewPassword" class="form-input" placeholder="Ulangi kata sandi baru" minlength="8" required>
+                                <i class="fa-solid fa-eye toggle-password" id="toggleConfirmNewPassword" onclick="togglePasswordVisibility('confirmNewPassword', 'toggleConfirmNewPassword')"></i>
+                            </div>
+                        </div>
+
+                        <!-- Security Note Card -->
+                        <div style="background-color:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:1.1rem 1.25rem; margin:1.5rem 0;">
+                            <h5 style="font-size:0.85rem; font-weight:700; color:#1E293B; margin-bottom:0.4rem; display:flex; align-items:center; gap:0.45rem;">
+                                <i class="fa-solid fa-circle-info" style="color:var(--primary-color);"></i> Ketentuan Kata Sandi:
+                            </h5>
+                            <ul style="font-size:0.8rem; color:#64748B; padding-left:1.4rem; line-height:1.6;">
+                                <li>Panjang minimal 8 karakter.</li>
+                                <li>Diawali dengan huruf kapital (A-Z).</li>
+                                <li>Memiliki minimal 1 angka dan 1 simbol.</li>
+                                <li>Gunakan kombinasi huruf kapital, angka, atau simbol untuk keamanan lebih maksimal.</li>
+                                <li>Setelah kata sandi diperbarui, Anda tetap masuk pada sesi aktif ini.</li>
+                            </ul>
+                        </div>
+
+                        <div style="margin-top: 1.75rem;">
+                            <button type="submit" class="btn btn-primary" id="btnSavePassword" style="width:auto; padding:0.75rem 2.25rem;">
+                                <i class="fa-solid fa-shield-halved"></i> Perbarui Kata Sandi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Script dependencies -->
+    <script src="/js/script.js"></script>
+    <script>
+        let currentRole = 'PEMBELI';
+
+        // Tab Switching Logic
+        function switchProfileTab(tabName) {
+            const btnInfo = document.getElementById('tabNavInfo');
+            const btnSecurity = document.getElementById('tabNavSecurity');
+            const paneInfo = document.getElementById('tabPaneInfo');
+            const paneSecurity = document.getElementById('tabPaneSecurity');
+
+            if (tabName === 'security') {
+                btnInfo.classList.remove('active');
+                btnSecurity.classList.add('active');
+                paneInfo.classList.remove('active');
+                paneSecurity.classList.add('active');
+                history.replaceState(null, '', '?tab=security');
+            } else {
+                btnSecurity.classList.remove('active');
+                btnInfo.classList.add('active');
+                paneSecurity.classList.remove('active');
+                paneInfo.classList.add('active');
+                history.replaceState(null, '', '?tab=info');
+            }
+        }
+
+        // Render Avatar Elements
+        function renderAvatarElements(user) {
+            const name = user.namaLengkap || user.nama || 'Pengguna';
+            const initial = name.trim().charAt(0).toUpperCase() || 'U';
+            const avatarUrl = user.fotoProfilUrl || user.fotoProfil || user.fotoUrl || user.avatarUrl;
+
+            const sidebarAvatar = document.getElementById('sidebarAvatar');
+            const previewAvatar = document.getElementById('previewAvatarImg');
+
+            if (avatarUrl) {
+                if (sidebarAvatar.tagName === 'IMG') {
+                    sidebarAvatar.src = avatarUrl;
+                } else {
+                    sidebarAvatar.outerHTML = `<img src="${avatarUrl}" id="sidebarAvatar" class="sidebar-big-avatar" alt="Foto Profil">`;
+                }
+                if (previewAvatar.tagName === 'IMG') {
+                    previewAvatar.src = avatarUrl;
+                } else {
+                    previewAvatar.outerHTML = `<img src="${avatarUrl}" id="previewAvatarImg" class="preview-avatar-img" alt="Foto Profil">`;
+                }
+            } else {
+                if (sidebarAvatar.tagName !== 'IMG') {
+                    sidebarAvatar.textContent = initial;
+                } else {
+                    sidebarAvatar.outerHTML = `<div class="sidebar-big-avatar" id="sidebarAvatar">${initial}</div>`;
+                }
+                if (previewAvatar.tagName !== 'IMG') {
+                    previewAvatar.textContent = initial;
+                } else {
+                    previewAvatar.outerHTML = `<div class="preview-avatar-img" id="previewAvatarImg">${initial}</div>`;
+                }
+            }
+        }
+
+        // Apply Role-Specific UI Context (Breadcrumbs, Titles, Sections)
+        function applyRoleSpecificUI(role) {
+            const breadcrumbInfo = document.getElementById('breadcrumbInfo');
+            const breadcrumbSecurity = document.getElementById('breadcrumbSecurity');
+            const headerTitleInfo = document.getElementById('headerTitleInfo');
+            const headerSubtitleInfo = document.getElementById('headerSubtitleInfo');
+            const headerTitleSecurity = document.getElementById('headerTitleSecurity');
+            const headerSubtitleSecurity = document.getElementById('headerSubtitleSecurity');
+            const sidebarSectionTitle = document.getElementById('sidebarSectionTitle');
+
+            if (role === 'ADMIN') {
+                if (breadcrumbInfo) {
+                    breadcrumbInfo.innerHTML = `
+                        <a href="${API_ADMIN_SERVICE}/admin-dashboard.html">Panel Admin</a>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
+                        <span>Profil Administrator</span>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
+                        <span style="color: var(--primary-color); font-weight: 600;">Informasi Dasar</span>
+                    `;
+                }
+                if (breadcrumbSecurity) {
+                    breadcrumbSecurity.innerHTML = `
+                        <a href="${API_ADMIN_SERVICE}/admin-dashboard.html">Panel Admin</a>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
+                        <span>Profil Administrator</span>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
+                        <span style="color: var(--primary-color); font-weight: 600;">Pengaturan Keamanan</span>
+                    `;
+                }
+                if (headerTitleInfo) headerTitleInfo.textContent = 'Profil Administrator';
+                if (headerSubtitleInfo) headerSubtitleInfo.textContent = 'Kelola data identitas pengelola dan hak akses administratif akun TIKARA.';
+                if (headerTitleSecurity) headerTitleSecurity.textContent = 'Keamanan Akun Administrator';
+                if (headerSubtitleSecurity) headerSubtitleSecurity.textContent = 'Perbarui kata sandi akun administratif secara berkala untuk menjaga integritas sistem.';
+                if (sidebarSectionTitle) sidebarSectionTitle.textContent = 'MANAJEMEN SISTEM';
+            } else if (role === 'PENYELENGGARA') {
+                if (breadcrumbInfo) {
+                    breadcrumbInfo.innerHTML = `
+                        <a href="${API_ADMIN_SERVICE}/admin-dashboard.html">Portal Penyelenggara</a>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
+                        <span>Profil Penyelenggara</span>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
+                        <span style="color: var(--primary-color); font-weight: 600;">Informasi Dasar</span>
+                    `;
+                }
+                if (breadcrumbSecurity) {
+                    breadcrumbSecurity.innerHTML = `
+                        <a href="${API_ADMIN_SERVICE}/admin-dashboard.html">Portal Penyelenggara</a>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
+                        <span>Profil Penyelenggara</span>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
+                        <span style="color: var(--primary-color); font-weight: 600;">Pengaturan Keamanan</span>
+                    `;
+                }
+                if (headerTitleInfo) headerTitleInfo.textContent = 'Profil Penyelenggara';
+                if (headerSubtitleInfo) headerSubtitleInfo.textContent = 'Kelola identitas penyelenggara acara dan akses promotor TIKARA.';
+                if (headerTitleSecurity) headerTitleSecurity.textContent = 'Keamanan Akun Penyelenggara';
+                if (headerSubtitleSecurity) headerSubtitleSecurity.textContent = 'Perbarui kata sandi untuk melindungi akses promotor dan manajemen event konser Anda.';
+                if (sidebarSectionTitle) sidebarSectionTitle.textContent = 'PORTAL PENYELENGGARA';
+            } else {
+                // PEMBELI
+                if (breadcrumbInfo) {
+                    breadcrumbInfo.innerHTML = `
+                        <a href="${API_EVENT_SERVICE}/index.html">Beranda</a>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
+                        <span>Akun Saya</span>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
+                        <span style="color: var(--primary-color); font-weight: 600;">Informasi Dasar</span>
+                    `;
+                }
+                if (breadcrumbSecurity) {
+                    breadcrumbSecurity.innerHTML = `
+                        <a href="${API_EVENT_SERVICE}/index.html">Beranda</a>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
+                        <span>Akun Saya</span>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
+                        <span style="color: var(--primary-color); font-weight: 600;">Pengaturan Keamanan</span>
+                    `;
+                }
+                if (headerTitleInfo) headerTitleInfo.textContent = 'Informasi Akun';
+                if (headerSubtitleInfo) headerSubtitleInfo.textContent = 'Kelola data profil, nomor kontak, dan perbarui foto akun TIKARA Anda.';
+                if (headerTitleSecurity) headerTitleSecurity.textContent = 'Keamanan Akun';
+                if (headerSubtitleSecurity) headerSubtitleSecurity.textContent = 'Perbarui kata sandi Anda secara berkala demi melindungi transaksi dan akses tiket Anda.';
+                if (sidebarSectionTitle) sidebarSectionTitle.textContent = 'AKTIVITAS & LAYANAN';
+            }
+        }
+
+        // Render Sidebar Activity Links according to Role (Strict RBAC)
+        function renderSidebarLinks(role) {
+            const container = document.getElementById('sidebarRoleLinks');
+            let linksHtml = '';
+
+            if (role === 'ADMIN') {
+                linksHtml = `
+                    <a href="${API_ADMIN_SERVICE}/admin-dashboard.html" class="profile-nav-btn">
+                        <i class="fa-solid fa-gauge-high"></i> <span>Dashboard Admin</span>
+                    </a>
+                    <a href="${API_ADMIN_SERVICE}/admin-dashboard.html?tab=users" class="profile-nav-btn">
+                        <i class="fa-solid fa-users-gear"></i> <span>Kelola Pengguna</span>
+                    </a>
+                    <a href="${API_ADMIN_SERVICE}/admin-dashboard.html?tab=approvals" class="profile-nav-btn">
+                        <i class="fa-solid fa-calendar-check"></i> <span>Verifikasi Event</span>
+                    </a>
+                    <a href="${API_EVENT_SERVICE}/index.html" class="profile-nav-btn">
+                        <i class="fa-solid fa-compass"></i> <span>Jelajah Event</span>
+                    </a>
+                `;
+            } else if (role === 'PENYELENGGARA') {
+                linksHtml = `
+                    <a href="${API_ADMIN_SERVICE}/admin-dashboard.html" class="profile-nav-btn">
+                        <i class="fa-solid fa-chart-line"></i> <span>Dashboard Penyelenggara</span>
+                    </a>
+                    <a href="${API_ADMIN_SERVICE}/admin-dashboard.html?tab=events" class="profile-nav-btn">
+                        <i class="fa-solid fa-guitar"></i> <span>Event Saya</span>
+                    </a>
+                    <a href="${API_ADMIN_SERVICE}/admin-dashboard.html?action=create" class="profile-nav-btn">
+                        <i class="fa-solid fa-plus-circle"></i> <span>Buat Event Baru</span>
+                    </a>
+                    <a href="${API_EVENT_SERVICE}/index.html" class="profile-nav-btn">
+                        <i class="fa-solid fa-compass"></i> <span>Mode Pembeli (Jelajah)</span>
+                    </a>
+                    <a href="${API_TICKET_SERVICE}/my-tickets.html" class="profile-nav-btn">
+                        <i class="fa-solid fa-ticket-simple"></i> <span>Tiket Saya</span>
+                    </a>
+                `;
+            } else {
+                // PEMBELI
+                linksHtml = `
+                    <a href="${API_EVENT_SERVICE}/index.html" class="profile-nav-btn">
+                        <i class="fa-solid fa-compass"></i> <span>Jelajah Event</span>
+                    </a>
+                    <a href="${API_TICKET_SERVICE}/my-tickets.html" class="profile-nav-btn">
+                        <i class="fa-solid fa-ticket-simple"></i> <span>Tiket Saya</span>
+                    </a>
+                    <a href="${API_ORDER_SERVICE}/my-orders.html" class="profile-nav-btn">
+                        <i class="fa-solid fa-receipt"></i> <span>Pesanan Saya</span>
+                    </a>
+                `;
+            }
+            container.innerHTML = linksHtml;
+        }
+
+        // Fetch and load profile data
+        async function loadUserProfile() {
+            if (!getToken()) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            try {
+                const res = await authFetch(`${API_USER_SERVICE}/api/users/profile`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setUserData(data);
+
+                    const nama = data.namaLengkap || data.nama || 'Pengguna';
+                    const email = data.email || '-';
+                    const noHp = data.nomorTelepon || data.noTelepon || '';
+                    const role = (data.peran || data.role || 'PEMBELI').toUpperCase();
+                    currentRole = role;
+
+                    // Sidebar User Info
+                    document.getElementById('sidebarName').textContent = nama;
+                    document.getElementById('sidebarEmail').textContent = email;
+                    
+                    const roleBadge = document.getElementById('sidebarRoleBadge');
+                    roleBadge.textContent = role === 'ADMIN' ? 'ADMINISTRATOR' : role;
+                    roleBadge.className = 'role-tag ' + (
+                        role === 'ADMIN' ? 'role-badge-admin' :
+                        role === 'PENYELENGGARA' ? 'role-badge-organizer' : 'role-badge-buyer'
+                    );
+
+                    // Form info
+                    document.getElementById('inputNamaLengkap').value = nama;
+                    document.getElementById('inputEmail').value = email;
+                    document.getElementById('inputTelepon').value = noHp;
+                    document.getElementById('inputPeran').value = role;
+
+                    // Apply Role-Specific UI titles & breadcrumbs
+                    applyRoleSpecificUI(role);
+
+                    // Avatars
+                    renderAvatarElements(data);
+
+                    // Sidebar links
+                    renderSidebarLinks(role);
+
+                    // Re-render Dynamic Top Navbar Menu & Dropdown
+                    renderNavbarMenu();
+                    renderNavbarUser();
+                } else {
+                    showToast('Gagal memuat informasi akun.', 'error');
+                }
+            } catch (err) {
+                console.error('Error fetching profile:', err);
+                showToast('Terjadi gangguan koneksi ke server.', 'error');
+            }
+        }
+
+        // Handle Profile Form Submit
+        document.getElementById('formProfileInfo').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSaveProfile');
+            const alertBox = document.getElementById('profileAlert');
+            alertBox.innerHTML = '';
+
+            const namaLengkap = document.getElementById('inputNamaLengkap').value.trim();
+            const nomorTelepon = document.getElementById('inputTelepon').value.trim();
+
+            if (!namaLengkap) {
+                alertBox.innerHTML = `<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Nama lengkap tidak boleh kosong.</div>`;
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
+
+            try {
+                const res = await authFetch(`${API_USER_SERVICE}/api/users/profile`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nama: namaLengkap,
+                        namaLengkap: namaLengkap,
+                        nomorTelepon: nomorTelepon,
+                        noTelepon: nomorTelepon
+                    })
+                });
+
+                if (res.ok) {
+                    const updated = await res.json();
+                    showToast('Profil Anda berhasil diperbarui!');
+                    alertBox.innerHTML = `<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Perubahan profil berhasil disimpan.</div>`;
+                    
+                    // Update cache
+                    const currentCache = getUserData() || {};
+                    const merged = {
+                        ...currentCache,
+                        ...updated,
+                        nama: namaLengkap,
+                        namaLengkap: namaLengkap,
+                        nomorTelepon: nomorTelepon,
+                        noTelepon: nomorTelepon
+                    };
+                    setUserData(merged);
+
+                    // Update UI
+                    document.getElementById('sidebarName').textContent = namaLengkap;
+                    renderNavbarUser();
+                } else {
+                    const errData = await res.json().catch(() => ({}));
+                    alertBox.innerHTML = `<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> ${errData.pesan || errData.message || 'Gagal menyimpan perubahan.'}</div>`;
+                }
+            } catch (err) {
+                alertBox.innerHTML = `<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Terjadi kesalahan jaringan. Coba beberapa saat lagi.</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan`;
+            }
+        });
+
+        // Handle Avatar Upload
+        async function handleAvatarUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validate format & size
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                showToast('Format foto harus JPG, PNG, atau WEBP.', 'error');
+                event.target.value = '';
+                return;
+            }
+
+            if (file.size > 2 * 1024 * 1024) {
+                showToast('Ukuran foto tidak boleh lebih dari 2MB.', 'error');
+                event.target.value = '';
+                return;
+            }
+
+            const status = document.getElementById('avatarUploadStatus');
+            status.style.display = 'inline-block';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const token = getToken();
+                const res = await fetch(`${API_USER_SERVICE}/api/users/profile/upload-avatar`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (res.ok) {
+                    const result = await res.json();
+                    showToast('Foto profil berhasil diperbarui!');
+
+                    const newAvatarUrl = result.fotoProfilUrl || result.fotoProfil || result.avatarUrl || result.fotoUrl;
+                    const cached = getUserData() || {};
+                    cached.fotoProfil = newAvatarUrl;
+                    cached.fotoProfilUrl = newAvatarUrl;
+                    cached.fotoUrl = newAvatarUrl;
+                    cached.avatarUrl = newAvatarUrl;
+                    setUserData(cached);
+
+                    renderAvatarElements(cached);
+                    renderNavbarUser();
+                } else {
+                    const errData = await res.json().catch(() => ({}));
+                    showToast(errData.pesan || errData.message || 'Gagal mengunggah foto profil.', 'error');
+                }
+            } catch (err) {
+                console.error('Avatar upload error:', err);
+                showToast('Gagal terhubung ke server untuk unggah foto.', 'error');
+            } finally {
+                status.style.display = 'none';
+                event.target.value = '';
+            }
+        }
+
+        // Handle Change Password Submit
+        document.getElementById('formChangePassword').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSavePassword');
+            const alertBox = document.getElementById('securityAlert');
+            alertBox.innerHTML = '';
+
+            const oldPassword = document.getElementById('oldPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+            if (newPassword !== confirmNewPassword) {
+                alertBox.innerHTML = `<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Kata sandi baru dan konfirmasi kata sandi tidak cocok!</div>`;
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                alertBox.innerHTML = `<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Kata sandi baru minimal harus 8 karakter.</div>`;
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memperbarui...`;
+
+            try {
+                const res = await authFetch(`${API_USER_SERVICE}/api/users/change-password`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        oldPassword: oldPassword,
+                        kataSandiLama: oldPassword,
+                        newPassword: newPassword,
+                        kataSandiBaru: newPassword,
+                        confirmNewPassword: confirmNewPassword,
+                        konfirmasiKataSandiBaru: confirmNewPassword
+                    })
+                });
+
+                const data = await res.json().catch(() => ({}));
+
+                if (res.ok) {
+                    showToast('Kata sandi Anda berhasil diperbarui!');
+                    alertBox.innerHTML = `<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Kata sandi berhasil diubah! Gunakan kata sandi baru untuk login berikutnya.</div>`;
+                    document.getElementById('formChangePassword').reset();
+                } else {
+                    alertBox.innerHTML = `<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> ${data.pesan || data.message || 'Gagal memperbarui kata sandi. Pastikan kata sandi saat ini benar.'}</div>`;
+                }
+            } catch (err) {
+                alertBox.innerHTML = `<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Terjadi kesalahan jaringan. Coba lagi nanti.</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-shield-halved"></i> Perbarui Kata Sandi`;
+            }
+        });
+
+        // Initialize Page
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam === 'security') {
+                switchProfileTab('security');
+            } else {
+                switchProfileTab('info');
+            }
+
+            renderNavbarMenu();
+            loadUserProfile();
+        });
+    </script>
+</body>
+</html>

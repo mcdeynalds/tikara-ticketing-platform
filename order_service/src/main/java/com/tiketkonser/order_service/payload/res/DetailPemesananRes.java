@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 public class DetailPemesananRes {
     private Long id;
     private Long kategoriTiketId;
+    private String namaKategoriTiket;
     private Integer jumlah;
     private BigDecimal hargaSatuan;
     private BigDecimal subtotal;

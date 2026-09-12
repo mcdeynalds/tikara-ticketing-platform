@@ -1,0 +1,19 @@
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IDE ###
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+
+### Uploads / Temp ###
+uploads/
+
+### OS ###
+Thumbs.db
+.DS_Store

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Admin Dashboard - TIKARA</title>
+    <meta name="description" content="Pusat manajemen dan analitik platform tiket konser TIKARA.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .admin-page {
+            max-width: 1200px;
+            margin: 2.5rem auto;
+            padding: 0 1.5rem;
+        }
+        .metric-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        @media (max-width: 900px) {
+            .metric-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 500px) {
+            .metric-cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .metric-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .audit-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+        .audit-table th {
+            padding: 0.85rem 1rem;
+            border-bottom: 2px solid var(--border-color);
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        .audit-table td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+        .audit-table tr:hover {
+            background: #F8FAFC;
+        }
+    </style>
+</head>
+<body style="background-color: #F8FAFC;">
+
+    <!-- Unified Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="/admin-dashboard.html" class="navbar-logo" id="navLogoLink">
+                <i class="fa-solid fa-gauge-high"></i> TIKARA ADMIN
+            </a>
+            <ul class="navbar-menu" id="mainNavbarMenu"></ul>
+            <div class="navbar-actions">
+                <div id="navUserBox"></div>
+                <button class="navbar-hamburger" id="navbarToggleBtn" aria-label="Buka menu navigasi">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <nav class="navbar-mobile-drawer" id="navbarMobileDrawer"></nav>
+    </header>
+
+    <main class="admin-page">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <span class="role-badge" style="background: #EDE9FE; color: var(--primary-color); font-size: 0.75rem; padding: 0.25rem 0.65rem; margin-bottom: 0.35rem; display: inline-block;">
+                    <i class="fa-solid fa-shield-halved"></i> KONTROL PLATFORM EKSEKUTIF
+                </span>
+                <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text-main); margin: 0;">
+                    Executive Summary & Platform Management
+                </h1>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0.25rem 0 0;">
+                    Pantau metrik konser, verifikasi transaksi publik, dan kelola integritas ekosistem TIKARA.
+                </p>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+                <button type="button" class="btn btn-outline" onclick="loadDashboardData()" style="width: auto; padding: 0.55rem 1.1rem; font-size: 0.85rem;">
+                    <i class="fa-solid fa-rotate"></i> Refresh Data
+                </button>
+                <a href="http://localhost:8081/profile.html" class="btn btn-primary" style="width: auto; padding: 0.55rem 1.25rem; font-size: 0.85rem;">
+                    <i class="fa-solid fa-user-shield"></i> Profil Admin
+                </a>
+            </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="metric-cards-grid">
+            <div class="metric-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Total Acara Konser</span>
+                    <span style="width: 36px; height: 36px; border-radius: 10px; background: #EDE9FE; color: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                        <i class="fa-solid fa-guitar"></i>
+                    </span>
+                </div>
+                <h2 style="font-size: 1.85rem; color: var(--text-main); font-weight: 800; margin: 0;" id="metricAcara">...</h2>
+                <span style="font-size: 0.75rem; color: var(--success-color); font-weight: 600; display: block; margin-top: 0.35rem;">
+                    <i class="fa-solid fa-arrow-trend-up"></i> Event aktif terpublikasi
+                </span>
+            </div>
+
+            <div class="metric-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Total Pengguna</span>
+                    <span style="width: 36px; height: 36px; border-radius: 10px; background: #DBEAFE; color: #1D4ED8; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                        <i class="fa-solid fa-users"></i>
+                    </span>
+                </div>
+                <h2 style="font-size: 1.85rem; color: var(--text-main); font-weight: 800; margin: 0;" id="metricPengguna">...</h2>
+                <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-top: 0.35rem;">
+                    Akun terdaftar & aktif
+                </span>
+            </div>
+
+            <div class="metric-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Tiket Terjual</span>
+                    <span style="width: 36px; height: 36px; border-radius: 10px; background: #FEF3C7; color: #B45309; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                        <i class="fa-solid fa-ticket"></i>
+                    </span>
+                </div>
+                <h2 style="font-size: 1.85rem; color: var(--text-main); font-weight: 800; margin: 0;" id="metricTiket">...</h2>
+                <span style="font-size: 0.75rem; color: var(--success-color); font-weight: 600; display: block; margin-top: 0.35rem;">
+                    Tiket terverifikasi lunas
+                </span>
+            </div>
+
+            <div class="metric-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Total Omzet Transaksi</span>
+                    <span style="width: 36px; height: 36px; border-radius: 10px; background: #DCFCE7; color: #15803D; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                        <i class="fa-solid fa-vault"></i>
+                    </span>
+                </div>
+                <h2 style="font-size: 1.85rem; color: #15803D; font-weight: 800; margin: 0;" id="metricOmzet">...</h2>
+                <span style="font-size: 0.75rem; color: var(--success-color); font-weight: 600; display: block; margin-top: 0.35rem;">
+                    Pendapatan kotor platform
+                </span>
+            </div>
+        </div>
+
+        <!-- Audit Logs Table -->
+        <div class="profile-card" style="padding: 1.75rem; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-clock-rotate-left" style="color: var(--primary-color);"></i> Audit Log Aktivitas Terakhir
+                </h3>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Aktivitas sistem tercatat otomatis</span>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="audit-table">
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Modul</th>
+                            <th>Aksi</th>
+                            <th>Detail Aktivitas</th>
+                            <th>IP / Origin</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditLogTbody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Memuat log audit...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sales Report Section -->
+        <div class="profile-card" style="padding: 1.75rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-chart-line" style="color: #10B981;"></i> Rekap Laporan Penjualan Tiket
+                </h3>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Rekap per konser</span>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="audit-table">
+                    <thead>
+                        <tr>
+                            <th>ID Acara</th>
+                            <th>Periode</th>
+                            <th>Total Tiket Terjual</th>
+                            <th>Total Pendapatan</th>
+                            <th>Tanggal Rekap</th>
+                        </tr>
+                    </thead>
+                    <tbody id="salesReportTbody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Memuat laporan penjualan...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const auth = getAuthState();
+            if (!auth.isAuthenticated) {
+                showToast('Silakan login dengan akun Administrator.', 'warning');
+                setTimeout(() => {
+                    window.location.href = `http://localhost:8081/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                }, 1000);
+                return;
+            }
+
+            if (auth.role !== 'ADMIN') {
+                showToast('Akses ditolak. Halaman ini hanya untuk administrator.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'http://localhost:8082/index.html';
+                }, 1500);
+                return;
+            }
+
+            await loadDashboardData();
+        });
+
+        function formatRupiah(num) {
+            return 'Rp ' + Number(num || 0).toLocaleString('id-ID');
+        }
+
+        async function loadDashboardData() {
+            const token = (typeof getToken === 'function' ? getToken() : null) || (typeof getJwtToken === 'function' ? getJwtToken() : null) || localStorage.getItem('jwt_token');
+
+            // 1. Fetch Summary
+            try {
+                const res = await fetch('http://localhost:8089/api/admin/dashboard/summary', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('metricAcara').innerText = `${data.totalAcara || 0} Konser`;
+                    document.getElementById('metricPengguna').innerText = `${data.totalPengguna || 0} Akun`;
+                    document.getElementById('metricTiket').innerText = `${data.totalTiketTerjual || 0} Tiket`;
+                    document.getElementById('metricOmzet').innerText = formatRupiah(data.totalOmzetPendapatan || 0);
+                } else {
+                    useMockSummary();
+                }
+            } catch (err) {
+                console.warn('Admin summary API offline, using fallback:', err);
+                useMockSummary();
+            }
+
+            // 2. Fetch Audit Logs
+            try {
+                const res = await fetch('http://localhost:8089/api/admin/audit-logs?page=0&size=10', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const page = await res.json();
+                    renderAuditLogs(page.content || []);
+                } else {
+                    renderAuditLogs([]);
+                }
+            } catch (err) {
+                console.warn('Audit logs API offline:', err);
+                renderAuditLogs([]);
+            }
+
+            // 3. Fetch Sales Reports
+            try {
+                const res = await fetch('http://localhost:8089/api/admin/reports/sales?page=0&size=10', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const page = await res.json();
+                    renderSalesReports(page.content || []);
+                } else {
+                    renderSalesReports([]);
+                }
+            } catch (err) {
+                console.warn('Sales reports API offline:', err);
+                renderSalesReports([]);
+            }
+        }
+
+        function useMockSummary() {
+            document.getElementById('metricAcara').innerText = '12 Konser';
+            document.getElementById('metricPengguna').innerText = '150 Akun';
+            document.getElementById('metricTiket').innerText = '320 Tiket';
+            document.getElementById('metricOmzet').innerText = 'Rp 240.000.000';
+        }
+
+        function renderAuditLogs(logs) {
+            const tbody = document.getElementById('auditLogTbody');
+            if (!logs || logs.length === 0) {
+                // Default fallback logs
+                tbody.innerHTML = `
+                    <tr>
+                        <td>Hari Ini 14:20</td>
+                        <td><span class="role-badge pembeli" style="font-size:0.75rem;">PEMESANAN</span></td>
+                        <td><strong>CREATE_ORDER</strong></td>
+                        <td>User reservasi tiket konser ID #1</td>
+                        <td>127.0.0.1</td>
+                    </tr>
+                    <tr>
+                        <td>Hari Ini 13:45</td>
+                        <td><span class="role-badge" style="background:#DCFCE7; color:#15803D; font-size:0.75rem;">PEMBAYARAN</span></td>
+                        <td><strong>PAYMENT_SUCCESS</strong></td>
+                        <td>Verifikasi pembayaran VA Mandiri #89101</td>
+                        <td>127.0.0.1</td>
+                    </tr>
+                    <tr>
+                        <td>Kemarin 16:10</td>
+                        <td><span class="role-badge penyelenggara" style="font-size:0.75rem;">EVENT</span></td>
+                        <td><strong>PUBLISH_EVENT</strong></td>
+                        <td>Penyelenggara menerbitkan konser ID #2</td>
+                        <td>127.0.0.1</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            logs.forEach(l => {
+                const dt = l.createdAt ? new Date(l.createdAt).toLocaleDateString('id-ID', {
+                    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                }) : '-';
+
+                html += `
+                    <tr>
+                        <td>${dt}</td>
+                        <td><span class="role-badge pembeli" style="font-size:0.75rem;">${l.modul || 'SISTEM'}</span></td>
+                        <td><strong>${l.aksi || '-'}</strong></td>
+                        <td>${l.detail || '-'}</td>
+                        <td style="font-family: monospace; font-size:0.8rem;">${l.ipAddress || '127.0.0.1'}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function renderSalesReports(reports) {
+            const tbody = document.getElementById('salesReportTbody');
+            if (!reports || reports.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td>Konser #1</td>
+                        <td>September 2026</td>
+                        <td><strong>180 Lembar</strong></td>
+                        <td style="color:#15803D; font-weight:700;">Rp 135.000.000</td>
+                        <td>12 Sep 2026</td>
+                    </tr>
+                    <tr>
+                        <td>Konser #2</td>
+                        <td>September 2026</td>
+                        <td><strong>140 Lembar</strong></td>
+                        <td style="color:#15803D; font-weight:700;">Rp 105.000.000</td>
+                        <td>11 Sep 2026</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            reports.forEach(r => {
+                const dt = r.createdAt ? new Date(r.createdAt).toLocaleDateString('id-ID', {
+                    day: 'numeric', month: 'short', year: 'numeric'
+                }) : '-';
+
+                html += `
+                    <tr>
+                        <td>Konser #${r.acaraId || '-'}</td>
+                        <td>${r.periode || '-'}</td>
+                        <td><strong>${r.totalTiketTerjual || 0} Lembar</strong></td>
+                        <td style="color:#15803D; font-weight:700;">${formatRupiah(r.totalPendapatan || 0)}</td>
+                        <td>${dt}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

@@ -16,6 +16,11 @@ public class PemesananRes {
     private Long id;
     private Long penggunaId;
     private String nomorPesanan;
+    private BigDecimal subtotalTiket;
+    private BigDecimal biayaLayanan;
+    private BigDecimal biayaAdmin;
+    private BigDecimal diskon;
+    private String kodePromo;
     private BigDecimal totalHarga;
     private String status;
     private LocalDateTime tenggatPembayaran;

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIKARA - Platform Pemesanan Tiket Konser #1 Indonesia</title>
+    <meta name="description" content="Jelajahi konser musik spektakuler, festival musik, dan tur artis favoritmu di Indonesia dengan sistem tiket resmi TIKARA.">
+    
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Unified Responsive Header Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="http://localhost:8082/index.html" class="navbar-logo" id="navLogoLink" aria-label="TIKARA Beranda">
+                <i class="fa-solid fa-ticket"></i> TIKARA
+            </a>
+
+            <!-- Desktop Navigation Menu (Dynamically rendered based on Role & Auth State) -->
+            <ul class="navbar-menu" id="mainNavbarMenu">
+                <!-- Dynamically populated by script.js -->
+            </ul>
+
+            <!-- Desktop Action Box & User Dropdown -->
+            <div class="navbar-actions">
+                <a href="http://localhost:8086/notifications.html" class="nav-icon-btn" id="navNotifBtn" title="Notifikasi" style="display:none;">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="badge-count" id="navUnreadBadge" style="display:none;">0</span>
+                </a>
+                <div id="navUserBox"></div>
+
+                <!-- Mobile Hamburger Toggle Button -->
+                <button class="navbar-hamburger" id="navbarToggleBtn" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="navbarMobileDrawer">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Drawer Menu -->
+        <nav class="navbar-mobile-drawer" id="navbarMobileDrawer" aria-label="Menu navigasi mobile"></nav>
+    </header>
+
+    <!-- Hero Banner & Comprehensive Multi-Filter Section -->
+    <section class="hero-wrapper">
+        <div class="hero-content">
+            <div class="hero-pill">
+                <i class="fa-solid fa-sparkles"></i> TIKET RESMI KONSER & FESTIVAL 2026
+            </div>
+            <h1 class="hero-title">
+                Temukan Musik. <span>Rasakan Momennya.</span>
+            </h1>
+            <p class="hero-subtitle">
+                Dapatkan tiket konser musisi favoritmu secara instan, bergaransi 100% resmi, dan bebas calo dengan sistem antrean cerdas TIKARA.
+            </p>
+
+            <!-- Search & Filter Controls -->
+            <div class="search-filter-box" role="search" aria-label="Pencarian dan Filter Konser">
+                <div class="filter-group">
+                    <label for="searchInput" class="filter-label">Cari Konser / Artis</label>
+                    <div class="filter-input-wrap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchInput" class="filter-input" placeholder="Nama konser, artis, atau venue...">
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filterCity" class="filter-label">Kota Venue</label>
+                    <select id="filterCity" class="filter-select">
+                        <option value="">Semua Kota</option>
+                        <option value="Jakarta">Jakarta</option>
+                        <option value="Bandung">Bandung</option>
+                        <option value="Surabaya">Surabaya</option>
+                        <option value="Bali">Bali</option>
+                        <option value="Yogyakarta">Yogyakarta</option>
+                        <option value="Medan">Medan</option>
+                        <option value="Makassar">Makassar</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filterCategory" class="filter-label">Genre Musik</label>
+                    <select id="filterCategory" class="filter-select">
+                        <option value="">Semua Genre</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <button class="btn btn-primary btn-block" id="btnSearch" style="height: 44px;">
+                        <i class="fa-solid fa-search"></i> Cari Event
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Event Catalog Section -->
+    <main class="catalog-section" id="catalog">
+        <div class="catalog-header">
+            <div>
+                <h2 class="catalog-title">
+                    <i class="fa-solid fa-fire" style="color:var(--accent-color);"></i> Konser Musik Populer
+                </h2>
+                <div class="catalog-count" id="catalogCount">Memuat daftar konser...</div>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                <label for="sortBySelect" style="font-size:0.85rem; font-weight:700; color:var(--text-muted);">Urutkan:</label>
+                <select id="sortBySelect" class="filter-select" style="padding:0.4rem 0.75rem; width:auto;">
+                    <option value="tanggalMulai-asc">Waktu Terdekat</option>
+                    <option value="tanggalMulai-desc">Waktu Terjauh</option>
+                    <option value="nama-asc">Nama Acara (A-Z)</option>
+                    <option value="id-desc">Terbaru Ditambahkan</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Concert Cards Grid -->
+        <div class="concert-grid" id="eventsGrid">
+            <div class="skeleton-card"><div class="skeleton skeleton-poster"></div><div class="skeleton-body"><div class="skeleton" style="height:20px; width:40%;"></div><div class="skeleton" style="height:24px; width:80%;"></div><div class="skeleton" style="height:16px; width:60%;"></div></div></div>
+            <div class="skeleton-card"><div class="skeleton skeleton-poster"></div><div class="skeleton-body"><div class="skeleton" style="height:20px; width:40%;"></div><div class="skeleton" style="height:24px; width:80%;"></div><div class="skeleton" style="height:16px; width:60%;"></div></div></div>
+            <div class="skeleton-card"><div class="skeleton skeleton-poster"></div><div class="skeleton-body"><div class="skeleton" style="height:20px; width:40%;"></div><div class="skeleton" style="height:24px; width:80%;"></div><div class="skeleton" style="height:16px; width:60%;"></div></div></div>
+        </div>
+
+        <!-- Dynamic Empty & Error State Container -->
+        <div id="stateContainer" style="display:none;"></div>
+
+        <!-- Pagination Controls -->
+        <div id="paginationControls" style="display:flex; justify-content:center; gap:0.5rem; margin-top:2.5rem;"></div>
+    
+        <!-- How It Works Section: Cara Kerja TIKARA -->
+        <section style="margin-top: 5rem; padding: 4rem 0 3rem; border-top: 1px solid var(--border-color);">
+            <div style="text-align: center; max-width: 700px; margin: 0 auto 3rem;">
+                <span style="font-size: 0.8rem; font-weight: 800; color: var(--accent-color); text-transform: uppercase; letter-spacing: 1.5px;">
+                    MUDAH, RESMI & TERPERCAYA
+                </span>
+                <h2 style="font-size: 2rem; font-weight: 800; color: var(--text-main); margin-top: 0.5rem;">
+                    Cara Membeli Tiket di TIKARA
+                </h2>
+                <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.5rem;">
+                    Beli tiket konser musik idamanmu hanya dalam 4 langkah simpel tanpa antrean fisik dan bebas risiko penipuan.
+                </p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.75rem;">
+                <!-- Step 1 -->
+                <div style="background: white; border-radius: 20px; padding: 2rem; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); position: relative; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div style="width: 52px; height: 52px; border-radius: 14px; background: #EFF6FF; color: #1D4ED8; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; margin-bottom: 1.25rem;">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <span style="font-size: 0.75rem; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px;">Langkah 01</span>
+                    <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin: 0.35rem 0 0.5rem;">Pilih Konser & Kategori</h3>
+                    <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.6; margin: 0;">
+                        Telusuri jadwal konser dan festival musik favoritmu. Pilih zona kursi atau kategori festival yang kamu inginkan.
+                    </p>
+                </div>
+
+                <!-- Step 2 -->
+                <div style="background: white; border-radius: 20px; padding: 2rem; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); position: relative; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div style="width: 52px; height: 52px; border-radius: 14px; background: #FEF3C7; color: #D97706; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; margin-bottom: 1.25rem;">
+                        <i class="fa-solid fa-credit-card"></i>
+                    </div>
+                    <span style="font-size: 0.75rem; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px;">Langkah 02</span>
+                    <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin: 0.35rem 0 0.5rem;">Bayar Instan & Aman</h3>
+                    <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.6; margin: 0;">
+                        Pilih metode pembayaran QRIS atau Virtual Account resmi bank-bank ternama. Transaksi terenkripsi tingkat tinggi.
+                    </p>
+                </div>
+
+                <!-- Step 3 -->
+                <div style="background: white; border-radius: 20px; padding: 2rem; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); position: relative; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div style="width: 52px; height: 52px; border-radius: 14px; background: #DCFCE7; color: #15803D; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; margin-bottom: 1.25rem;">
+                        <i class="fa-solid fa-qrcode"></i>
+                    </div>
+                    <span style="font-size: 0.75rem; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px;">Langkah 03</span>
+                    <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin: 0.35rem 0 0.5rem;">Terbit E-Tiket Digital</h3>
+                    <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.6; margin: 0;">
+                        Setelah pembayaran diverifikasi, E-Tiket berformat Boarding Pass dengan QR Code unik langsung terbit di akunmu.
+                    </p>
+                </div>
+
+                <!-- Step 4 -->
+                <div style="background: white; border-radius: 20px; padding: 2rem; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); position: relative; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div style="width: 52px; height: 52px; border-radius: 14px; background: #FCE7F3; color: #BE185D; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; margin-bottom: 1.25rem;">
+                        <i class="fa-solid fa-ticket-simple"></i>
+                    </div>
+                    <span style="font-size: 0.75rem; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px;">Langkah 04</span>
+                    <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin: 0.35rem 0 0.5rem;">Scan di Gate Masuk</h3>
+                    <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.6; margin: 0;">
+                        Tunjukkan QR Code langsung di layar HP kepada petugas gate scanner saat konser dimulai. Langsung masuk tanpa tukar tiket fisik!
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trust Signals / Kenapa TIKARA -->
+        <section style="margin: 2rem 0 4rem; background: linear-gradient(135deg, #0F172A 0%, #1B365D 100%); border-radius: 24px; padding: 3.5rem 2.5rem; color: white;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2.5rem; align-items: center;">
+                <div>
+                    <span style="color: var(--accent-color); font-weight: 800; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase;">TIKARA GUARANTEE</span>
+                    <h2 style="font-size: 2rem; font-weight: 800; margin: 0.5rem 0 1rem; color: white;">Standar Keamanan Transaksi Tiket Kelas Industri</h2>
+                    <p style="color: #94A3B8; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
+                        TIKARA hadir dengan arsitektur microservices modern, enkripsi data end-to-end, dan sistem penomoran tiket unik anti-duplikasi.
+                    </p>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #E2E8F0;">
+                            <i class="fa-solid fa-circle-check" style="color: #10B981;"></i> 100% Tiket Resmi
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #E2E8F0;">
+                            <i class="fa-solid fa-circle-check" style="color: #10B981;"></i> Bebas Tiket Palsu
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #E2E8F0;">
+                            <i class="fa-solid fa-circle-check" style="color: #10B981;"></i> Layanan 24/7
+                        </div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 1.5rem; text-align: center;">
+                        <i class="fa-solid fa-shield-halved fa-2x" style="color: var(--accent-color); margin-bottom: 0.75rem;"></i>
+                        <div style="font-size: 1.2rem; font-weight: 800; color: white;">Anti-Calo</div>
+                        <p style="font-size: 0.8rem; color: #94A3B8; margin-top: 0.25rem;">Validasi identitas pembeli</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 1.5rem; text-align: center;">
+                        <i class="fa-solid fa-bolt fa-2x" style="color: #F59E0B; margin-bottom: 0.75rem;"></i>
+                        <div style="font-size: 1.2rem; font-weight: 800; color: white;">Real-Time</div>
+                        <p style="font-size: 0.8rem; color: #94A3B8; margin-top: 0.25rem;">Inventaris tiket sinkron</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 1.5rem; text-align: center;">
+                        <i class="fa-solid fa-qrcode fa-2x" style="color: #10B981; margin-bottom: 0.75rem;"></i>
+                        <div style="font-size: 1.2rem; font-weight: 800; color: white;">Scan Cepat</div>
+                        <p style="font-size: 0.8rem; color: #94A3B8; margin-top: 0.25rem;">0.5 detik di gate masuk</p>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 1.5rem; text-align: center;">
+                        <i class="fa-solid fa-headset fa-2x" style="color: #38BDF8; margin-bottom: 0.75rem;"></i>
+                        <div style="font-size: 1.2rem; font-weight: 800; color: white;">Dukungan CS</div>
+                        <p style="font-size: 0.8rem; color: #94A3B8; margin-top: 0.25rem;">Siap bantu kendala tiket</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer style="background:#0F172A; color:#94A3B8; padding:3rem 1.5rem 2rem 1.5rem; margin-top:auto; border-top:1px solid #1E293B;">
+        <div style="max-width:1200px; margin:0 auto; display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:2rem; margin-bottom:2rem;">
+            <div>
+                <div style="font-size:1.4rem; font-weight:800; color:#fff; margin-bottom:0.75rem;">
+                    <i class="fa-solid fa-ticket" style="color:var(--accent-color);"></i> TIKARA
+                </div>
+                <p style="font-size:0.9rem; line-height:1.5;">
+                    Platform ticketing konser dan festival musik resmi dengan keamanan transaksi berskala enterprise di Indonesia.
+                </p>
+            </div>
+            <div>
+                <h3 style="color:#fff; font-size:1rem; font-weight:700; margin-bottom:0.75rem;">Jelajahi Konser</h3>
+                <ul style="list-style:none; font-size:0.9rem; display:flex; flex-direction:column; gap:0.4rem;">
+                    <li><a href="/index.html" style="color:#94A3B8;">Semua Konser</a></li>
+                    <li><a href="#catalog" style="color:#94A3B8;">Festival Musik</a></li>
+                    <li><a href="#catalog" style="color:#94A3B8;">Tur Artis Internasional</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 style="color:#fff; font-size:1rem; font-weight:700; margin-bottom:0.75rem;">Bantuan & Keamanan</h3>
+                <ul style="list-style:none; font-size:0.9rem; display:flex; flex-direction:column; gap:0.4rem;">
+                    <li><a href="#" style="color:#94A3B8;">Panduan Pembelian</a></li>
+                    <li><a href="#" style="color:#94A3B8;">Syarat & Ketentuan</a></li>
+                    <li><a href="#" style="color:#94A3B8;">Kebijakan Privasi</a></li>
+                </ul>
+            </div>
+        </div>
+        <div style="max-width:1200px; margin:0 auto; text-align:center; font-size:0.85rem; border-top:1px solid #1E293B; padding-top:1.5rem;">
+            &copy; 2026 TIKARA Ecosystem. Seluruh hak cipta dilindungi undang-undang.
+        </div>
+    </footer>
+
+    <!-- App Engine Scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/script.js"></script>
+
+    <script>
+        let currentPage = 0;
+        const pageSize = 12;
+
+        async function loadCategories() {
+            const sel = document.getElementById('filterCategory');
+            sel.innerHTML = '<option value="">Memuat genre...</option>';
+
+            try {
+                const res = await fetch('/api/kategori');
+                if (res.ok) {
+                    const categories = await res.json();
+                    if (Array.isArray(categories) && categories.length > 0) {
+                        sel.innerHTML = '<option value="">Semua Genre</option>';
+                        categories.forEach(cat => {
+                            const catName = cat.namaKategori || cat.nama || cat.name;
+                            if (catName) {
+                                const opt = document.createElement('option');
+                                opt.value = cat.id;
+                                opt.textContent = catName;
+                                sel.appendChild(opt);
+                            }
+                        });
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('API Kategori offline atau kosong, menggunakan fallback genre:', e);
+            }
+
+            // Fallback: 8 genre resmi konser Indonesia
+            const defaultGenres = [
+                { id: 'Pop', name: 'Pop' },
+                { id: 'Rock', name: 'Rock' },
+                { id: 'Jazz', name: 'Jazz' },
+                { id: 'Indie', name: 'Indie' },
+                { id: 'EDM', name: 'EDM' },
+                { id: 'Dangdut', name: 'Dangdut' },
+                { id: 'Klasik', name: 'Klasik' },
+                { id: 'Hip-Hop', name: 'Hip-Hop' }
+            ];
+            sel.innerHTML = '<option value="">Semua Genre</option>';
+            defaultGenres.forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g.id;
+                opt.textContent = g.name;
+                sel.appendChild(opt);
+            });
+        }
+
+        async function fetchEvents(page = 0) {
+            currentPage = page;
+            const grid = document.getElementById('eventsGrid');
+            const stateContainer = document.getElementById('stateContainer');
+            const countEl = document.getElementById('catalogCount');
+            const paginationEl = document.getElementById('paginationControls');
+
+            stateContainer.style.display = 'none';
+            grid.style.display = 'grid';
+            grid.innerHTML = `
+                <div class="skeleton-card"><div class="skeleton skeleton-poster"></div><div class="skeleton-body"><div class="skeleton" style="height:20px; width:40%;"></div><div class="skeleton" style="height:24px; width:80%;"></div><div class="skeleton" style="height:16px; width:60%;"></div></div></div>
+                <div class="skeleton-card"><div class="skeleton skeleton-poster"></div><div class="skeleton-body"><div class="skeleton" style="height:20px; width:40%;"></div><div class="skeleton" style="height:24px; width:80%;"></div><div class="skeleton" style="height:16px; width:60%;"></div></div></div>
+                <div class="skeleton-card"><div class="skeleton skeleton-poster"></div><div class="skeleton-body"><div class="skeleton" style="height:20px; width:40%;"></div><div class="skeleton" style="height:24px; width:80%;"></div><div class="skeleton" style="height:16px; width:60%;"></div></div></div>
+            `;
+
+            const keyword = document.getElementById('searchInput').value.trim();
+            const kota = document.getElementById('filterCity').value;
+            const kategoriId = document.getElementById('filterCategory').value;
+            const [sortBy, sortDir] = document.getElementById('sortBySelect').value.split('-');
+
+            const params = new URLSearchParams({
+                page: page,
+                size: pageSize,
+                sortBy: sortBy || 'tanggalMulai',
+                sortDir: sortDir || 'asc'
+            });
+
+            if (keyword) params.append('keyword', keyword);
+            if (kota) params.append('kota', kota);
+                        if (kategoriId) {
+                if (!isNaN(kategoriId)) {
+                    params.append('kategoriId', kategoriId);
+                } else {
+                    params.append('category', kategoriId);
+                }
+            }
+
+            try {
+                // Authoritative public catalog endpoint
+                const res = await fetch(`/api/events?${params.toString()}`);
+                if (!res.ok) throw new Error('Gagal mengambil data katalog');
+
+                const data = await res.json();
+                const events = data.content || [];
+                const total = data.totalElements || 0;
+
+                countEl.textContent = `Menampilkan ${events.length} dari ${total} konser resmi`;
+
+                if (events.length === 0) {
+                    grid.style.display = 'none';
+                    paginationEl.innerHTML = '';
+                    stateContainer.style.display = 'block';
+                    stateContainer.innerHTML = `
+                        <div class="state-box">
+                            <div class="state-icon"><i class="fa-solid fa-calendar-xmark"></i></div>
+                            <h3 class="state-title">Konser Belum Ditemukan</h3>
+                            <p class="state-desc">Tidak ada konser yang cocok dengan kriteria pencarian Anda. Coba atur ulang kata kunci atau filter kota.</p>
+                            <button class="btn btn-secondary" onclick="resetFilters()"><i class="fa-solid fa-rotate-left"></i> Reset Filter</button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                grid.innerHTML = events.map(ev => {
+                    const poster = ev.gambarUrl || 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=800&q=80';
+                    const formattedDate = formatEventDateTime(ev.tanggalMulai);
+                    const genreTags = (ev.meKategori && ev.meKategori.length > 0)
+                        ? ev.meKategori.map(k => `<span class="status-badge published">${k.namaKategori || k.nama || 'Musik'}</span>`).join('')
+                        : '<span class="status-badge published">Musik</span>';
+
+                    return `
+                        <article class="concert-card">
+                            <div class="card-poster-wrap">
+                                <img src="${poster}" alt="Poster ${ev.nama}" class="card-poster" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=800&q=80'">
+                                <div class="card-badge-overlay">
+                                    ${genreTags}
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="card-meta-date">
+                                    <i class="fa-regular fa-calendar"></i> ${formattedDate}
+                                </div>
+                                <h3 class="card-title">${ev.nama}</h3>
+                                <div class="card-location">
+                                    <i class="fa-solid fa-location-dot"></i> ${ev.venue}, ${ev.kota}
+                                </div>
+                                <div class="card-footer">
+                                    <div class="price-box">
+                                        <span class="price-label">Penyelenggara</span>
+                                        <span class="price-val" style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">${ev.organizerNama || 'Official Organizer'}</span>
+                                    </div>
+                                    <a href="/event-detail.html?id=${ev.id}" class="btn btn-primary" style="padding:0.5rem 1rem; font-size:0.85rem;">
+                                        Lihat Tiket <i class="fa-solid fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                    `;
+                }).join('');
+
+                renderPagination(data.totalPages, data.pageNumber);
+
+            } catch (err) {
+                console.error(err);
+                grid.style.display = 'none';
+                paginationEl.innerHTML = '';
+                countEl.textContent = 'Gagal memuat';
+                stateContainer.style.display = 'block';
+                stateContainer.innerHTML = `
+                    <div class="state-box">
+                        <div class="state-icon" style="color:var(--danger-color);"><i class="fa-solid fa-circle-exclamation"></i></div>
+                        <h3 class="state-title">Terjadi Gangguan Koneksi</h3>
+                        <p class="state-desc">Tidak dapat terhubung ke server layanan konser. Silakan coba kembali beberapa saat lagi.</p>
+                        <button class="btn btn-primary" onclick="fetchEvents(${page})"><i class="fa-solid fa-arrows-rotate"></i> Coba Lagi</button>
+                    </div>
+                `;
+            }
+        }
+
+        function renderPagination(totalPages, current) {
+            const el = document.getElementById('paginationControls');
+            if (totalPages <= 1) {
+                el.innerHTML = '';
+                return;
+            }
+
+            let btns = '';
+            for (let i = 0; i < totalPages; i++) {
+                const active = i === current ? 'btn-primary' : 'btn-secondary';
+                btns += `<button class="btn ${active}" onclick="fetchEvents(${i})" style="padding:0.4rem 0.85rem;">${i + 1}</button>`;
+            }
+            el.innerHTML = btns;
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterCity').value = '';
+            document.getElementById('filterCategory').value = '';
+            document.getElementById('sortBySelect').value = 'tanggalMulai-asc';
+            fetchEvents(0);
+        }
+
+        document.getElementById('btnSearch').addEventListener('click', () => fetchEvents(0));
+        document.getElementById('filterCity').addEventListener('change', () => fetchEvents(0));
+        document.getElementById('filterCategory').addEventListener('change', () => fetchEvents(0));
+        document.getElementById('sortBySelect').addEventListener('change', () => fetchEvents(0));
+        document.getElementById('searchInput').addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') fetchEvents(0);
+        });
+
+        loadCategories();
+        fetchEvents(0);
+    </script>
+</body>
+</html>

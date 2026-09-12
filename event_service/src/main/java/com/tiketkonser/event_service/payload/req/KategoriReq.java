@@ -1,18 +1,17 @@
 package com.tiketkonser.event_service.payload.req;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class KategoriReq {
-    @NotBlank(message = "Nama kategori wajib diisi")
-    @Size(min = 2, max = 100, message = "Nama kategori minimal 2 karakter dan maksimal 100 karakter")
+
+    @NotBlank(message = "Nama kategori tidak boleh kosong")
     private String namaKategori;
+
+    public String getNamaKategori() { return namaKategori; }
+    public void setNamaKategori(String namaKategori) { this.namaKategori = namaKategori; }
 }

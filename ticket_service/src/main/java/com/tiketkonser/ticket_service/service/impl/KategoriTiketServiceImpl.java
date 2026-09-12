@@ -64,6 +64,11 @@ public class KategoriTiketServiceImpl implements KategoriTiketService {
         KategoriTiket kt = kategoriTiketRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Kategori tiket tidak ditemukan"));
 
+        // Prevent reducing quota below already sold tickets
+        if (request.getKuota() != null && request.getKuota() < kt.getTerjual()) {
+            throw new BadRequestException("Kuota baru (" + request.getKuota() + ") tidak boleh lebih rendah dari jumlah tiket yang sudah terjual (" + kt.getTerjual() + ")");
+        }
+
         kt.setNamaKategori(request.getNamaKategori());
         kt.setHarga(request.getHarga());
         kt.setKuota(request.getKuota());

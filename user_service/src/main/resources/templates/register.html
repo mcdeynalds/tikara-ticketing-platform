@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Akun Baru - TIKARA Platform Konser</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Guest Navbar (Context: Registration) -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="http://localhost:8082/index.html" class="navbar-logo">
+                <i class="fa-solid fa-ticket"></i> TIKARA
+            </a>
+            <ul class="navbar-menu">
+                <li><a href="http://localhost:8082/index.html" class="navbar-link"><i class="fa-solid fa-compass"></i> Beranda</a></li>
+            </ul>
+            <div class="navbar-actions">
+                <a href="/login.html" class="btn btn-outline" style="width:auto; padding:0.5rem 1.3rem; font-size:0.9rem; color:white; border-color:rgba(255,255,255,0.3);">Masuk</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Registration Card Layout -->
+    <main class="auth-wrapper" style="padding: 2.5rem 1rem;">
+        <div class="auth-card" style="max-width: 520px;">
+            <div class="auth-header">
+                <h2>Daftar Akun TIKARA</h2>
+                <p>Bergabunglah bersama jutaan penikmat musik di platform konser terbesar</p>
+            </div>
+
+            <form id="registerForm" action="javascript:void(0);">
+                <div class="form-group">
+                    <label class="form-label">Pilih Peran Akun</label>
+                    <div class="role-options">
+                        <div class="role-card active" id="rolePembeli" onclick="selectRole('PEMBELI')">
+                            <i class="fa-solid fa-user" style="font-size:1.3rem; color:var(--secondary-color); margin-bottom:0.3rem;"></i>
+                            <h4>Pembeli</h4>
+                            <p>Temukan event & beli tiket</p>
+                        </div>
+                        <div class="role-card" id="rolePenyelenggara" onclick="selectRole('PENYELENGGARA')">
+                            <i class="fa-solid fa-bullhorn" style="font-size:1.3rem; color:var(--accent-color); margin-bottom:0.3rem;"></i>
+                            <h4>Penyelenggara</h4>
+                            <p>Buat & jual tiket konser</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="namaLengkap">Nama Lengkap</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-user input-icon"></i>
+                        <input type="text" id="namaLengkap" class="form-input" placeholder="Masukkan nama lengkap" required autocomplete="name">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Alamat Email</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope input-icon"></i>
+                        <input type="email" id="email" class="form-input" placeholder="Masukkan alamat email" required autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="nomorTelepon">Nomor WhatsApp</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-phone input-icon"></i>
+                        <input type="text" id="nomorTelepon" class="form-input" placeholder="Contoh: 081234567890" required autocomplete="tel">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Kata Sandi</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="password" class="form-input" placeholder="Masukkan kata sandi aman" required autocomplete="new-password">
+                        <i class="fa-solid fa-eye toggle-password" id="togglePass1" onclick="togglePasswordVisibility('password', 'togglePass1')"></i>
+                    </div>
+
+                    <!-- Real-Time Password Requirements Checklist -->
+                    <div class="password-requirements-card" id="passwordRequirements">
+                        <div class="requirements-title">
+                            <i class="fa-solid fa-shield-halved"></i> Ketentuan Kata Sandi:
+                        </div>
+                        <ul class="requirements-list">
+                            <li id="reqLength" class="req-item invalid">
+                                <span class="req-icon"><i class="fa-solid fa-circle-xmark"></i></span>
+                                <span class="req-text">Minimal 8 karakter</span>
+                            </li>
+                            <li id="reqCapital" class="req-item invalid">
+                                <span class="req-icon"><i class="fa-solid fa-circle-xmark"></i></span>
+                                <span class="req-text">Diawali dengan huruf kapital</span>
+                            </li>
+                            <li id="reqNumber" class="req-item invalid">
+                                <span class="req-icon"><i class="fa-solid fa-circle-xmark"></i></span>
+                                <span class="req-text">Memiliki minimal 1 angka</span>
+                            </li>
+                            <li id="reqSymbol" class="req-item invalid">
+                                <span class="req-icon"><i class="fa-solid fa-circle-xmark"></i></span>
+                                <span class="req-text">Memiliki minimal 1 simbol</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <span class="field-error" id="passwordError" style="display:block; margin-top:0.4rem;"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="confirmPassword">Konfirmasi Kata Sandi</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-shield-halved input-icon"></i>
+                        <input type="password" id="confirmPassword" class="form-input" placeholder="Masukkan ulang kata sandi" required autocomplete="new-password">
+                        <i class="fa-solid fa-eye toggle-password" id="togglePass2" onclick="togglePasswordVisibility('confirmPassword', 'togglePass2')"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-accent" id="btnRegister" style="margin-top:0.75rem; cursor:pointer; z-index:20; position:relative;">
+                    <span>BUAT AKUN SEKARANG</span> <i class="fa-solid fa-user-plus"></i>
+                </button>
+
+                <p style="font-size:0.75rem; color:var(--text-muted); text-align:center; margin-top:0.8rem;">
+                    Dengan membuat akun, Anda menyetujui Syarat & Ketentuan serta Kebijakan Privasi TIKARA.
+                </p>
+            </form>
+
+            <div class="auth-footer">
+                Sudah memiliki akun? <a href="/login.html">Masuk di sini</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/script.js"></script>
+    <script>
+        let selectedRole = 'PEMBELI';
+
+        function selectRole(role) {
+            selectedRole = role;
+            document.getElementById('rolePembeli').classList.toggle('active', role === 'PEMBELI');
+            document.getElementById('rolePenyelenggara').classList.toggle('active', role === 'PENYELENGGARA');
+        }
+
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        const passwordInput = document.getElementById('password');
+        const reqLength = document.getElementById('reqLength');
+        const reqCapital = document.getElementById('reqCapital');
+        const reqNumber = document.getElementById('reqNumber');
+        const reqSymbol = document.getElementById('reqSymbol');
+        const passwordError = document.getElementById('passwordError');
+
+        // Real-Time Password Requirements Validator
+        function validatePasswordRequirements(val) {
+            const isLengthValid = val.length >= 8;
+            const isCapitalValid = val.length > 0 && /^[A-Z]/.test(val);
+            const isNumberValid = /\d/.test(val);
+            const isSymbolValid = /[^a-zA-Z0-9]/.test(val);
+
+            updateReqItem(reqLength, isLengthValid, 'Minimal 8 karakter');
+            updateReqItem(reqCapital, isCapitalValid, 'Diawali dengan huruf kapital');
+            updateReqItem(reqNumber, isNumberValid, 'Memiliki minimal 1 angka');
+            updateReqItem(reqSymbol, isSymbolValid, 'Memiliki minimal 1 simbol');
+
+            const missing = [];
+            if (!isLengthValid) missing.push('Minimal 8 karakter');
+            if (!isCapitalValid) missing.push('Harus diawali dengan huruf kapital');
+            if (!isNumberValid) missing.push('Harus memiliki minimal 1 angka');
+            if (!isSymbolValid) missing.push('Harus memiliki minimal 1 simbol');
+
+            return {
+                isValid: missing.length === 0,
+                missing: missing
+            };
+        }
+
+        function updateReqItem(elem, isValid, label) {
+            if (isValid) {
+                elem.className = 'req-item valid';
+                elem.innerHTML = `<span class="req-icon"><i class="fa-solid fa-circle-check"></i></span> <span class="req-text">${label}</span>`;
+            } else {
+                elem.className = 'req-item invalid';
+                elem.innerHTML = `<span class="req-icon"><i class="fa-solid fa-circle-xmark"></i></span> <span class="req-text">${label}</span>`;
+            }
+        }
+
+        passwordInput.addEventListener('input', (e) => {
+            passwordError.innerText = '';
+            validatePasswordRequirements(e.target.value);
+        });
+
+        async function processRegister() {
+            const namaLengkap = document.getElementById('namaLengkap').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const nomorTelepon = document.getElementById('nomorTelepon').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const btnRegister = document.getElementById('btnRegister');
+
+            passwordError.innerText = '';
+
+            // 1. Strict Password Policy Check
+            const passCheck = validatePasswordRequirements(password);
+            if (!passCheck.isValid) {
+                const specificMsg = 'Password belum memenuhi ketentuan: ' + passCheck.missing.join(', ');
+                passwordError.innerText = specificMsg;
+                showToast(specificMsg, 'error');
+                document.getElementById('password').focus();
+                return;
+            }
+
+            // 2. Password Confirmation Match Check
+            if (password !== confirmPassword) {
+                showToast('Konfirmasi kata sandi tidak cocok!', 'error');
+                document.getElementById('confirmPassword').focus();
+                return;
+            }
+
+            btnRegister.disabled = true;
+            btnRegister.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
+
+            try {
+                let res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nama: namaLengkap,
+                        email: email,
+                        nomorTelepon: nomorTelepon,
+                        kataSandi: password,
+                        role: selectedRole
+                    })
+                });
+
+                if (!res.ok) {
+                    res = await fetch('/api/users/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            nama: namaLengkap,
+                            email: email,
+                            nomorTelepon: nomorTelepon,
+                            kataSandi: password,
+                            role: selectedRole
+                        })
+                    });
+                }
+
+                const data = await res.json().catch(() => ({}));
+
+                if (res.ok) {
+                    showToast('Registrasi berhasil! Silakan login', 'success');
+                    setTimeout(() => window.location.href = '/login.html', 1200);
+                } else {
+                    const errorMsg = data.message || 'Registrasi gagal, periksa kelengkapan data';
+                    passwordError.innerText = errorMsg;
+                    showToast(errorMsg, 'error');
+                }
+            } catch (err) {
+                console.error('Register error:', err);
+                showToast('Gagal terhubung ke server registrasi', 'error');
+            } finally {
+                btnRegister.disabled = false;
+                btnRegister.innerHTML = '<span>BUAT AKUN SEKARANG</span> <i class="fa-solid fa-user-plus"></i>';
+            }
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            processRegister();
+        });
+    </script>
+</body>
+</html>

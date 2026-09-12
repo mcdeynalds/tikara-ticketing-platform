@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Saya - Manajemen Event & Tiket TIKARA</title>
+    <meta name="description" content="Daftar konser dan festival musik yang diselenggarakan, kelola status event, ubah tier tiket, dan pantau kuota.">
+    
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light">
+
+    <!-- Unified Responsive Header Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="http://localhost:8082/index.html" class="navbar-logo" id="navLogoLink" aria-label="TIKARA Beranda">
+                <i class="fa-solid fa-ticket"></i> TIKARA
+            </a>
+
+            <ul class="navbar-menu" id="mainNavbarMenu"></ul>
+
+            <div class="navbar-actions">
+                <a href="http://localhost:8086/notifications.html" class="nav-icon-btn" id="navNotifBtn" title="Notifikasi" style="display:none;">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="badge-count" id="navUnreadBadge" style="display:none;">0</span>
+                </a>
+                <div id="navUserBox"></div>
+
+                <button class="navbar-hamburger" id="navbarToggleBtn" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="navbarMobileDrawer">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <nav class="navbar-mobile-drawer" id="navbarMobileDrawer" aria-label="Menu navigasi mobile"></nav>
+    </header>
+
+    <!-- Main Container -->
+    <main class="organizer-container">
+        <!-- Page Header -->
+        <div class="dashboard-header">
+            <div class="dashboard-header-left">
+                <h1>Daftar Event Saya</h1>
+                <p>Kelola seluruh siklus hidup konser Anda mulai dari Draft, Publikasi, Sold Out, hingga Selesai.</p>
+            </div>
+            <div class="dashboard-actions">
+                <a href="/create-event.html" class="btn btn-primary">
+                    <i class="fa-solid fa-plus-circle"></i> Buat Event Baru
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter Tabs Bar (Lifecycle States) -->
+        <div class="filter-tabs-container" id="statusTabsContainer">
+            <button class="filter-tab-btn active" onclick="switchFilterTab('', this)">
+                Semua Event <span class="filter-tab-count" id="countAll">0</span>
+            </button>
+            <button class="filter-tab-btn" onclick="switchFilterTab('PUBLISHED', this)">
+                Published <span class="filter-tab-count" id="countPublished">0</span>
+            </button>
+            <button class="filter-tab-btn" onclick="switchFilterTab('DRAFT', this)">
+                Draft <span class="filter-tab-count" id="countDraft">0</span>
+            </button>
+            <button class="filter-tab-btn" onclick="switchFilterTab('PENDING_REVIEW', this)">
+                Pending Review <span class="filter-tab-count" id="countPending">0</span>
+            </button>
+            <button class="filter-tab-btn" onclick="switchFilterTab('SOLD_OUT', this)">
+                Sold Out <span class="filter-tab-count" id="countSoldOut">0</span>
+            </button>
+            <button class="filter-tab-btn" onclick="switchFilterTab('ENDED', this)">
+                Selesai <span class="filter-tab-count" id="countEnded">0</span>
+            </button>
+            <button class="filter-tab-btn" onclick="switchFilterTab('CANCELLED', this)">
+                Dibatalkan <span class="filter-tab-count" id="countCancelled">0</span>
+            </button>
+        </div>
+
+        <!-- Search and Sorting Bar -->
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+            <div style="flex:1; min-width:260px; max-width:400px; position:relative;">
+                <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:1rem; top:50%; transform:translateY(-50%); color:var(--text-muted);"></i>
+                <input type="text" id="eventSearchInput" class="filter-input" style="padding-left:2.5rem;" placeholder="Cari nama konser atau lokasi..." onkeyup="handleSearchInput(event)">
+            </div>
+            <div style="font-size:0.875rem; color:var(--text-muted);" id="paginationInfo">
+                Memuat data event...
+            </div>
+        </div>
+
+        <!-- Events Data Table Container -->
+        <div class="table-card">
+            <div id="myEventsTableArea">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="pagination-wrapper" id="myEventsPagination" style="margin-top:1.5rem; display:flex; justify-content:center; gap:0.5rem;"></div>
+    </main>
+
+    <!-- MODAL 1: KELOLA TIER TIKET LANGSUNG -->
+    <div class="modal-overlay" id="tierManageModal">
+        <div class="modal-dialog" style="max-width: 680px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-tags" style="color:var(--accent-color);"></i> Kelola Kategori Tiket</h3>
+                <button type="button" class="modal-close-btn" onclick="closeTierModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="modalEventInfoBanner" style="background:#F1F5F9; padding:0.85rem 1rem; border-radius:var(--border-radius-sm); margin-bottom:1.25rem;">
+                    <!-- Event Title & Status -->
+                </div>
+
+                <div id="modalTierAlert" style="display:none; margin-bottom:1rem;" role="alert"></div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                    <h4 style="font-size:0.95rem; font-weight:800; color:var(--primary-color);">Daftar Tier Aktif</h4>
+                    <button type="button" class="btn btn-secondary" style="padding:0.35rem 0.75rem; font-size:0.8rem;" onclick="openAddTierForm()">
+                        <i class="fa-solid fa-plus"></i> Tambah Tier Baru
+                    </button>
+                </div>
+
+                <!-- Form Add New Tier (Hidden by default) -->
+                <div id="addNewTierBox" style="display:none; background:#F8FAFC; border:1.5px dashed #CBD5E1; border-radius:var(--border-radius-md); padding:1rem; margin-bottom:1.25rem;">
+                    <h5 style="font-size:0.85rem; font-weight:800; margin-bottom:0.75rem; color:var(--primary-color);">Tambah Kategori Tiket Baru</h5>
+                    <div class="form-grid-3">
+                        <div class="form-field" style="margin-bottom:0.5rem;">
+                            <label>Nama Tier</label>
+                            <input type="text" id="newTierNama" placeholder="Misal: VIP Early Bird">
+                        </div>
+                        <div class="form-field" style="margin-bottom:0.5rem;">
+                            <label>Harga (Rp)</label>
+                            <input type="number" id="newTierHarga" placeholder="750000" min="0">
+                        </div>
+                        <div class="form-field" style="margin-bottom:0.5rem;">
+                            <label>Kuota</label>
+                            <input type="number" id="newTierKuota" placeholder="100" min="1">
+                        </div>
+                    </div>
+                    <div class="form-field" style="margin-top:0.5rem; margin-bottom:0.75rem;">
+                        <label>Deskripsi Benefit</label>
+                        <input type="text" id="newTierDeskripsi" placeholder="Benefit tier tiket...">
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+                        <button type="button" class="btn btn-outline" style="padding:0.35rem 0.75rem; font-size:0.8rem;" onclick="closeAddTierForm()">Batal</button>
+                        <button type="button" class="btn btn-primary" style="padding:0.35rem 0.75rem; font-size:0.8rem;" onclick="saveNewTierToTicketService()">Simpan Tier</button>
+                    </div>
+                </div>
+
+                <!-- Tier Table Inside Modal -->
+                <div id="modalTierListArea">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeTierModal()">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: UBAH STATUS EVENT / CANCEL SAFE CONFIRMATION -->
+    <div class="modal-overlay" id="statusChangeModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-arrows-spin" style="color:var(--primary-color);"></i> Ubah Status Siklus Acara</h3>
+                <button type="button" class="modal-close-btn" onclick="closeStatusModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="statusModalDesc" style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.25rem;"></p>
+                <div class="form-field">
+                    <label for="selectNewStatus">Pilih Status Baru <span class="required">*</span></label>
+                    <select id="selectNewStatus" class="filter-select" style="width:100%;">
+                        <option value="DRAFT">DRAFT (Disembunyikan dari publik)</option>
+                        <option value="PENDING_REVIEW">PENDING_REVIEW (Diajukan untuk verifikasi)</option>
+                        <option value="PUBLISHED">PUBLISHED (Aktif & Tiket Dapat Dibeli)</option>
+                        <option value="SOLD_OUT">SOLD_OUT (Semua Tiket Habis Terjual)</option>
+                        <option value="ENDED">ENDED (Konser Telah Selesai)</option>
+                        <option value="CANCELLED">CANCELLED (Konser Dibatalkan Resmi)</option>
+                    </select>
+                </div>
+                <div id="statusWarningNote" style="display:none; background:#FEF2F2; color:#991B1B; padding:0.85rem; border-radius:var(--border-radius-sm); border:1px solid #FECACA; font-size:0.8rem;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> <strong>Peringatan Pembatalan:</strong> Mengubah status menjadi <code>CANCELLED</code> akan menghentikan penjualan tiket secara permanen.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeStatusModal()">Batal</button>
+                <button type="button" class="btn btn-primary" id="btnConfirmStatusChange" onclick="confirmStatusChange()">Simpan Perubahan Status</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/script.js"></script>
+    <script>
+        let currentFilterStatus = '';
+        let currentKeyword = '';
+        let currentPage = 0;
+        const pageSize = 10;
+        let activeModalEvent = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const auth = getAuthState();
+            if (!auth.isAuthenticated) {
+                window.location.href = `${API_USER_SERVICE}/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                return;
+            }
+
+            if (auth.role !== 'PENYELENGGARA' && auth.role !== 'ADMIN') {
+                alert('Akses Terbatas: Halaman ini khusus untuk Penyelenggara Event resmi TIKARA.');
+                window.location.href = '/index.html';
+                return;
+            }
+
+            // Check URL param if manage=ID is present
+            const urlParams = new URLSearchParams(window.location.search);
+            const manageId = urlParams.get('manage');
+
+            await fetchMyEvents(0);
+
+            if (manageId) {
+                openManageTiersModal(manageId);
+            }
+        });
+
+        function switchFilterTab(status, btnElement) {
+            currentFilterStatus = status;
+            document.querySelectorAll('#statusTabsContainer .filter-tab-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            fetchMyEvents(0);
+        }
+
+        let searchTimeout = null;
+        function handleSearchInput(e) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentKeyword = e.target.value.trim();
+                fetchMyEvents(0);
+            }, 350);
+        }
+
+        async function fetchMyEvents(page = 0) {
+            currentPage = page;
+            const token = getToken();
+            const tableArea = document.getElementById('myEventsTableArea');
+            const infoEl = document.getElementById('paginationInfo');
+
+            // Skeleton loading state
+            tableArea.innerHTML = `
+                <div style="padding: 2rem 1.5rem;">
+                    <div class="skeleton" style="height:24px; width:100%; margin-bottom:12px;"></div>
+                    <div class="skeleton" style="height:24px; width:100%; margin-bottom:12px;"></div>
+                    <div class="skeleton" style="height:24px; width:100%; margin-bottom:12px;"></div>
+                    <div class="skeleton" style="height:24px; width:100%;"></div>
+                </div>
+            `;
+
+            const params = new URLSearchParams({
+                page: page,
+                size: pageSize
+            });
+            if (currentFilterStatus) params.append('status', currentFilterStatus);
+            if (currentKeyword) params.append('keyword', currentKeyword);
+
+            try {
+                // Authoritative Isolated Organizer Endpoint
+                const res = await fetch(`/api/acara/my-events?${params.toString()}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        window.location.href = `${API_USER_SERVICE}/login.html`;
+                        return;
+                    }
+                    throw new Error('Gagal mengambil daftar event Anda');
+                }
+
+                const data = await res.json();
+                const events = data.content || [];
+                const total = data.totalElements || 0;
+
+                infoEl.textContent = `Menampilkan ${events.length} dari ${total} event`;
+                updateTabBadgeCounts(events, total);
+
+                if (events.length === 0) {
+                    tableArea.innerHTML = `
+                        <div class="state-box" style="padding: 3.5rem 1.5rem; text-align: center;">
+                            <div class="state-icon" style="font-size: 2.5rem; color: var(--text-muted); margin-bottom: 1rem;">
+                                <i class="fa-solid fa-calendar-xmark"></i>
+                            </div>
+                            <h3 class="state-title" style="font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--primary-color);">Tidak Ada Event Ditemukan</h3>
+                            <p class="state-desc" style="max-width: 450px; margin: 0 auto 1.5rem auto; color: var(--text-muted);">
+                                ${currentKeyword || currentFilterStatus ? 'Tidak ada event yang sesuai dengan filter pencarian Anda.' : 'Anda belum membuat konser apapun.'}
+                            </p>
+                            ${currentKeyword || currentFilterStatus 
+                                ? '<button class="btn btn-secondary" onclick="resetAllFilters()"><i class="fa-solid fa-rotate-left"></i> Reset Filter</button>' 
+                                : '<a href="/create-event.html" class="btn btn-primary"><i class="fa-solid fa-plus-circle"></i> Buat Event Baru</a>'
+                            }
+                        </div>
+                    `;
+                    document.getElementById('myEventsPagination').innerHTML = '';
+                    return;
+                }
+
+                renderEventsTable(events);
+                renderPagination(data.totalPages, data.pageNumber);
+
+            } catch (err) {
+                console.error(err);
+                tableArea.innerHTML = `
+                    <div style="padding: 2.5rem 1rem; text-align: center; color: var(--danger-color);">
+                        <i class="fa-solid fa-circle-exclamation" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                        <p>Terjadi gangguan saat memuat data. Silakan coba kembali.</p>
+                        <button class="btn btn-primary" style="margin-top: 1rem;" onclick="fetchMyEvents(${page})">Coba Lagi</button>
+                    </div>
+                `;
+            }
+        }
+
+        function updateTabBadgeCounts(events, total) {
+            if (!currentFilterStatus && !currentKeyword) {
+                document.getElementById('countAll').textContent = total;
+            }
+        }
+
+        function renderEventsTable(events) {
+            const tableArea = document.getElementById('myEventsTableArea');
+
+            const rowsHtml = events.map(ev => {
+                const poster = ev.gambarUrl || 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=400&q=80';
+                const formattedStart = formatEventDateTime(ev.tanggalMulai);
+                const statusClass = (ev.status || 'DRAFT').toLowerCase();
+
+                return `
+                    <tr>
+                        <td>
+                            <div class="event-cell-flex">
+                                <img src="${poster}" alt="${ev.nama}" class="event-thumb" onerror="this.src='https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=400&q=80'">
+                                <div class="event-cell-info">
+                                    <h4>${ev.nama}</h4>
+                                    <p><i class="fa-solid fa-location-dot"></i> ${ev.venue}, ${ev.kota}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-size:0.85rem; font-weight:600; color:var(--text-main);">
+                                <i class="fa-regular fa-calendar"></i> ${formattedStart}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge ${statusClass}">${ev.status}</span>
+                        </td>
+                        <td style="text-align: right;">
+                            <div style="display:inline-flex; gap:0.4rem; flex-wrap:wrap; justify-content:flex-end;">
+                                <a href="/event-detail.html?id=${ev.id}" class="btn btn-outline" style="padding:0.4rem 0.65rem; font-size:0.8rem;" title="Lihat Halaman Publik">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                </a>
+                                <button class="btn btn-secondary" style="padding:0.4rem 0.65rem; font-size:0.8rem;" onclick="openManageTiersModal(${ev.id}, '${encodeURIComponent(ev.nama)}', '${ev.status}')" title="Kelola Tier Tiket">
+                                    <i class="fa-solid fa-tags"></i> Tiket
+                                </button>
+                                <button class="btn btn-outline" style="padding:0.4rem 0.65rem; font-size:0.8rem;" onclick="openStatusChangeModal(${ev.id}, '${encodeURIComponent(ev.nama)}', '${ev.status}')" title="Ubah Status Acara">
+                                    <i class="fa-solid fa-pen-to-square"></i> Status
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tableArea.innerHTML = `
+                <div class="table-responsive">
+                    <table class="tikara-table">
+                        <thead>
+                            <tr>
+                                <th>Konser & Lokasi</th>
+                                <th>Jadwal Pelaksanaan</th>
+                                <th>Status Siklus</th>
+                                <th style="text-align: right;">Aksi Operasional</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderPagination(totalPages, current) {
+            const el = document.getElementById('myEventsPagination');
+            if (totalPages <= 1) {
+                el.innerHTML = '';
+                return;
+            }
+
+            let btns = '';
+            for (let i = 0; i < totalPages; i++) {
+                const active = i === current ? 'btn-primary' : 'btn-secondary';
+                btns += `<button class="btn ${active}" onclick="fetchMyEvents(${i})" style="padding:0.4rem 0.85rem;">${i + 1}</button>`;
+            }
+            el.innerHTML = btns;
+        }
+
+        function resetAllFilters() {
+            currentFilterStatus = '';
+            currentKeyword = '';
+            document.getElementById('eventSearchInput').value = '';
+            document.querySelectorAll('#statusTabsContainer .filter-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('#statusTabsContainer .filter-tab-btn').classList.add('active');
+            fetchMyEvents(0);
+        }
+
+        // =========================================================================
+        // MODAL 1: KELOLA TIER TIKET (ticket_service Integration)
+        // =========================================================================
+        let currentModalEventId = null;
+
+        async function openManageTiersModal(eventId, encodedNama = '', status = '') {
+            currentModalEventId = eventId;
+            const modal = document.getElementById('tierManageModal');
+            const banner = document.getElementById('modalEventInfoBanner');
+            const alertBox = document.getElementById('modalTierAlert');
+            alertBox.style.display = 'none';
+
+            const decodedNama = decodeURIComponent(encodedNama) || `Event #${eventId}`;
+            banner.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <strong style="color:var(--primary-color); font-size:1rem;">${decodedNama}</strong>
+                        <div style="font-size:0.775rem; color:var(--text-muted); margin-top:2px;">ID Acara: #${eventId}</div>
+                    </div>
+                    <span class="status-badge ${(status || 'draft').toLowerCase()}">${status || 'ACTIVE'}</span>
+                </div>
+            `;
+
+            modal.classList.add('active');
+            closeAddTierForm();
+            await loadTiersForModal(eventId);
+        }
+
+        function closeTierModal() {
+            document.getElementById('tierManageModal').classList.remove('active');
+            currentModalEventId = null;
+        }
+
+        async function loadTiersForModal(eventId) {
+            const listArea = document.getElementById('modalTierListArea');
+            listArea.innerHTML = '<div style="text-align:center; padding:1.5rem;"><i class="fa-solid fa-spinner fa-spin"></i> Memuat kategori tiket...</div>';
+
+            try {
+                const res = await fetch(`${API_TICKET_SERVICE}/api/kategori-tiket/acara/${eventId}`);
+                if (!res.ok) throw new Error('Gagal mengambil data tier');
+
+                const tiers = await res.json();
+                if (!tiers || tiers.length === 0) {
+                    listArea.innerHTML = `
+                        <div style="text-align:center; padding:1.5rem; color:var(--text-muted);">
+                            <p>Belum ada kategori tiket untuk event ini.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const tiersHtml = tiers.map(t => {
+                    const terjual = t.terjual || 0;
+                    const kuota = t.kuota || 0;
+                    const harga = 'Rp ' + Number(t.harga || 0).toLocaleString('id-ID');
+
+                    return `
+                        <div style="background:white; border:1px solid var(--border-color); border-radius:var(--border-radius-sm); padding:1rem; margin-bottom:0.75rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+                            <div>
+                                <strong style="color:var(--primary-color); font-size:0.95rem;">${t.nama}</strong>
+                                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">
+                                    Harga: <strong>${harga}</strong> &bull; Kuota: <strong>${kuota}</strong> &bull; Terjual: <strong style="color:var(--success-color);">${terjual}</strong>
+                                </div>
+                                ${t.deskripsi ? `<div style="font-size:0.75rem; color:#64748B; margin-top:2px;">${t.deskripsi}</div>` : ''}
+                            </div>
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <button class="btn btn-outline" style="padding:0.35rem 0.65rem; font-size:0.75rem;" onclick="promptUpdateKuota(${t.id}, ${kuota}, ${terjual})">
+                                    <i class="fa-solid fa-sliders"></i> Atur Kuota
+                                </button>
+                                ${terjual === 0 ? `
+                                    <button class="btn btn-outline" style="padding:0.35rem 0.65rem; font-size:0.75rem; color:var(--danger-color); border-color:#FECACA;" onclick="deleteTier(${t.id})" title="Hapus tier (hanya jika belum ada tiket terjual)">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                ` : `
+                                    <span style="font-size:0.75rem; color:var(--text-muted); background:#F1F5F9; padding:0.25rem 0.5rem; border-radius:4px;" title="Tier dengan tiket terjual dilindungi dari penghapusan">
+                                        <i class="fa-solid fa-lock"></i> Terkunci
+                                    </span>
+                                `}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                listArea.innerHTML = tiersHtml;
+
+            } catch (err) {
+                console.error(err);
+                listArea.innerHTML = '<div style="color:var(--danger-color); padding:1rem; text-align:center;">Gagal memuat kategori tiket dari Ticket Service.</div>';
+            }
+        }
+
+        function openAddTierForm() {
+            document.getElementById('addNewTierBox').style.display = 'block';
+        }
+
+        function closeAddTierForm() {
+            document.getElementById('addNewTierBox').style.display = 'none';
+            document.getElementById('newTierNama').value = '';
+            document.getElementById('newTierHarga').value = '';
+            document.getElementById('newTierKuota').value = '';
+            document.getElementById('newTierDeskripsi').value = '';
+        }
+
+        async function saveNewTierToTicketService() {
+            if (!currentModalEventId) return;
+
+            const nama = document.getElementById('newTierNama').value.trim();
+            const harga = parseFloat(document.getElementById('newTierHarga').value);
+            const kuota = parseInt(document.getElementById('newTierKuota').value, 10);
+            const deskripsi = document.getElementById('newTierDeskripsi').value.trim();
+
+            if (!nama || isNaN(harga) || harga < 0 || isNaN(kuota) || kuota <= 0) {
+                alert('Nama, harga (>=0), dan kuota (>=1) wajib diisi.');
+                return;
+            }
+
+            const token = getToken();
+            try {
+                const res = await fetch(`${API_TICKET_SERVICE}/api/kategori-tiket`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        acaraId: currentModalEventId,
+                        nama: nama,
+                        harga: harga,
+                        kuota: kuota,
+                        deskripsi: deskripsi
+                    })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.message || 'Gagal menambahkan tier tiket');
+                }
+
+                closeAddTierForm();
+                await loadTiersForModal(currentModalEventId);
+
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        async function promptUpdateKuota(tierId, currentKuota, terjual) {
+            const input = prompt(`Masukkan jumlah kuota baru (minimal ${terjual} sesuai jumlah tiket yang sudah terjual):`, currentKuota);
+            if (input === null) return;
+
+            const newKuota = parseInt(input, 10);
+            if (isNaN(newKuota) || newKuota < terjual) {
+                alert(`Proteksi Penjualan: Kuota tidak boleh lebih kecil dari jumlah tiket yang sudah terjual (${terjual} tiket).`);
+                return;
+            }
+
+            const token = getToken();
+            try {
+                const res = await fetch(`${API_TICKET_SERVICE}/api/kategori-tiket/${tierId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        kuota: newKuota
+                    })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.message || 'Gagal memperbarui kuota tier');
+                }
+
+                await loadTiersForModal(currentModalEventId);
+
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        async function deleteTier(tierId) {
+            if (!confirm('Apakah Anda yakin ingin menghapus kategori tiket ini? Tindakan tidak dapat dibatalkan.')) return;
+
+            const token = getToken();
+            try {
+                const res = await fetch(`${API_TICKET_SERVICE}/api/kategori-tiket/${tierId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.message || 'Gagal menghapus kategori tiket');
+                }
+
+                await loadTiersForModal(currentModalEventId);
+
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        // =========================================================================
+        // MODAL 2: UBAH STATUS EVENT
+        // =========================================================================
+        let currentStatusEventId = null;
+
+        function openStatusChangeModal(eventId, encodedNama, currentStatus) {
+            currentStatusEventId = eventId;
+            const decodedNama = decodeURIComponent(encodedNama);
+            document.getElementById('statusModalDesc').innerHTML = `
+                Mengubah status siklus untuk konser: <strong>${decodedNama}</strong> (ID: #${eventId}).
+            `;
+            const select = document.getElementById('selectNewStatus');
+            select.value = currentStatus || 'DRAFT';
+
+            const warning = document.getElementById('statusWarningNote');
+            warning.style.display = select.value === 'CANCELLED' ? 'block' : 'none';
+
+            select.onchange = () => {
+                warning.style.display = select.value === 'CANCELLED' ? 'block' : 'none';
+            };
+
+            document.getElementById('statusChangeModal').classList.add('active');
+        }
+
+        function closeStatusModal() {
+            document.getElementById('statusChangeModal').classList.remove('active');
+            currentStatusEventId = null;
+        }
+
+        async function confirmStatusChange() {
+            if (!currentStatusEventId) return;
+            const newStatus = document.getElementById('selectNewStatus').value;
+            const btn = document.getElementById('btnConfirmStatusChange');
+
+            if (newStatus === 'CANCELLED') {
+                const confirmCancel = confirm('KONFIRMASI PEMBATALAN KONSER:\n\nApakah Anda yakin ingin membatalkan konser ini secara resmi? Penjualan tiket akan segera ditutup.');
+                if (!confirmCancel) return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memperbarui...';
+
+            const token = getToken();
+            try {
+                const res = await fetch(`/api/acara/${currentStatusEventId}/status?status=${newStatus}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.message || 'Gagal memperbarui status konser');
+                }
+
+                closeStatusModal();
+                await fetchMyEvents(currentPage);
+
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Simpan Perubahan Status';
+            }
+        }
+    </script>
+</body>
+</html>

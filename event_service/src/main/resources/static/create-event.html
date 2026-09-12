@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buat Event Baru - Dashboard Penyelenggara TIKARA</title>
+    <meta name="description" content="Buat dan atur konser musik baru, atur tier tiket, harga, kuota, dan unggah poster konser resmi di TIKARA.">
+    
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light">
+
+    <!-- Unified Responsive Header Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="http://localhost:8082/index.html" class="navbar-logo" id="navLogoLink" aria-label="TIKARA Beranda">
+                <i class="fa-solid fa-ticket"></i> TIKARA
+            </a>
+
+            <ul class="navbar-menu" id="mainNavbarMenu"></ul>
+
+            <div class="navbar-actions">
+                <a href="http://localhost:8086/notifications.html" class="nav-icon-btn" id="navNotifBtn" title="Notifikasi" style="display:none;">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="badge-count" id="navUnreadBadge" style="display:none;">0</span>
+                </a>
+                <div id="navUserBox"></div>
+
+                <button class="navbar-hamburger" id="navbarToggleBtn" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="navbarMobileDrawer">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <nav class="navbar-mobile-drawer" id="navbarMobileDrawer" aria-label="Menu navigasi mobile"></nav>
+    </header>
+
+    <!-- Main Container -->
+    <main class="organizer-container">
+        <!-- Breadcrumb & Header -->
+        <div class="dashboard-header">
+            <div class="dashboard-header-left">
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">
+                    <a href="/organizer-dashboard.html" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">
+                        <i class="fa-solid fa-arrow-left"></i> Kembali ke Dashboard
+                    </a>
+                </div>
+                <h1>Buat Event & Atur Tiket</h1>
+                <p>Isi rincian konser, tentukan jadwal konser, unggah poster, dan konfigurasi tier tiket penjualan Anda.</p>
+            </div>
+            <div class="dashboard-actions">
+                <a href="/my-events.html" class="btn btn-secondary">
+                    <i class="fa-solid fa-calendar-days"></i> Event Saya
+                </a>
+            </div>
+        </div>
+
+        <!-- Alert Notification Box -->
+        <div id="alertBox" style="display:none; margin-bottom: 1.5rem;" role="alert"></div>
+
+        <form id="createEventForm" onsubmit="handleCreateEvent(event)" novalidate>
+            <!-- SECTION 1: INFORMASI UTAMA ACARA -->
+            <section class="form-section-card">
+                <h2 class="section-legend">
+                    <i class="fa-solid fa-circle-info" style="color: var(--accent-color);"></i> 1. Informasi Utama Konser
+                </h2>
+                <p class="section-desc">Lengkapi identitas konser agar calon penonton dapat menemukan acara Anda dengan mudah.</p>
+
+                <div class="form-field">
+                    <label for="eventNama">Nama Konser / Acara <span class="required">*</span></label>
+                    <input type="text" id="eventNama" placeholder="Contoh: Soundrenaline 2026 - Jakarta Fest" required maxlength="200">
+                    <div class="field-hint">Pastikan nama acara jelas dan mencantumkan nama artis atau festival.</div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-field">
+                        <label for="eventKategori">Kategori Musik / Genre <span class="required">*</span></label>
+                        <select id="eventKategori" required>
+                            <option value="">-- Pilih Genre --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="eventKota">Kota Penyelenggaraan <span class="required">*</span></label>
+                        <select id="eventKota" required>
+                            <option value="">-- Pilih Kota --</option>
+                            <option value="Jakarta">Jakarta</option>
+                            <option value="Bandung">Bandung</option>
+                            <option value="Surabaya">Surabaya</option>
+                            <option value="Bali">Bali</option>
+                            <option value="Yogyakarta">Yogyakarta</option>
+                            <option value="Medan">Medan</option>
+                            <option value="Makassar">Makassar</option>
+                            <option value="Semarang">Semarang</option>
+                            <option value="Solo">Solo</option>
+                            <option value="Lainnya">Kota Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label for="eventVenue">Nama Venue / Lokasi Konser <span class="required">*</span></label>
+                    <input type="text" id="eventVenue" placeholder="Contoh: Gelora Bung Karno (GBK) Senayan" required maxlength="255">
+                </div>
+
+                <div class="form-field">
+                    <label for="eventDeskripsi">Deskripsi Lengkap Konser <span class="required">*</span></label>
+                    <textarea id="eventDeskripsi" rows="5" placeholder="Tuliskan line-up musisi, rundown, aturan penonton, dan informasi penting lainnya..." required></textarea>
+                </div>
+            </section>
+
+            <!-- SECTION 2: JADWAL & POSTER -->
+            <section class="form-section-card">
+                <h2 class="section-legend">
+                    <i class="fa-solid fa-calendar-days" style="color: var(--primary-color);"></i> 2. Jadwal & Poster Acara
+                </h2>
+                <p class="section-desc">Atur waktu pelaksanaan konser dan pasang poster visual yang menarik.</p>
+
+                <div class="form-grid-2">
+                    <div class="form-field">
+                        <label for="eventTanggalMulai">Waktu Mulai Konser <span class="required">*</span></label>
+                        <input type="datetime-local" id="eventTanggalMulai" required>
+                        <div class="field-hint">Waktu dimulainya konser atau open gate.</div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="eventTanggalSelesai">Waktu Selesai Konser <span class="required">*</span></label>
+                        <input type="datetime-local" id="eventTanggalSelesai" required>
+                        <div class="field-hint">Perkiraan acara berakhir. Harus setelah waktu mulai.</div>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label>Poster Konser Visual</label>
+                    <div class="poster-upload-container">
+                        <div class="file-dropzone" id="posterDropzone" onclick="document.getElementById('posterFileInput').click()">
+                            <input type="file" id="posterFileInput" accept="image/*" style="display:none" onchange="handlePosterFileSelect(event)">
+                            <div class="dropzone-icon">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                            </div>
+                            <div class="dropzone-title">Klik atau Tarik File Gambar Poster ke Sini</div>
+                            <div class="dropzone-subtitle">Mendukung format JPG, PNG, WEBP (Maksimal 5MB)</div>
+                            <div style="margin-top: 1rem;">
+                                <button type="button" class="btn btn-outline" style="padding:0.4rem 1rem; font-size:0.85rem;" onclick="event.stopPropagation(); document.getElementById('posterFileInput').click()">
+                                    <i class="fa-solid fa-folder-open"></i> Pilih Berkas
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="poster-preview-card">
+                            <img id="posterPreviewImg" class="poster-preview-img" src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=800&q=80" alt="Preview Poster">
+                            <div class="poster-preview-caption">
+                                <span id="posterPreviewText">Preview Poster Acara</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label for="eventGambarUrl">Atau Masukkan URL Poster Langsung</label>
+                    <input type="url" id="eventGambarUrl" placeholder="https://contoh-url.com/poster-konser.jpg" oninput="handlePosterUrlInput(event)">
+                    <div class="field-hint">Jika gambar sudah diunggah di CDN/Image Hosting.</div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: TIKET & KATEGORI (TIER BUILDER) -->
+            <section class="form-section-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom: 0.5rem;">
+                    <h2 class="section-legend" style="margin-bottom:0;">
+                        <i class="fa-solid fa-ticket-simple" style="color: #10B981;"></i> 3. Kategori Tiket (Ticket Tiers)
+                    </h2>
+                    <button type="button" class="btn btn-secondary" onclick="addTicketTierRow()" style="padding:0.45rem 1rem; font-size:0.85rem;">
+                        <i class="fa-solid fa-plus"></i> Tambah Tier Tiket
+                    </button>
+                </div>
+                <p class="section-desc">Tentukan kategori tiket yang tersedia (misal: VIP, Festival, Tribune), harga per tiket, dan alokasi kuota.</p>
+
+                <!-- Dynamic Tier List -->
+                <div id="tierListContainer" class="tier-builder-list">
+                    <!-- Dynamic tiers populated by JS -->
+                </div>
+
+                <div class="field-hint" style="background:#EFF6FF; color:#1E40AF; padding:0.85rem 1rem; border-radius:var(--border-radius-sm); border:1px solid #BFDBFE;">
+                    <i class="fa-solid fa-shield-halved"></i> <strong>Jaminan Orkestrasi Aman:</strong> Jika pembuatan kategori tiket di sistem tiket gagal, pembuatan event akan otomatis dibatalkan (kompensasi rollback) sehingga tidak ada data yang menggantung.
+                </div>
+            </section>
+
+            <!-- SECTION 4: AKSI & STATUS PENYIMPANAN -->
+            <div class="form-submit-bar">
+                <button type="button" class="btn btn-secondary" id="btnSaveDraft" onclick="submitFormWithStatus('DRAFT')">
+                    <i class="fa-regular fa-floppy-disk"></i> Simpan sebagai Draft
+                </button>
+                <button type="submit" class="btn btn-primary" id="btnPublish" onclick="submitFormWithStatus('PENDING_REVIEW')">
+                    <i class="fa-solid fa-paper-plane"></i> Ajukan Publikasi Event
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <!-- Scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/script.js"></script>
+    <script>
+        let currentSubmitStatus = 'PENDING_REVIEW';
+        let tierCount = 0;
+
+        // Verify RBAC: Only PENYELENGGARA or ADMIN allowed
+        document.addEventListener('DOMContentLoaded', async () => {
+            const auth = getAuthState();
+            if (!auth.isAuthenticated) {
+                window.location.href = `${API_USER_SERVICE}/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                return;
+            }
+
+            if (auth.role !== 'PENYELENGGARA' && auth.role !== 'ADMIN') {
+                alert('Akses Terbatas: Halaman ini khusus untuk Penyelenggara Event resmi TIKARA.');
+                window.location.href = '/index.html';
+                return;
+            }
+
+            await loadCategoriesDropdown();
+            setupDateConstraints();
+            setupDropzone();
+
+            // Default initial 2 tiers: VIP & Festival
+            addTicketTierRow('VIP', 1250000, 150, 'Akses baris depan, free merchandise, snack & lounge eksklusif');
+            addTicketTierRow('Festival A', 650000, 500, 'Akses area berdiri festival depan panggung');
+        });
+
+        async function loadCategoriesDropdown() {
+            const select = document.getElementById('eventKategori');
+            try {
+                const res = await fetch('/api/categories');
+                if (res.ok) {
+                    const data = await res.json();
+                    select.innerHTML = '<option value="">-- Pilih Genre Musik --</option>';
+                    data.forEach(cat => {
+                        const opt = document.createElement('option');
+                        opt.value = cat.id;
+                        opt.textContent = cat.nama || cat.namaKategori;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (e) {
+                console.warn('Gagal memuat kategori dari API, gunakan fallback statis', e);
+                select.innerHTML = `
+                    <option value="">-- Pilih Genre --</option>
+                    <option value="1">Pop</option>
+                    <option value="2">Rock</option>
+                    <option value="3">Jazz</option>
+                    <option value="4">Indie</option>
+                    <option value="5">Electronic / EDM</option>
+                    <option value="6">Dangdut Modern</option>
+                `;
+            }
+        }
+
+        function setupDateConstraints() {
+            const now = new Date();
+            // Minimum start date: 1 day in the future
+            now.setDate(now.getDate() + 1);
+            const minDateStr = now.toISOString().slice(0, 16);
+            
+            const startInput = document.getElementById('eventTanggalMulai');
+            const endInput = document.getElementById('eventTanggalSelesai');
+            
+            startInput.min = minDateStr;
+            startInput.addEventListener('change', () => {
+                if (startInput.value) {
+                    endInput.min = startInput.value;
+                    if (endInput.value && endInput.value < startInput.value) {
+                        endInput.value = startInput.value;
+                    }
+                }
+            });
+        }
+
+        function setupDropzone() {
+            const dropzone = document.getElementById('posterDropzone');
+            ['dragenter', 'dragover'].forEach(name => {
+                dropzone.addEventListener(name, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.add('dragover');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(name => {
+                dropzone.addEventListener(name, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.remove('dragover');
+                }, false);
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files && files[0]) {
+                    processPosterFile(files[0]);
+                }
+            });
+        }
+
+        function handlePosterFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) processPosterFile(file);
+        }
+
+        function processPosterFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showAlert('Format berkas tidak didukung. Harap pilih gambar JPG/PNG/WEBP.', 'danger');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showAlert('Ukuran gambar terlalu besar. Maksimal 5MB.', 'danger');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const previewImg = document.getElementById('posterPreviewImg');
+                previewImg.src = evt.target.result;
+                document.getElementById('posterPreviewText').textContent = file.name;
+                document.getElementById('eventGambarUrl').value = evt.target.result; // Data URL for immediate use
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handlePosterUrlInput(e) {
+            const url = e.target.value.trim();
+            if (url) {
+                document.getElementById('posterPreviewImg').src = url;
+                document.getElementById('posterPreviewText').textContent = 'Preview dari URL Eksternal';
+            }
+        }
+
+        function addTicketTierRow(nama = '', harga = '', kuota = '', deskripsi = '') {
+            tierCount++;
+            const container = document.getElementById('tierListContainer');
+            const rowId = `tierRow_${Date.now()}_${tierCount}`;
+
+            const tierHtml = `
+                <div class="tier-item-card" id="${rowId}">
+                    <div class="tier-card-head">
+                        <span class="tier-card-badge"><i class="fa-solid fa-tag"></i> Tier #${tierCount}</span>
+                        <button type="button" class="tier-del-btn" title="Hapus Tier" onclick="removeTicketTierRow('${rowId}')">
+                            <i class="fa-solid fa-trash-can"></i> Hapus
+                        </button>
+                    </div>
+
+                    <div class="form-grid-3">
+                        <div class="form-field" style="margin-bottom:0;">
+                            <label>Nama Kategori / Tier <span class="required">*</span></label>
+                            <input type="text" class="tier-input-nama" value="${nama}" placeholder="Contoh: VIP / Cat 1 / Festival" required maxlength="50">
+                        </div>
+
+                        <div class="form-field" style="margin-bottom:0;">
+                            <label>Harga Tiket (Rp) <span class="required">*</span></label>
+                            <input type="number" class="tier-input-harga" value="${harga}" placeholder="Contoh: 750000" min="0" step="5000" required>
+                        </div>
+
+                        <div class="form-field" style="margin-bottom:0;">
+                            <label>Jumlah Kuota Tiket <span class="required">*</span></label>
+                            <input type="number" class="tier-input-kuota" value="${kuota}" placeholder="Contoh: 300" min="1" step="1" required>
+                        </div>
+                    </div>
+
+                    <div class="form-field" style="margin-top:0.85rem; margin-bottom:0;">
+                        <label>Benefit / Keterangan Tier</label>
+                        <input type="text" class="tier-input-deskripsi" value="${deskripsi}" placeholder="Contoh: Termasuk nomor kursi, lanyard khusus, & fast-track">
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', tierHtml);
+        }
+
+        function removeTicketTierRow(rowId) {
+            const container = document.getElementById('tierListContainer');
+            const rows = container.getElementsByClassName('tier-item-card');
+            if (rows.length <= 1) {
+                showAlert('Konser wajib memiliki minimal 1 kategori tiket aktif.', 'warning');
+                return;
+            }
+            const el = document.getElementById(rowId);
+            if (el) el.remove();
+        }
+
+        function submitFormWithStatus(status) {
+            currentSubmitStatus = status;
+        }
+
+        function showAlert(message, type = 'info') {
+            const box = document.getElementById('alertBox');
+            box.style.display = 'block';
+            let bg = '#EFF6FF';
+            let color = '#1E40AF';
+            let border = '#BFDBFE';
+            let icon = 'fa-circle-info';
+
+            if (type === 'danger') {
+                bg = '#FEF2F2';
+                color = '#991B1B';
+                border = '#FECACA';
+                icon = 'fa-circle-exclamation';
+            } else if (type === 'success') {
+                bg = '#ECFDF5';
+                color = '#065F46';
+                border = '#A7F3D0';
+                icon = 'fa-circle-check';
+            } else if (type === 'warning') {
+                bg = '#FFFBEB';
+                color = '#92400E';
+                border = '#FDE68A';
+                icon = 'fa-triangle-exclamation';
+            }
+
+            box.style.background = bg;
+            box.style.color = color;
+            box.style.border = `1px solid ${border}`;
+            box.style.padding = '0.85rem 1.25rem';
+            box.style.borderRadius = 'var(--border-radius-sm)';
+            box.innerHTML = `<i class="fa-solid ${icon}"></i> ${message}`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function handleCreateEvent(e) {
+            e.preventDefault();
+            const btnDraft = document.getElementById('btnSaveDraft');
+            const btnPublish = document.getElementById('btnPublish');
+
+            // 1. Client-Side Validations
+            const nama = document.getElementById('eventNama').value.trim();
+            const kategoriId = document.getElementById('eventKategori').value;
+            const kota = document.getElementById('eventKota').value;
+            const venue = document.getElementById('eventVenue').value.trim();
+            const deskripsi = document.getElementById('eventDeskripsi').value.trim();
+            const tanggalMulai = document.getElementById('eventTanggalMulai').value;
+            const tanggalSelesai = document.getElementById('eventTanggalSelesai').value;
+            const gambarUrl = document.getElementById('eventGambarUrl').value.trim() || document.getElementById('posterPreviewImg').src;
+
+            if (!nama || !kategoriId || !kota || !venue || !deskripsi || !tanggalMulai || !tanggalSelesai) {
+                showAlert('Harap lengkapi semua kolom rincian konser bertanda bintang merah (*).', 'danger');
+                return;
+            }
+
+            if (new Date(tanggalSelesai) <= new Date(tanggalMulai)) {
+                showAlert('Waktu Selesai Konser harus setelah Waktu Mulai Konser.', 'danger');
+                return;
+            }
+
+            // Extract and validate tiers
+            const tierCards = document.querySelectorAll('#tierListContainer .tier-item-card');
+            if (tierCards.length === 0) {
+                showAlert('Wajib menentukan minimal 1 kategori tiket.', 'danger');
+                return;
+            }
+
+            const tiers = [];
+            for (let card of tierCards) {
+                const tNama = card.querySelector('.tier-input-nama').value.trim();
+                const tHarga = parseFloat(card.querySelector('.tier-input-harga').value);
+                const tKuota = parseInt(card.querySelector('.tier-input-kuota').value, 10);
+                const tDeskripsi = card.querySelector('.tier-input-deskripsi').value.trim();
+
+                if (!tNama) {
+                    showAlert('Nama kategori tiket tidak boleh kosong.', 'danger');
+                    return;
+                }
+                if (isNaN(tHarga) || tHarga < 0) {
+                    showAlert(`Harga tiket untuk "${tNama}" tidak valid. Harus >= 0.`, 'danger');
+                    return;
+                }
+                if (isNaN(tKuota) || tKuota <= 0) {
+                    showAlert(`Kuota tiket untuk "${tNama}" harus minimal 1 lembar.`, 'danger');
+                    return;
+                }
+
+                tiers.push({
+                    nama: tNama,
+                    harga: tHarga,
+                    kuota: tKuota,
+                    deskripsi: tDeskripsi
+                });
+            }
+
+            // 2. Execution with Fail-Safe Cross-Service Orchestration & Rollback
+            btnDraft.disabled = true;
+            btnPublish.disabled = true;
+            const originalDraftText = btnDraft.innerHTML;
+            const originalPublishText = btnPublish.innerHTML;
+            btnPublish.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
+
+            const token = getToken();
+            let createdEventId = null;
+
+            try {
+                // STEP A: Create Event in event_service
+                const eventPayload = {
+                    nama: nama,
+                    deskripsi: deskripsi,
+                    venue: venue,
+                    kota: kota,
+                    tanggalMulai: tanggalMulai,
+                    tanggalSelesai: tanggalSelesai,
+                    gambarUrl: gambarUrl,
+                    kategoriIds: [parseInt(kategoriId, 10)],
+                    status: currentSubmitStatus
+                };
+
+                const resEvent = await fetch('/api/acara', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(eventPayload)
+                });
+
+                if (!resEvent.ok) {
+                    const errData = await resEvent.json().catch(() => ({}));
+                    throw new Error(errData.message || 'Gagal membuat event di katalog server.');
+                }
+
+                const createdEvent = await resEvent.json();
+                createdEventId = createdEvent.id;
+
+                // STEP B: Create Tiers in ticket_service
+                // If any tier creation fails, trigger compensation rollback by deleting createdEventId
+                try {
+                    for (let tier of tiers) {
+                        const tierPayload = {
+                            acaraId: createdEventId,
+                            nama: tier.nama,
+                            harga: tier.harga,
+                            kuota: tier.kuota,
+                            deskripsi: tier.deskripsi
+                        };
+
+                        const resTier = await fetch(`${API_TICKET_SERVICE}/api/kategori-tiket`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify(tierPayload)
+                        });
+
+                        if (!resTier.ok) {
+                            const errTier = await resTier.json().catch(() => ({}));
+                            throw new Error(errTier.message || `Gagal membuat tier tiket "${tier.nama}".`);
+                        }
+                    }
+                } catch (ticketError) {
+                    console.error('Ticket creation failed. Triggering compensation rollback for event:', createdEventId, ticketError);
+                    // COMPENSATION ROLLBACK
+                    await fetch(`/api/acara/${createdEventId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }).catch(rbErr => console.error('Rollback failed:', rbErr));
+
+                    throw new Error(`Orkestrasi Gagal: ${ticketError.message}. Event telah dibatalkan secara otomatis.`);
+                }
+
+                // Success!
+                showAlert(`Event "${nama}" dan ${tiers.length} tier tiket berhasil dibuat dengan status ${currentSubmitStatus}!`, 'success');
+                setTimeout(() => {
+                    window.location.href = '/my-events.html';
+                }, 1500);
+
+            } catch (err) {
+                console.error(err);
+                showAlert(err.message || 'Terjadi kesalahan sistem saat menyimpan event.', 'danger');
+                btnDraft.disabled = false;
+                btnPublish.disabled = false;
+                btnDraft.innerHTML = originalDraftText;
+                btnPublish.innerHTML = originalPublishText;
+            }
+        }
+    </script>
+</body>
+</html>

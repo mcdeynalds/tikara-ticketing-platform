@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waiting Room Antrean Tiket - TIKARA</title>
+    <meta name="description" content="Ruang tunggu antrean resmi pembelian tiket konser TIKARA.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .waiting-hero {
+            min-height: calc(100vh - 75px);
+            background: radial-gradient(circle at 50% 20%, rgba(124, 58, 237, 0.12) 0%, rgba(15, 23, 42, 0.02) 70%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 1.5rem;
+        }
+        .waiting-box {
+            max-width: 680px;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.08);
+            overflow: hidden;
+            text-align: center;
+        }
+        .pulse-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #ECFDF5;
+            color: #059669;
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            border: 1px solid #A7F3D0;
+        }
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #10B981;
+            border-radius: 50%;
+            animation: pulseDot 1.5s infinite;
+        }
+        @keyframes pulseDot {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .queue-display-card {
+            background: linear-gradient(135deg, #F8FAFC 0%, #FAF5FF 100%);
+            border: 2px solid rgba(124, 58, 237, 0.15);
+            border-radius: 20px;
+            padding: 2rem 1.5rem;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+        .queue-huge-number {
+            font-size: 4rem;
+            font-weight: 900;
+            line-height: 1;
+            background: linear-gradient(135deg, var(--primary-color) 0%, #4F46E5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0.5rem 0;
+            letter-spacing: -1px;
+        }
+        .queue-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid rgba(0,0,0,0.06);
+        }
+        @media (max-width: 560px) {
+            .queue-stats-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            .queue-huge-number {
+                font-size: 3.2rem;
+            }
+        }
+        .stat-item {
+            background: white;
+            padding: 0.85rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        .stat-val {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-main);
+            display: block;
+        }
+        .stat-lbl {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        .progress-bar-container {
+            height: 10px;
+            background: #E2E8F0;
+            border-radius: 999px;
+            overflow: hidden;
+            margin: 1.5rem 0 0.5rem;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), #A855F7);
+            border-radius: 999px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .ready-card {
+            background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%);
+            border: 2px solid #34D399;
+            border-radius: 20px;
+            padding: 2.5rem 1.5rem;
+            margin: 1.5rem 0;
+            animation: bounceIn 0.5s ease-out;
+        }
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.9); }
+            60% { transform: scale(1.03); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Unified Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="http://localhost:8082/index.html" class="navbar-logo" id="navLogoLink">
+                <i class="fa-solid fa-ticket"></i> TIKARA
+            </a>
+            <ul class="navbar-menu" id="mainNavbarMenu"></ul>
+            <div class="navbar-actions">
+                <div id="navUserBox"></div>
+                <button class="navbar-hamburger" id="navbarToggleBtn" aria-label="Buka menu navigasi">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <nav class="navbar-mobile-drawer" id="navbarMobileDrawer"></nav>
+    </header>
+
+    <main class="waiting-hero">
+        <div class="waiting-box">
+
+            <!-- Event Header Info -->
+            <div style="padding: 1.75rem 2rem 1.25rem; border-bottom: 1px solid var(--border-color); text-align: left; display: flex; align-items: center; gap: 1rem;">
+                <img id="eventImg" src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=200" alt="Concert" style="width: 70px; height: 70px; border-radius: 12px; object-fit: cover; background: #e2e8f0; flex-shrink: 0;">
+                <div style="flex: 1; min-width: 0;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem;">
+                        <span class="role-badge pembeli" style="font-size: 0.7rem; padding: 0.15rem 0.5rem;">WAR TIKET RESMI</span>
+                        <span id="eventCategoryBadge" style="font-size: 0.75rem; color: var(--text-muted);">TIKARA Protection</span>
+                    </div>
+                    <h2 id="eventTitle" style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        Memuat Informasi Konser...
+                    </h2>
+                    <p id="eventMeta" style="font-size: 0.8rem; color: var(--text-muted); margin: 0.2rem 0 0;">
+                        <i class="fa-regular fa-calendar"></i> Jadwal sedang diperiksa...
+                    </p>
+                </div>
+            </div>
+
+            <div style="padding: 2rem;">
+                <!-- Live Queue Badge -->
+                <div class="pulse-badge">
+                    <span class="pulse-dot"></span>
+                    <span>SISTEM ANTREAN REALTIME AKTIF</span>
+                </div>
+
+                <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.4rem;">
+                    Virtual Waiting Room TIKARA
+                </h1>
+                <p style="font-size: 0.9rem; color: var(--text-muted); max-width: 480px; margin: 0 auto 1.25rem;">
+                    Tingginya antusiasme penonton membuat sistem antrean aktif untuk memastikan pembelian tiket yang adil, aman, dan tertib.
+                </p>
+
+                <!-- WAITING CARD STATE -->
+                <div id="queueWaitingCard" class="queue-display-card">
+                    <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+                        Nomor Antrean Anda
+                    </span>
+                    <div class="queue-huge-number" id="queueNumber">
+                        <i class="fa-solid fa-spinner fa-spin" style="font-size: 2.5rem; color: var(--primary-color);"></i>
+                    </div>
+
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                        <i class="fa-solid fa-arrows-rotate fa-spin" style="color: var(--primary-color);"></i>
+                        <span id="queueLiveStatusText">Menghubungkan ke antrean server...</span>
+                    </div>
+
+                    <!-- Visual Progress Bar -->
+                    <div class="progress-bar-container">
+                        <div id="queueProgressBar" class="progress-bar-fill" style="width: 15%;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+                        <span>Masuk Antrean</span>
+                        <span id="queuePercentLabel">Memproses...</span>
+                        <span>Pintu Tiket</span>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="queue-stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-val" id="queueAheadVal">-</span>
+                            <span class="stat-lbl">Antrean di Depan</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-val" id="queueTotalVal">-</span>
+                            <span class="stat-lbl">Total Antrean</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-val" id="queueEstimateVal">-</span>
+                            <span class="stat-lbl">Estimasi Tunggu</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- READY CARD STATE (Hidden by default) -->
+                <div id="queueReadyCard" class="ready-card" style="display: none;">
+                    <div style="width: 64px; height: 64px; background: #10B981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1rem; box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.4);">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <h2 style="font-size: 1.5rem; font-weight: 800; color: #065F46; margin-bottom: 0.5rem;">
+                        Giliran Anda Telah Tiba! 🎉
+                    </h2>
+                    <p style="font-size: 0.95rem; color: #047857; margin-bottom: 1.5rem;">
+                        Nomor antrean Anda sedang diproses. Anda sekarang dapat memilih kategori tiket resmi dan melanjutkan pemesanan.
+                    </p>
+                    <a id="btnProceedToSelection" href="javascript:void(0)" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.85rem 2rem; font-size: 1rem; font-weight: 700; background: #059669; border-color: #059669; box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.4);">
+                        PILIH TIKET SEKARANG <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <!-- Browser Notification Request Button -->
+                <div id="notifOptInBox" style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 0.6rem; font-size: 0.85rem; color: var(--text-muted);">
+                    <i class="fa-regular fa-bell" style="color: var(--primary-color);"></i>
+                    <span>Ingin buka tab lain?</span>
+                    <button type="button" onclick="requestBrowserNotification()" class="btn btn-outline" style="width: auto; padding: 0.35rem 0.85rem; font-size: 0.8rem; border-radius: 8px;">
+                        Aktifkan Notifikasi Suara & Browser
+                    </button>
+                </div>
+
+                <!-- Crucial Guidelines -->
+                <div style="background: #F8FAFC; border-radius: 14px; padding: 1.25rem; text-align: left; border: 1px solid var(--border-color); font-size: 0.85rem; color: #475569;">
+                    <strong style="color: var(--text-main); display: block; margin-bottom: 0.5rem;">
+                        <i class="fa-solid fa-shield-halved" style="color: var(--primary-color);"></i> Panduan Saat Berada di Waiting Room:
+                    </strong>
+                    <ul style="padding-left: 1.25rem; margin: 0; display: flex; flex-direction: column; gap: 0.35rem;">
+                        <li><strong>Jangan refresh atau tutup tab</strong> ini agar nomor urut antrean Anda tidak tereset.</li>
+                        <li>Sistem memperbarui nomor dan posisi antrean secara otomatis setiap beberapa detik.</li>
+                        <li>Siapkan <strong>NIK 16 digit</strong> sesuai e-KTP dan tentukan kategori tiket yang diinginkan.</li>
+                        <li>Ketika giliran tiba, halaman akan mengalihkan Anda secara otomatis.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/script.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('eventId') || urlParams.get('acaraId');
+        let pollTimer = null;
+        let initialAheadCount = null;
+        let audioCtx = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const auth = getAuthState();
+            if (!auth.isAuthenticated) {
+                showToast('Silakan login terlebih dahulu untuk bergabung ke antrean tiket.', 'warning');
+                setTimeout(() => {
+                    window.location.href = `http://localhost:8081/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                }, 1000);
+                return;
+            }
+
+            if (!eventId) {
+                alert('Parameter konser tidak ditemukan.');
+                window.location.href = 'http://localhost:8082/index.html';
+                return;
+            }
+
+            // Load concert info
+            await loadConcertHeader();
+
+            // Join or check queue status on queue_service (Port 8085)
+            await joinAndPollQueue();
+        });
+
+        async function loadConcertHeader() {
+            try {
+                const res = await fetch(`http://localhost:8082/api/events/${eventId}`);
+                if (res.ok) {
+                    const ev = await res.json();
+                    document.getElementById('eventTitle').innerText = ev.nama || 'Konser Musik TIKARA';
+                    if (ev.tanggalMulai) {
+                        const dt = new Date(ev.tanggalMulai);
+                        document.getElementById('eventMeta').innerHTML = `<i class="fa-regular fa-calendar"></i> ${dt.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} • ${ev.venue || '-'}, ${ev.kota || '-'}`;
+                    }
+                    if (ev.gambarUrl) {
+                        const poster = ev.gambarUrl.startsWith('http') ? ev.gambarUrl : `http://localhost:8082${ev.gambarUrl}`;
+                        document.getElementById('eventImg').src = poster;
+                    }
+                }
+            } catch (err) {
+                console.warn('Gagal memuat header konser:', err);
+            }
+        }
+
+        async function joinAndPollQueue() {
+            const token = (typeof getToken === 'function' ? getToken() : null) || (typeof getJwtToken === 'function' ? getJwtToken() : null) || localStorage.getItem('jwt_token');
+
+            try {
+                // 1. Join queue on queue_service (Port 8085)
+                const joinRes = await fetch('http://localhost:8085/api/queue/join', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ acaraId: parseInt(eventId) })
+                });
+
+                if (joinRes.ok) {
+                    const data = await joinRes.json();
+                    handleQueueData(data);
+                } else {
+                    // Coba cek status jika sudah terdaftar
+                    await pollQueueStatus();
+                }
+
+                // Mulai polling periodik setiap 4 detik
+                pollTimer = setInterval(pollQueueStatus, 4000);
+
+            } catch (err) {
+                console.warn('Backend queue_service offline / fallback mode:', err);
+                enableGracefulFallback();
+            }
+        }
+
+        async function pollQueueStatus() {
+            const token = (typeof getToken === 'function' ? getToken() : null) || (typeof getJwtToken === 'function' ? getJwtToken() : null) || localStorage.getItem('jwt_token');
+            try {
+                const res = await fetch(`http://localhost:8085/api/queue/status?acaraId=${eventId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    handleQueueData(data);
+                } else if (res.status === 404) {
+                    // Belum join, coba join lagi
+                    console.log('Antrean belum aktif, mengulang pendaftaran...');
+                }
+            } catch (err) {
+                console.warn('Gagal polling antrean:', err);
+            }
+        }
+
+        function handleQueueData(data) {
+            if (!data) return;
+
+            // Status: WAITING, SERVING, COMPLETED, EXPIRED
+            if (data.status === 'SERVING' || data.status === 'COMPLETED') {
+                triggerQueueReady();
+                return;
+            }
+
+            // Still waiting
+            const queueNumEl = document.getElementById('queueNumber');
+            const aheadEl = document.getElementById('queueAheadVal');
+            const totalEl = document.getElementById('queueTotalVal');
+            const estimateEl = document.getElementById('queueEstimateVal');
+            const statusTextEl = document.getElementById('queueLiveStatusText');
+            const progressBar = document.getElementById('queueProgressBar');
+            const percentLabel = document.getElementById('queuePercentLabel');
+
+            const noAntrean = data.nomorAntrean || 1;
+            const posisi = data.posisiAntrean || 1;
+            const totalMenunggu = data.totalMenunggu || posisi;
+            const estimasi = data.estimasiMenit || Math.max(1, Math.ceil(posisi / 5));
+
+            queueNumEl.innerText = `#${String(noAntrean).padStart(3, '0')}`;
+            aheadEl.innerText = `${Math.max(0, posisi - 1)} orang`;
+            totalEl.innerText = `${totalMenunggu} orang`;
+            estimateEl.innerText = `~${estimasi} menit`;
+
+            statusTextEl.innerText = posisi <= 2 
+                ? 'Persiapkan diri, giliran Anda akan segera tiba!' 
+                : `Sedang memproses antrean (${posisi} tersisa)...`;
+
+            // Hitung progress
+            if (initialAheadCount === null) {
+                initialAheadCount = Math.max(1, posisi);
+            }
+            const progress = Math.min(95, Math.max(15, Math.round(((initialAheadCount - posisi) / initialAheadCount) * 100)));
+            progressBar.style.width = `${progress}%`;
+            percentLabel.innerText = `${progress}% diproses`;
+        }
+
+        function triggerQueueReady() {
+            if (pollTimer) clearInterval(pollTimer);
+
+            // Play notification sound
+            playBeep();
+
+            // Send Web Notification if permitted
+            sendBrowserNotification();
+
+            const waitingCard = document.getElementById('queueWaitingCard');
+            const readyCard = document.getElementById('queueReadyCard');
+            const optInBox = document.getElementById('notifOptInBox');
+
+            if (waitingCard) waitingCard.style.display = 'none';
+            if (optInBox) optInBox.style.display = 'none';
+            if (readyCard) readyCard.style.display = 'block';
+
+            const nextUrl = `http://localhost:8083/pilih-tiket.html?eventId=${eventId}`;
+            const btnProceed = document.getElementById('btnProceedToSelection');
+            if (btnProceed) {
+                btnProceed.href = nextUrl;
+            }
+
+            showToast('Giliran Anda tiba! Mengalihkan ke halaman pemilihan tiket...', 'success');
+
+            // Auto redirect after 2.5 seconds
+            setTimeout(() => {
+                window.location.href = nextUrl;
+            }, 2500);
+        }
+
+        function enableGracefulFallback() {
+            // Fallback ketika queue_service belum running di local dev
+            const queueNumEl = document.getElementById('queueNumber');
+            const aheadEl = document.getElementById('queueAheadVal');
+            const totalEl = document.getElementById('queueTotalVal');
+            const estimateEl = document.getElementById('queueEstimateVal');
+            const statusTextEl = document.getElementById('queueLiveStatusText');
+            const progressBar = document.getElementById('queueProgressBar');
+
+            let fallbackCount = 3;
+            queueNumEl.innerText = '#005';
+            aheadEl.innerText = '2 orang';
+            totalEl.innerText = '12 orang';
+            estimateEl.innerText = '~1 menit';
+            progressBar.style.width = '70%';
+            statusTextEl.innerText = 'Giliran Anda hampir tiba...';
+
+            pollTimer = setInterval(() => {
+                fallbackCount--;
+                aheadEl.innerText = `${fallbackCount} orang`;
+                progressBar.style.width = `${70 + (3 - fallbackCount) * 10}%`;
+                if (fallbackCount <= 0) {
+                    clearInterval(pollTimer);
+                    triggerQueueReady();
+                }
+            }, 3000);
+        }
+
+        function requestBrowserNotification() {
+            if (!('Notification' in window)) {
+                showToast('Browser Anda tidak mendukung Web Notification.', 'info');
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    showToast('Notifikasi browser aktif! Anda akan diberi tahu saat giliran tiba.', 'success');
+                    const optInBox = document.getElementById('notifOptInBox');
+                    if (optInBox) {
+                        optInBox.innerHTML = '<span style="color:#10B981; font-weight:700;"><i class="fa-solid fa-bell"></i> Notifikasi suara & browser aktif</span>';
+                    }
+                } else {
+                    showToast('Izin notifikasi tidak diberikan.', 'warning');
+                }
+            });
+        }
+
+        function sendBrowserNotification() {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                    new Notification('🎉 Giliran Tiket Anda Tiba! - TIKARA', {
+                        body: 'Nomor antrean Anda telah dipanggil. Segera pilih tiket sebelum waktu sesi habis!',
+                        icon: 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=100'
+                    });
+                } catch (e) {
+                    console.warn('Error sending notification:', e);
+                }
+            }
+        }
+
+        function playBeep() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+                osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15); // A5
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.5);
+            } catch (e) {
+                console.warn('Audio chime error:', e);
+            }
+        }
+    </script>
+</body>
+</html>

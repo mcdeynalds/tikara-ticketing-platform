@@ -27,6 +27,9 @@ public class DetailPemesanan {
     @Column(name = "kategori_tiket_id", nullable = false)
     private Long kategoriTiketId; // Referensi ID ke ticket-service
 
+    @Column(name = "nama_kategori_tiket")
+    private String namaKategoriTiket;
+
     @Column(name = "jumlah", nullable = false)
     private Integer jumlah;
 

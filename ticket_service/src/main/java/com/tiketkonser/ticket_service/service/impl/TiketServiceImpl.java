@@ -5,8 +5,10 @@ import com.tiketkonser.ticket_service.entity.Tiket;
 import com.tiketkonser.ticket_service.handler.BadRequestException;
 import com.tiketkonser.ticket_service.handler.NotFoundException;
 import com.tiketkonser.ticket_service.payload.req.IssueTiketReq;
+import com.tiketkonser.ticket_service.payload.req.TransferTiketReq;
 import com.tiketkonser.ticket_service.payload.res.PageResponse;
 import com.tiketkonser.ticket_service.payload.res.TiketRes;
+import com.tiketkonser.ticket_service.payload.res.TransferTiketRes;
 import com.tiketkonser.ticket_service.repository.KategoriTiketRepository;
 import com.tiketkonser.ticket_service.repository.TiketRepository;
 import com.tiketkonser.ticket_service.service.TiketService;
@@ -16,13 +18,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -33,6 +41,7 @@ public class TiketServiceImpl implements TiketService {
     private final TiketRepository tiketRepository;
     private final KategoriTiketRepository kategoriTiketRepository;
     private final TicketMapper ticketMapper;
+    private final RestTemplate restTemplate;
 
     @Override
     @Transactional
@@ -40,7 +49,7 @@ public class TiketServiceImpl implements TiketService {
         KategoriTiket kt = kategoriTiketRepository.findById(request.getKategoriTiketId())
                 .orElseThrow(() -> new NotFoundException("Kategori tiket tidak ditemukan"));
 
-        String uniqueQr = "TK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase() + "-" + System.currentTimeMillis() % 10000;
+        String uniqueQr = "TK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase() + "-" + (System.currentTimeMillis() % 10000);
 
         Tiket tiket = Tiket.builder()
                 .kategoriTiket(kt)
@@ -96,6 +105,9 @@ public class TiketServiceImpl implements TiketService {
         if ("USED".equalsIgnoreCase(tiket.getStatus())) {
             throw new BadRequestException("Tiket ini sudah pernah digunakan untuk check-in");
         }
+        if ("TRANSFERRED".equalsIgnoreCase(tiket.getStatus())) {
+            throw new BadRequestException("Tiket ini telah dipindahtangankan (ditransfer) ke pemilik lain dan QR Code ini sudah dicabut.");
+        }
         if ("CANCELLED".equalsIgnoreCase(tiket.getStatus())) {
             throw new BadRequestException("Tiket ini telah dibatalkan");
         }
@@ -104,5 +116,130 @@ public class TiketServiceImpl implements TiketService {
         tiket.setDigunakanAt(LocalDateTime.now());
 
         return ticketMapper.toTiketRes(tiketRepository.save(tiket));
+    }
+
+    @Override
+    @Transactional
+    public TransferTiketRes transferTiket(Long tiketId, TransferTiketReq request, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("Silakan login terlebih dahulu untuk mentransfer tiket");
+        }
+
+        Long senderUserId = (Long) authentication.getCredentials();
+        if (senderUserId == null) senderUserId = 1L;
+        String senderEmail = authentication.getName();
+
+        Tiket oldTiket = tiketRepository.findById(tiketId)
+                .orElseThrow(() -> new NotFoundException("Tiket dengan ID " + tiketId + " tidak ditemukan"));
+
+        if (!oldTiket.getPenggunaId().equals(senderUserId)) {
+            throw new AccessDeniedException("Anda tidak memiliki hak untuk mentransfer tiket milik orang lain");
+        }
+
+        if ("USED".equalsIgnoreCase(oldTiket.getStatus())) {
+            throw new BadRequestException("Tiket sudah digunakan untuk check-in, tidak dapat ditransfer");
+        }
+        if ("TRANSFERRED".equalsIgnoreCase(oldTiket.getStatus())) {
+            throw new BadRequestException("Tiket ini sudah pernah dipindahtangankan (ditransfer) sebelumnya");
+        }
+        if ("CANCELLED".equalsIgnoreCase(oldTiket.getStatus())) {
+            throw new BadRequestException("Tiket yang telah dibatalkan tidak dapat ditransfer");
+        }
+
+        String targetEmail = request.getPenerimaEmail().trim();
+        if (senderEmail != null && senderEmail.equalsIgnoreCase(targetEmail)) {
+            throw new BadRequestException("Anda tidak dapat mentransfer tiket ke akun Anda sendiri");
+        }
+
+        // Verify recipient from user_service
+        Long recipientUserId = null;
+        String recipientNama = "Pengguna TIKARA";
+        try {
+            String checkUrl = "http://localhost:8081/api/users/check-recipient?email=" + targetEmail;
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + (authentication.getDetails() != null ? authentication.getDetails().toString() : ""));
+            HttpEntity<?> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<Map> userRes = restTemplate.exchange(
+                    checkUrl,
+                    HttpMethod.GET,
+                    entity,
+                    Map.class
+            );
+
+            if (userRes.getStatusCode().is2xxSuccessful() && userRes.getBody() != null) {
+                Map body = userRes.getBody();
+                Object idObj = body.get("id");
+                if (idObj instanceof Number) {
+                    recipientUserId = ((Number) idObj).longValue();
+                } else if (idObj != null) {
+                    recipientUserId = Long.valueOf(idObj.toString());
+                }
+                if (body.get("nama") != null) {
+                    recipientNama = body.get("nama").toString();
+                }
+            }
+        } catch (Exception e) {
+            throw new BadRequestException("Penerima dengan email '" + targetEmail + "' belum terdaftar di TIKARA. Pastikan calon penerima sudah memiliki akun aktif.");
+        }
+
+        if (recipientUserId == null) {
+            throw new BadRequestException("Gagal memverifikasi akun penerima di server identitas TIKARA.");
+        }
+
+        if (recipientUserId.equals(senderUserId)) {
+            throw new BadRequestException("Anda tidak dapat mentransfer tiket ke akun Anda sendiri");
+        }
+
+        // Mark old ticket as TRANSFERRED
+        oldTiket.setStatus("TRANSFERRED");
+        oldTiket.setDigunakanAt(LocalDateTime.now());
+        tiketRepository.save(oldTiket);
+
+        // Issue new fresh ticket for recipient
+        String newQr = "TK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase() + "-" + (System.currentTimeMillis() % 10000);
+        Tiket newTiket = Tiket.builder()
+                .kategoriTiket(oldTiket.getKategoriTiket())
+                .detailPemesananId(oldTiket.getDetailPemesananId())
+                .penggunaId(recipientUserId)
+                .kodeQr(newQr)
+                .status("ISSUED")
+                .diterbitkanAt(LocalDateTime.now())
+                .build();
+
+        Tiket savedNewTiket = tiketRepository.save(newTiket);
+
+        // Send Notification to sender and receiver
+        try {
+            Map<String, Object> notifSender = Map.of(
+                    "penggunaId", senderUserId,
+                    "judul", "Transfer Tiket Berhasil",
+                    "pesan", "Tiket ID #TKT-" + oldTiket.getId() + " telah berhasil dipindahtangankan kepada " + recipientNama + " (" + targetEmail + ").",
+                    "tipe", "IN_APP"
+            );
+            restTemplate.postForEntity("http://localhost:8086/api/notifications/send", notifSender, Map.class);
+
+            Map<String, Object> notifReceiver = Map.of(
+                    "penggunaId", recipientUserId,
+                    "judul", "Tiket Konser Diterima!",
+                    "pesan", "Selamat! Anda menerima transfer tiket resmi (ID #TKT-" + savedNewTiket.getId() + ") dari " + (senderEmail != null ? senderEmail : "pengguna lain") + ". Buka E-Tiket Anda sekarang.",
+                    "tipe", "IN_APP"
+            );
+            restTemplate.postForEntity("http://localhost:8086/api/notifications/send", notifReceiver, Map.class);
+        } catch (Exception notifErr) {
+            System.err.println("Gagal mengirim notifikasi transfer: " + notifErr.getMessage());
+        }
+
+        return TransferTiketRes.builder()
+                .status("SUCCESS")
+                .message("Tiket berhasil dipindahtangankan kepada " + recipientNama + " (" + targetEmail + ").")
+                .oldTiketId(oldTiket.getId())
+                .newTiketId(savedNewTiket.getId())
+                .newKodeQr(newQr)
+                .penerimaPenggunaId(recipientUserId)
+                .penerimaEmail(targetEmail)
+                .penerimaNama(recipientNama)
+                .transferAt(LocalDateTime.now())
+                .build();
     }
 }

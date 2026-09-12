@@ -1,9 +1,6 @@
 package com.tiketkonser.event_service.payload.res;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -12,10 +9,9 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ValidationErrorResponse {
-    private LocalDateTime timestamp;
     private int status;
-    private String error;
     private String message;
-    private String path;
     private Map<String, String> errors;
+    private String path;
+    private LocalDateTime timestamp;
 }

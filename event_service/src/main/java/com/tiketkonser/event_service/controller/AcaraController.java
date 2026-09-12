@@ -2,6 +2,7 @@ package com.tiketkonser.event_service.controller;
 
 import com.tiketkonser.event_service.payload.req.AcaraReq;
 import com.tiketkonser.event_service.payload.res.AcaraRes;
+import com.tiketkonser.event_service.payload.res.OrganizerAnalyticsRes;
 import com.tiketkonser.event_service.payload.res.PageResponse;
 import com.tiketkonser.event_service.service.AcaraService;
 import jakarta.validation.Valid;
@@ -12,8 +13,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
-@RequestMapping("/api/acara")
+@RequestMapping({"/api/acara", "/api/events"})
 @RequiredArgsConstructor
 public class AcaraController {
 
@@ -28,19 +31,56 @@ public class AcaraController {
     @GetMapping
     public ResponseEntity<PageResponse<AcaraRes>> getAll(
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String kota,
+            @RequestParam(required = false) Long kategoriId,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String genre,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(defaultValue = "tanggalMulai") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            Authentication authentication) {
+
+        String searchTerm = (keyword != null && !keyword.trim().isEmpty()) ? keyword : search;
+        String categoryName = (category != null && !category.trim().isEmpty()) ? category : genre;
+        return ResponseEntity.ok(acaraService.getAll(searchTerm, kota, kategoriId, categoryName, status, page, size, sortBy, sortDir, authentication));
+    }
+
+    @GetMapping("/my-events")
+    @PreAuthorize("hasAnyRole('PENYELENGGARA', 'ADMIN')")
+    public ResponseEntity<PageResponse<AcaraRes>> getMyEvents(
+            @RequestParam(required = false) String search,
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir,
+            Authentication authentication) {
 
-        return ResponseEntity.ok(acaraService.getAll(search, kota, status, page, size, sortBy, sortDir));
+        return ResponseEntity.ok(acaraService.getMyEvents(search, status, page, size, sortBy, sortDir, authentication));
+    }
+
+    @GetMapping("/organizer/analytics")
+    @PreAuthorize("hasAnyRole('PENYELENGGARA', 'ADMIN')")
+    public ResponseEntity<OrganizerAnalyticsRes> getOrganizerAnalytics(Authentication authentication) {
+        return ResponseEntity.ok(acaraService.getOrganizerAnalytics(authentication));
+    }
+
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('PENYELENGGARA', 'ADMIN')")
+    public ResponseEntity<AcaraRes> changeStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body,
+            Authentication authentication) {
+        String newStatus = body != null ? body.get("status") : "DRAFT";
+        return ResponseEntity.ok(acaraService.changeStatus(id, newStatus, authentication));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AcaraRes> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(acaraService.getById(id));
+    public ResponseEntity<AcaraRes> getById(@PathVariable Long id, Authentication authentication) {
+        return ResponseEntity.ok(acaraService.getById(id, authentication));
     }
 
     @PutMapping("/{id}")
@@ -60,5 +100,27 @@ public class AcaraController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AcaraRes> moderate(@PathVariable Long id, @RequestParam String status, Authentication authentication) {
         return ResponseEntity.ok(acaraService.moderate(id, status, authentication));
+    }
+
+    @PatchMapping("/{id}/restore")
+    @PreAuthorize("hasAnyRole('PENYELENGGARA', 'ADMIN')")
+    public ResponseEntity<AcaraRes> restore(@PathVariable Long id) {
+        return ResponseEntity.ok(acaraService.restore(id));
+    }
+
+    @PostMapping(value = "/{id}/upload-poster", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('PENYELENGGARA', 'ADMIN')")
+    public ResponseEntity<AcaraRes> uploadPoster(
+            @PathVariable Long id,
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        return ResponseEntity.ok(acaraService.uploadPoster(id, file));
+    }
+
+    @PostMapping(value = "/{id}/upload-flyer", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('PENYELENGGARA', 'ADMIN')")
+    public ResponseEntity<AcaraRes> uploadFlyerPdf(
+            @PathVariable Long id,
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        return ResponseEntity.ok(acaraService.uploadFlyerPdf(id, file));
     }
 }

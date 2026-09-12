@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran Pesanan - TIKARA</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .payment-container {
+            max-width: 780px;
+            margin: 2.5rem auto;
+            padding: 0 1.5rem;
+        }
+        .countdown-banner {
+            background: linear-gradient(135deg, #1E1B4B 0%, #312E81 100%);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 1.5rem;
+        }
+        .countdown-time {
+            font-size: 2rem;
+            font-weight: 800;
+            font-family: 'Courier New', Courier, monospace;
+            color: #FBBF24;
+            letter-spacing: 2px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 0.9rem;
+            border: 1px solid var(--border-color);
+            background: #F8FAFC;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .tab-btn.active {
+            background: white;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            box-shadow: var(--shadow-sm);
+        }
+        .va-box {
+            background: #F8FAFC;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .qris-frame {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: inline-block;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Unified Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="http://localhost:8082/index.html" class="navbar-logo" id="navLogoLink">
+                <i class="fa-solid fa-ticket"></i> TIKARA
+            </a>
+            <ul class="navbar-menu" id="mainNavbarMenu"></ul>
+            <div class="navbar-actions">
+                <div id="navUserBox"></div>
+                <button class="navbar-hamburger" id="navbarToggleBtn" aria-label="Buka menu navigasi">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <nav class="navbar-mobile-drawer" id="navbarMobileDrawer"></nav>
+    </header>
+
+    <main class="payment-container">
+        <!-- Countdown Timer Banner -->
+        <div class="countdown-banner" id="countdownBox">
+            <div>
+                <span style="font-size:0.85rem; text-transform:uppercase; letter-spacing:1px; opacity:0.85;">Selesaikan Pembayaran Dalam</span>
+                <h4 style="font-size:1.1rem; font-weight:700; margin-top:0.2rem;">Tenggat Waktu Reservasi Stok</h4>
+            </div>
+            <div class="countdown-time" id="countdownTimer">15:00</div>
+        </div>
+
+        <!-- Main Payment Card -->
+        <div class="profile-card" style="padding:2.25rem; margin-bottom:1.5rem;" id="mainPaymentBox">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:1.25rem; margin-bottom:1.5rem;">
+                <div>
+                    <span class="role-badge" id="orderStatusBadge" style="background:#FEF3C7; color:#B45309; margin-bottom:0.4rem;">MENUNGGU PEMBAYARAN</span>
+                    <h3 style="font-size:1.25rem; font-weight:800; color:var(--text-main);" id="orderNumberText">Memuat Pesanan...</h3>
+                </div>
+                <div style="text-align:right;">
+                    <span style="font-size:0.8rem; color:var(--text-muted);">Total Pembayaran</span>
+                    <h2 style="font-size:1.5rem; font-weight:800; color:var(--primary-color);" id="totalAmountText">Rp 0</h2>
+                </div>
+            </div>
+
+            <!-- Items & Fees Breakdown -->
+            <div style="background:#F8FAFC; border-radius:12px; padding:1.25rem; margin-bottom:1.75rem;" id="orderItemsSummary">
+                <p style="font-size:0.85rem; color:var(--text-muted);">Memuat rincian transaksi...</p>
+            </div>
+
+            <!-- Payment Method Tabs -->
+            <h4 style="font-size:1.05rem; font-weight:800; color:var(--text-main); margin-bottom:0.75rem;">Metode Pembayaran</h4>
+            <div style="display:flex; gap:0.75rem; margin-bottom:1.5rem;">
+                <button class="tab-btn active" id="tabQrisBtn" onclick="switchTab('qris')">
+                    <i class="fa-solid fa-qrcode"></i> QRIS Real-Time
+                </button>
+                <button class="tab-btn" id="tabVaBtn" onclick="switchTab('va')">
+                    <i class="fa-solid fa-building-columns"></i> Virtual Account
+                </button>
+            </div>
+
+            <!-- Tab 1: QRIS Content -->
+            <div id="qrisContent" style="text-align:center; padding:1rem 0;">
+                <div class="qris-frame">
+                    <div style="display:flex; justify-content:center; align-items:center; gap:0.5rem; margin-bottom:1rem;">
+                        <span style="font-weight:800; font-size:1.1rem; color:#1e293b;">QRIS</span>
+                        <span style="font-size:0.75rem; background:#e2e8f0; padding:0.2rem 0.5rem; border-radius:4px; font-weight:700;">GPN</span>
+                    </div>
+                    <img id="qrisImage" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=TIKARA-PAY-ORDER" alt="QR Code QRIS" style="width:200px; height:200px; display:block; margin:0 auto; border-radius:8px;">
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:1rem;">Pindai dengan GoPay, OVO, Dana, ShopeePay, BCA, atau M-Banking</p>
+                </div>
+            </div>
+
+            <!-- Tab 2: Virtual Account Content -->
+            <div id="vaContent" style="display:none;">
+                <div class="va-box">
+                    <div>
+                        <strong style="color:var(--text-main); display:block;">BCA Virtual Account</strong>
+                        <span style="font-family:monospace; font-size:1.15rem; font-weight:700; color:var(--primary-color);" id="bcaVaText">8801 0812 3456 7890</span>
+                    </div>
+                    <button class="btn btn-outline" style="width:auto; padding:0.45rem 1rem; font-size:0.85rem;" onclick="copyToClipboard('bcaVaText', 'Nomor BCA VA berhasil disalin!')">
+                        <i class="fa-regular fa-copy"></i> Salin
+                    </button>
+                </div>
+
+                <div class="va-box">
+                    <div>
+                        <strong style="color:var(--text-main); display:block;">Mandiri Virtual Account</strong>
+                        <span style="font-family:monospace; font-size:1.15rem; font-weight:700; color:var(--primary-color);" id="mandiriVaText">8910 0812 3456 7890</span>
+                    </div>
+                    <button class="btn btn-outline" style="width:auto; padding:0.45rem 1rem; font-size:0.85rem;" onclick="copyToClipboard('mandiriVaText', 'Nomor Mandiri VA berhasil disalin!')">
+                        <i class="fa-regular fa-copy"></i> Salin
+                    </button>
+                </div>
+
+                <div class="va-box">
+                    <div>
+                        <strong style="color:var(--text-main); display:block;">BRI Virtual Account (BRIVA)</strong>
+                        <span style="font-family:monospace; font-size:1.15rem; font-weight:700; color:var(--primary-color);" id="briVaText">1234 0812 3456 7890</span>
+                    </div>
+                    <button class="btn btn-outline" style="width:auto; padding:0.45rem 1rem; font-size:0.85rem;" onclick="copyToClipboard('briVaText', 'Nomor BRI VA berhasil disalin!')">
+                        <i class="fa-regular fa-copy"></i> Salin
+                    </button>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="margin-top:2rem; border-top:1px solid var(--border-color); padding-top:1.5rem; display:flex; flex-direction:column; gap:0.75rem;">
+                <button class="btn btn-accent" id="btnPaySimulation" style="width:100%; padding:1rem; font-size:1.05rem;" onclick="executePaySimulation()">
+                    <i class="fa-solid fa-circle-check" style="margin-right:0.4rem;"></i> SIMULASI BAYAR SEKARANG
+                </button>
+                <div style="display:flex; gap:0.75rem;">
+                    <a href="/my-orders.html" class="btn btn-outline" style="flex:1; text-align:center; padding:0.75rem;">
+                        Lihat Pesanan Saya
+                    </a>
+                    <button class="btn btn-outline" id="btnCancelOrder" style="flex:1; color:var(--danger-color); border-color:#FECACA;" onclick="cancelMyOrder()">
+                        Batalkan Pesanan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/script.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('orderId');
+        let currentOrder = null;
+        let timerInterval = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const auth = getAuthState();
+            if (!auth.isAuthenticated) {
+                window.location.href = `http://localhost:8081/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                return;
+            }
+
+            if (!orderId) {
+                alert('ID Pesanan tidak ditemukan pada URL tautan.');
+                window.location.href = '/my-orders.html';
+                return;
+            }
+
+            await loadOrderDetail();
+        });
+
+        function formatRupiah(num) {
+            return 'Rp ' + Number(num || 0).toLocaleString('id-ID');
+        }
+
+        async function loadOrderDetail() {
+            try {
+                const token = getJwtToken();
+                const res = await fetch(`http://localhost:8084/api/orders/${orderId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.message || 'Pesanan tidak ditemukan');
+                }
+
+                currentOrder = await res.json();
+                renderOrderUI();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('mainPaymentBox').innerHTML = `
+                    <div style="text-align:center; padding:3rem 1rem; color:var(--danger-color);">
+                        <i class="fa-solid fa-circle-exclamation fa-3x"></i>
+                        <h3 style="margin-top:1rem; font-size:1.2rem;">${err.message || 'Gagal memuat pesanan'}</h3>
+                        <a href="/my-orders.html" class="btn btn-primary" style="margin-top:1.5rem; display:inline-block; width:auto;">Kembali ke Pesanan Saya</a>
+                    </div>
+                `;
+            }
+        }
+
+        function renderOrderUI() {
+            document.getElementById('orderNumberText').innerText = currentOrder.nomorPesanan || `ORD-#${currentOrder.id}`;
+            document.getElementById('totalAmountText').innerText = formatRupiah(currentOrder.totalHarga);
+
+            // Update QRIS code data
+            const qrisData = `TIKARA-PAY-${currentOrder.nomorPesanan}-IDR-${currentOrder.totalHarga}`;
+            document.getElementById('qrisImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(qrisData)}`;
+
+            // Render Items Summary and Fee Breakdown
+            if (currentOrder.items && currentOrder.items.length > 0) {
+                let itemsHtml = '<h5 style="font-size:0.9rem; font-weight:800; color:var(--text-main); margin-bottom:0.75rem;">Rincian Pembelian:</h5>';
+                currentOrder.items.forEach(item => {
+                    const catName = item.namaKategoriTiket || `Kategori Tiket #${item.kategoriTiketId}`;
+                    itemsHtml += `
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem; font-size:0.875rem;">
+                            <span>${catName} <strong>x ${item.jumlah}</strong></span>
+                            <span style="font-weight:700; color:var(--text-main);">${formatRupiah(item.subtotal)}</span>
+                        </div>
+                    `;
+                });
+
+                const subtotal = currentOrder.subtotalTiket !== undefined && currentOrder.subtotalTiket !== null ? currentOrder.subtotalTiket : currentOrder.totalHarga;
+                const layanan = currentOrder.biayaLayanan !== undefined && currentOrder.biayaLayanan !== null ? currentOrder.biayaLayanan : 0;
+                const admin = currentOrder.biayaAdmin !== undefined && currentOrder.biayaAdmin !== null ? currentOrder.biayaAdmin : 0;
+
+                itemsHtml += `
+                    <div style="border-top:1px dashed var(--border-color); margin-top:0.75rem; padding-top:0.75rem;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.35rem; font-size:0.85rem; color:var(--text-muted);">
+                            <span>Subtotal Tiket</span>
+                            <span style="font-weight:700; color:var(--text-main);">${formatRupiah(subtotal)}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.35rem; font-size:0.85rem; color:var(--text-muted);">
+                            <span>Biaya Layanan Sistem (2%)</span>
+                            <span style="font-weight:700; color:var(--text-main);">${formatRupiah(layanan)}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.35rem; font-size:0.85rem; color:var(--text-muted);">
+                            <span>Biaya Jasa Penanganan Transaksi</span>
+                            <span style="font-weight:700; color:var(--text-main);">${formatRupiah(admin)}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-top:0.5rem; padding-top:0.5rem; border-top:1px solid var(--border-color); font-size:0.95rem; font-weight:800; color:var(--primary-color);">
+                            <span>Total Pembayaran</span>
+                            <span>${formatRupiah(currentOrder.totalHarga)}</span>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('orderItemsSummary').innerHTML = itemsHtml;
+            }
+
+            // Check Order Status
+            const badge = document.getElementById('orderStatusBadge');
+            const btnPay = document.getElementById('btnPaySimulation');
+            const btnCancel = document.getElementById('btnCancelOrder');
+
+            if (currentOrder.status === 'PAID') {
+                badge.style.background = '#DCFCE7';
+                badge.style.color = '#15803D';
+                badge.innerText = 'LUNAS (BERHASIL)';
+                document.getElementById('countdownBox').style.display = 'none';
+                btnPay.innerText = 'LIHAT E-TIKET SAYA';
+                btnPay.className = 'btn btn-primary';
+                btnPay.onclick = () => window.location.href = 'http://localhost:8083/my-tickets.html';
+                if (btnCancel) btnCancel.style.display = 'none';
+                return;
+            }
+
+            if (currentOrder.status === 'CANCELLED') {
+                badge.style.background = '#FEE2E2';
+                badge.style.color = '#B91C1C';
+                badge.innerText = 'DIBATALKAN';
+                document.getElementById('countdownBox').style.display = 'none';
+                btnPay.disabled = true;
+                btnPay.innerText = 'PESANAN TELAH DIBATALKAN';
+                if (btnCancel) btnCancel.disabled = true;
+                return;
+            }
+
+            // If PENDING, start countdown timer
+            if (currentOrder.tenggatPembayaran) {
+                startCountdown(new Date(currentOrder.tenggatPembayaran));
+            }
+        }
+
+        function startCountdown(deadline) {
+            if (timerInterval) clearInterval(timerInterval);
+
+            function tick() {
+                const now = new Date().getTime();
+                const distance = deadline.getTime() - now;
+
+                if (distance <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('countdownTimer').innerText = '00:00';
+                    showToast('Waktu pembayaran telah habis.', 'error');
+                    setTimeout(() => window.location.reload(), 1500);
+                    return;
+                }
+
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                const mStr = minutes < 10 ? '0' + minutes : minutes;
+                const sStr = seconds < 10 ? '0' + seconds : seconds;
+                document.getElementById('countdownTimer').innerText = `${mStr}:${sStr}`;
+            }
+
+            tick();
+            timerInterval = setInterval(tick, 1000);
+        }
+
+        function switchTab(tab) {
+            const tabQris = document.getElementById('tabQrisBtn');
+            const tabVa = document.getElementById('tabVaBtn');
+            const qrisContent = document.getElementById('qrisContent');
+            const vaContent = document.getElementById('vaContent');
+
+            if (tab === 'qris') {
+                tabQris.classList.add('active');
+                tabVa.classList.remove('active');
+                qrisContent.style.display = 'block';
+                vaContent.style.display = 'none';
+            } else {
+                tabVa.classList.add('active');
+                tabQris.classList.remove('active');
+                vaContent.style.display = 'block';
+                qrisContent.style.display = 'none';
+            }
+        }
+
+        function copyToClipboard(elementId, msg) {
+            const text = document.getElementById(elementId).innerText.replace(/\s+/g, '');
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(msg || 'Berhasil disalin ke clipboard!', 'success');
+            }).catch(() => {
+                showToast('Gagal menyalin teks', 'error');
+            });
+        }
+
+        async function executePaySimulation() {
+            const btnPay = document.getElementById('btnPaySimulation');
+            btnPay.disabled = true;
+            btnPay.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memverifikasi Pembayaran...`;
+
+            try {
+                const token = getJwtToken();
+                const res = await fetch(`http://localhost:8084/api/orders/${orderId}/pay-simulation`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.message || 'Pembayaran gagal diproses');
+                }
+
+                showToast('Pembayaran Berhasil! Menerbitkan E-Tiket Anda...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'http://localhost:8083/my-tickets.html';
+                }, 1200);
+            } catch (err) {
+                console.error(err);
+                showToast(err.message || 'Gagal memproses simulasi pembayaran', 'error');
+                btnPay.disabled = false;
+                btnPay.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right:0.4rem;"></i> SIMULASI BAYAR SEKARANG`;
+            }
+        }
+
+        async function cancelMyOrder() {
+            if (!confirm('Apakah Anda yakin ingin membatalkan pesanan ini? Stok tiket yang direservasi akan dilepaskan.')) {
+                return;
+            }
+
+            try {
+                const token = getJwtToken();
+                const res = await fetch(`http://localhost:8084/api/orders/${orderId}/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Gagal membatalkan pesanan');
+
+                showToast('Pesanan berhasil dibatalkan.', 'info');
+                setTimeout(() => window.location.reload(), 1000);
+            } catch (err) {
+                console.error(err);
+                showToast(err.message || 'Gagal membatalkan pesanan', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

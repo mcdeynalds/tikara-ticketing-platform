@@ -18,4 +18,6 @@ public class PemesananReq {
     @NotEmpty(message = "Daftar item tiket tidak boleh kosong")
     @Valid
     private List<DetailPemesananItemReq> items;
+
+    private String kodePromo;
 }

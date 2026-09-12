@@ -29,6 +29,21 @@ public class Pemesanan {
     @Column(name = "nomor_pesanan", nullable = false, unique = true)
     private String nomorPesanan;
 
+    @Column(name = "subtotal_tiket", precision = 12, scale = 2)
+    private BigDecimal subtotalTiket;
+
+    @Column(name = "biaya_layanan", precision = 12, scale = 2)
+    private BigDecimal biayaLayanan;
+
+    @Column(name = "biaya_admin", precision = 12, scale = 2)
+    private BigDecimal biayaAdmin;
+
+    @Column(name = "diskon", precision = 12, scale = 2)
+    private BigDecimal diskon;
+
+    @Column(name = "kode_promo")
+    private String kodePromo;
+
     @Column(name = "total_harga", nullable = false, precision = 12, scale = 2)
     private BigDecimal totalHarga;
 

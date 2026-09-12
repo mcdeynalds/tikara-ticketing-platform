@@ -21,28 +21,28 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(NotFoundException ex, HttpServletRequest req) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                ErrorResponse.builder().timestamp(LocalDateTime.now()).status(404).error("NOT_FOUND").message(ex.getMessage()).path(req.getRequestURI()).build()
+                ErrorResponse.builder().timestamp(LocalDateTime.now()).status(404).message("NOT_FOUND").message(ex.getMessage()).path(req.getRequestURI()).build()
         );
     }
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex, HttpServletRequest req) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                ErrorResponse.builder().timestamp(LocalDateTime.now()).status(400).error("BAD_REQUEST").message(ex.getMessage()).path(req.getRequestURI()).build()
+                ErrorResponse.builder().timestamp(LocalDateTime.now()).status(400).message("BAD_REQUEST").message(ex.getMessage()).path(req.getRequestURI()).build()
         );
     }
 
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex, HttpServletRequest req) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                ErrorResponse.builder().timestamp(LocalDateTime.now()).status(409).error("CONFLICT").message(ex.getMessage()).path(req.getRequestURI()).build()
+                ErrorResponse.builder().timestamp(LocalDateTime.now()).status(409).message("CONFLICT").message(ex.getMessage()).path(req.getRequestURI()).build()
         );
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, HttpServletRequest req) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                ErrorResponse.builder().timestamp(LocalDateTime.now()).status(403).error("FORBIDDEN").message(ex.getMessage()).path(req.getRequestURI()).build()
+                ErrorResponse.builder().timestamp(LocalDateTime.now()).status(403).message("FORBIDDEN").message(ex.getMessage()).path(req.getRequestURI()).build()
         );
     }
 
@@ -56,14 +56,14 @@ public class GlobalExceptionHandler {
         });
 
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-                ValidationErrorResponse.builder().timestamp(LocalDateTime.now()).status(422).error("VALIDATION_ERROR").message("Validasi input gagal").path(req.getRequestURI()).errors(errors).build()
+                ValidationErrorResponse.builder().timestamp(LocalDateTime.now()).status(422).message("VALIDATION_ERROR").message("Validasi input gagal").path(req.getRequestURI()).errors(errors).build()
         );
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex, HttpServletRequest req) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                ErrorResponse.builder().timestamp(LocalDateTime.now()).status(500).error("INTERNAL_SERVER_ERROR").message(ex.getMessage()).path(req.getRequestURI()).build()
+                ErrorResponse.builder().timestamp(LocalDateTime.now()).status(500).message("INTERNAL_SERVER_ERROR").message(ex.getMessage()).path(req.getRequestURI()).build()
         );
     }
 }

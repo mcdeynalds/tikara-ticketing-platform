@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesanan Saya - TIKARA</title>
+    <link rel="stylesheet" href="http://localhost:8081/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="http://localhost:8082/index.html" class="navbar-logo"><i class="fa-solid fa-ticket"></i> TIKARA</a>
+            <ul class="navbar-menu">
+                <li><a href="http://localhost:8082/index.html" class="navbar-link"><i class="fa-solid fa-compass"></i> Beranda</a></li>
+                <li><a href="http://localhost:8083/my-tickets.html" class="navbar-link"><i class="fa-solid fa-ticket-simple"></i> Tiket Saya</a></li>
+                <li><a href="/my-orders.html" class="navbar-link active"><i class="fa-solid fa-receipt"></i> Pesanan Saya</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main style="max-width:1000px; margin:2.5rem auto; padding:0 1.5rem;">
+        <h2 style="font-size:1.6rem; font-weight:800; color:var(--primary-color); margin-bottom:1.5rem;">📋 Riwayat Pesanan Saya</h2>
+        <div class="profile-card" style="padding:1.5rem;">
+            <table style="width:100%; border-collapse:collapse; text-align:left;">
+                <thead>
+                    <tr style="border-bottom:2px solid var(--border-color); color:var(--text-muted); font-size:0.85rem;">
+                        <th style="padding:0.8rem;">NO. PESANAN</th>
+                        <th style="padding:0.8rem;">TOTAL</th>
+                        <th style="padding:0.8rem;">STATUS</th>
+                        <th style="padding:0.8rem;">TANGGAL</th>
+                        <th style="padding:0.8rem;">AKSI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom:1px solid var(--border-color);">
+                        <td style="padding:1rem; font-weight:700;">ORD-20260901-0001</td>
+                        <td style="padding:1rem; color:var(--accent-color); font-weight:700;">Rp 2.500.000</td>
+                        <td style="padding:1rem;"><span class="role-badge pembeli" style="background:#DCFCE7; color:#15803D;">LUNAS</span></td>
+                        <td style="padding:1rem; font-size:0.85rem; color:var(--text-muted);">01 Sep 2026</td>
+                        <td style="padding:1rem;"><a href="http://localhost:8083/my-tickets.html" class="btn btn-outline" style="width:auto; padding:0.4rem 0.8rem; font-size:0.8rem;">Lihat Tiket</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <script src="http://localhost:8081/js/script.js"></script>
+</body>
+</html>

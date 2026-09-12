@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifikasi OTP - TIKARA Platform Konser</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .otp-container {
+            display: flex;
+            justify-content: center;
+            gap: 0.55rem;
+            margin: 1.5rem auto;
+            width: 100%;
+            max-width: 360px;
+        }
+        .otp-input {
+            width: 100%;
+            max-width: 48px;
+            height: 52px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            text-align: center;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background: #F8FAFC;
+            color: var(--primary-color);
+            transition: all 0.2s;
+            min-width: 32px;
+        }
+        @media (max-width: 380px) {
+            .otp-container {
+                gap: 0.3rem;
+            }
+            .otp-input {
+                max-width: 40px;
+                height: 44px;
+                font-size: 1.15rem;
+                min-width: 28px;
+                border-radius: 8px;
+            }
+        }
+        .otp-input:focus {
+            border-color: var(--accent-color);
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.2);
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Guest Navbar (Context: OTP Verification) -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="http://localhost:8082/index.html" class="navbar-logo">
+                <i class="fa-solid fa-ticket"></i> TIKARA
+            </a>
+            <ul class="navbar-menu">
+                <li><a href="http://localhost:8082/index.html" class="navbar-link"><i class="fa-solid fa-compass"></i> Beranda</a></li>
+            </ul>
+            <div class="navbar-actions">
+                <a href="/login.html" class="btn btn-outline" style="width:auto; padding:0.5rem 1.3rem; font-size:0.9rem; color:white; border-color:rgba(255,255,255,0.3);">
+                    <i class="fa-solid fa-xmark"></i> Batal
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Auth Form Card -->
+    <main class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>Verifikasi Kode OTP</h2>
+                <p>Masukkan 6-digit kode verifikasi yang kami kirimkan ke email:</p>
+                <div style="font-weight:700; color:var(--primary-color); margin-top:0.3rem;" id="displayEmail">user@gmail.com</div>
+            </div>
+
+            <form id="verifyOtpForm" style="margin-top:1.5rem;">
+                <div class="otp-container">
+                    <input type="text" maxlength="1" class="otp-input" id="otp1" autofocus autocomplete="off">
+                    <input type="text" maxlength="1" class="otp-input" id="otp2" autocomplete="off">
+                    <input type="text" maxlength="1" class="otp-input" id="otp3" autocomplete="off">
+                    <input type="text" maxlength="1" class="otp-input" id="otp4" autocomplete="off">
+                    <input type="text" maxlength="1" class="otp-input" id="otp5" autocomplete="off">
+                    <input type="text" maxlength="1" class="otp-input" id="otp6" autocomplete="off">
+                </div>
+
+                <span class="field-error" id="otpError" style="display:block; text-align:center; margin-bottom:1rem;"></span>
+
+                <button type="submit" class="btn btn-accent" id="btnVerify" style="cursor:pointer;">
+                    <i class="fa-solid fa-shield-check"></i> VERIFIKASI KODE <span class="btn-spinner" id="btnSpinner"></span>
+                </button>
+            </form>
+
+            <div style="text-align:center; margin-top:1.5rem; font-size:0.9rem; color:var(--text-muted);">
+                Tidak menerima kode? 
+                <button id="btnResend" style="background:none; border:none; color:var(--accent-color); font-weight:700; cursor:pointer;" disabled>
+                    Kirim Ulang Kode (<span id="cooldownTimer">60</span>s)
+                </button>
+            </div>
+
+            <div class="auth-footer" style="margin-top:1.2rem;">
+                Salah alamat email? <a href="/forgot-password.html" class="auth-link">Ganti Email</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/script.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const email = urlParams.get('email') || '';
+        document.getElementById('displayEmail').innerText = email || 'email Anda';
+
+        // OTP inputs auto-focus next
+        const otpInputs = document.querySelectorAll('.otp-input');
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+        });
+
+        // Cooldown timer for resend
+        let timer = 60;
+        const timerSpan = document.getElementById('cooldownTimer');
+        const btnResend = document.getElementById('btnResend');
+
+        const interval = setInterval(() => {
+            timer--;
+            timerSpan.innerText = timer;
+            if (timer <= 0) {
+                clearInterval(interval);
+                btnResend.disabled = false;
+                btnResend.innerHTML = '<i class="fa-solid fa-rotate-right"></i> Kirim Ulang Sekarang';
+            }
+        }, 1000);
+
+        btnResend.addEventListener('click', async () => {
+            if (!email) return;
+            btnResend.disabled = true;
+            try {
+                const res = await fetch('/api/auth/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (res.ok) {
+                    showToast('Kode OTP baru telah dikirim ke email!', 'success');
+                    timer = 60;
+                    btnResend.disabled = true;
+                    btnResend.innerText = `Kirim Ulang Kode (60s)`;
+                } else {
+                    let msg = data.message || 'Gagal mengirim ulang kode OTP';
+                    showToast(msg, 'error');
+                }
+            } catch (err) {
+                showToast('Gagal terhubung ke server', 'error');
+            }
+        });
+
+        // Submit OTP Verification
+        document.getElementById('verifyOtpForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const otpCode = Array.from(otpInputs).map(i => i.value).join('');
+            const otpError = document.getElementById('otpError');
+            const btnVerify = document.getElementById('btnVerify');
+            const btnSpinner = document.getElementById('btnSpinner');
+
+            otpError.innerText = '';
+            if (otpCode.length !== 6) {
+                otpError.innerText = 'Harap isi 6-digit kode OTP lengkap';
+                return;
+            }
+
+            btnVerify.disabled = true;
+            btnSpinner.style.display = 'inline-block';
+
+            try {
+                const res = await fetch('/api/auth/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, otpCode })
+                });
+
+                const data = await res.json().catch(() => ({}));
+
+                if (res.ok && data.resetToken) {
+                    sessionStorage.setItem('resetToken', data.resetToken);
+                    showToast('Kode OTP Valid! Mengalihkan ke halaman reset password...', 'success');
+                    setTimeout(() => {
+                        window.location.href = `/reset-password.html?token=${encodeURIComponent(data.resetToken)}`;
+                    }, 1200);
+                } else {
+                    console.error('Verify OTP error:', data);
+                    let msg = data.message || 'Kode OTP tidak valid atau telah kadaluarsa.';
+                    otpError.innerText = msg;
+                    showToast(msg, 'error');
+                }
+            } catch (err) {
+                console.error('Verify OTP connection error:', err);
+                showToast('Gagal terhubung ke server backend.', 'error');
+            } finally {
+                btnVerify.disabled = false;
+                btnSpinner.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

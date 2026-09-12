@@ -1,0 +1,157 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masuk - TIKARA Platform Konser</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Guest Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="http://localhost:8082/index.html" class="navbar-logo">
+                <i class="fa-solid fa-ticket"></i> TIKARA
+            </a>
+            <ul class="navbar-menu">
+                <li><a href="http://localhost:8082/index.html" class="navbar-link"><i class="fa-solid fa-compass"></i> Beranda</a></li>
+            </ul>
+            <div class="navbar-actions">
+                <a href="/register.html" class="btn btn-accent" style="width:auto; padding:0.5rem 1.3rem; font-size:0.9rem;">Daftar</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Auth Form Card -->
+    <main class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>Selamat Datang Kembali!</h2>
+                <p>Masuk untuk melanjutkan pengalaman konsermu</p>
+            </div>
+
+            <form id="loginForm" action="javascript:void(0);" novalidate>
+                <div class="form-group">
+                    <label class="form-label" for="email">Alamat Email</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope input-icon"></i>
+                        <input type="email" id="email" class="form-input" placeholder="Masukkan alamat email" autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                        <label class="form-label" for="password" style="margin-bottom:0;">Kata Sandi</label>
+                        <a href="/forgot-password.html" style="font-size:0.825rem; font-weight:600;">Lupa Sandi?</a>
+                    </div>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="password" class="form-input" placeholder="Masukkan kata sandi" autocomplete="current-password">
+                        <i class="fa-solid fa-eye toggle-password" id="togglePassword" onclick="togglePasswordVisibility('password', 'togglePassword')"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-accent" id="btnSubmit" style="margin-top:0.5rem; cursor:pointer;">
+                    <span>MASUK SEKARANG</span> <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                Belum punya akun? <a href="/register.html">Daftar Sekarang</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/script.js"></script>
+    <script>
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                if (icon) icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        async function processLogin() {
+            const emailInput = document.getElementById('email');
+            const passInput = document.getElementById('password');
+            const btnSubmit = document.getElementById('btnSubmit');
+
+            const email = emailInput.value ? emailInput.value.trim() : '';
+            const password = passInput.value ? passInput.value : '';
+
+            // Validasi Input Kosong di Frontend
+            if (!email) {
+                showToast('Email wajib diisi.', 'error');
+                emailInput.focus();
+                return;
+            }
+
+            if (!password) {
+                showToast('Password wajib diisi.', 'error');
+                passInput.focus();
+                return;
+            }
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
+
+            try {
+                let res = await fetch('/api/users/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, kataSandi: password })
+                });
+
+                if (!res.ok && (res.status === 404 || res.status === 405)) {
+                    res = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email, kataSandi: password })
+                    });
+                }
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    const token = data.accessToken || data.token;
+                    const namaUser = data.nama || data.namaLengkap || 'Pengguna';
+                    const userRole = data.peran || data.role || 'PEMBELI';
+
+                    setToken(token);
+                    setUserData({
+                        id: data.id,
+                        namaLengkap: namaUser,
+                        email: data.email,
+                        role: userRole
+                    });
+
+                    showToast('Login berhasil', 'success');
+                    setTimeout(() => window.location.href = '/profile.html', 1000);
+                } else {
+                    const errorMsg = data.message || (data.errors ? Object.values(data.errors).join(', ') : 'Login gagal');
+                    showToast(errorMsg, 'error');
+                }
+            } catch (err) {
+                console.error('Login error:', err);
+                showToast('Gagal terhubung ke server backend user-service', 'error');
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<span>MASUK SEKARANG</span> <i class="fa-solid fa-arrow-right"></i>';
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            processLogin();
+        });
+    </script>
+</body>
+</html>

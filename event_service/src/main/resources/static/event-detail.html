@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Konser - TIKARA</title>
+    <meta name="description"
+        content="Informasi lengkap jadwal konser musik, lokasi venue, dan pemesanan tiket resmi di TIKARA.">
+
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Unified Responsive Header Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="/index.html" class="navbar-logo" aria-label="TIKARA Beranda">
+                <i class="fa-solid fa-ticket"></i> TIKARA
+            </a>
+
+            <!-- Desktop Navigation Menu (Dynamically rendered based on Role & Auth State) -->
+            <ul class="navbar-menu" id="mainNavbarMenu">
+                <!-- Dynamically populated by script.js -->
+            </ul>
+
+            <!-- Desktop Action Box & User Dropdown -->
+            <div class="navbar-actions">
+                <a href="http://localhost:8086/notifications.html" class="nav-icon-btn" id="navNotifBtn"
+                    title="Notifikasi" style="display:none;">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="badge-count" id="navUnreadBadge" style="display:none;">0</span>
+                </a>
+                <div id="navUserBox"></div>
+
+                <!-- Mobile Hamburger Toggle Button -->
+                <button class="navbar-hamburger" id="navbarToggleBtn" aria-label="Buka menu navigasi"
+                    aria-expanded="false" aria-controls="navbarMobileDrawer">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+
+            <!-- Mobile Drawer Menu -->
+            <nav class="navbar-mobile-drawer" id="navbarMobileDrawer" aria-label="Menu navigasi mobile"></nav>
+    </header>
+
+    <!-- Main Detail Content Area -->
+    <main style="padding: 2.5rem 1.5rem; flex-grow: 1;">
+        <!-- Loading State Placeholder -->
+        <div id="loadingState" style="max-width:1200px; margin:0 auto;">
+            <div class="skeleton" style="width:100%; aspect-ratio:16/9; border-radius:12px; margin-bottom:1.5rem;">
+            </div>
+            <div class="skeleton" style="height:36px; width:60%; margin-bottom:1rem;"></div>
+            <div class="skeleton" style="height:20px; width:40%; margin-bottom:2rem;"></div>
+        </div>
+
+        <!-- 404 / Invalid ID / Draft Guard State -->
+        <div id="notFoundState" style="display:none; max-width:600px; margin:3rem auto; text-align:center;">
+            <div class="state-box">
+                <div class="state-icon" style="color:var(--accent-color);"><i class="fa-solid fa-ticket-simple"></i>
+                </div>
+                <h1 class="state-title" style="font-size:1.75rem;">Konser Tidak Ditemukan</h1>
+                <p class="state-desc">
+                    Konser yang Anda tuju mungkin belum dipublikasikan, telah dihapus, atau tautan yang Anda masukkan
+                    tidak valid.
+                </p>
+                <a href="/index.html" class="btn btn-primary">
+                    <i class="fa-solid fa-arrow-left"></i> Kembali ke Jelajah Konser
+                </a>
+            </div>
+        </div>
+
+        <div id="eventDetailContent" class="detail-container" style="display:none;">
+            <div>
+                <img id="detailPoster" src="" alt="Poster Konser" class="detail-poster-main"
+                    onerror="this.src='https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1200&q=80'">
+
+                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;"
+                    id="detailGenreBadges"></div>
+
+                <h1 id="detailTitle" class="detail-title"></h1>
+
+                <!-- Meta Cards Grid -->
+                <div class="detail-meta-grid">
+                    <div class="detail-meta-card">
+                        <i class="fa-regular fa-calendar-check"></i>
+                        <div class="detail-meta-text">
+                            <div class="label">Jadwal Pelaksanaan</div>
+                            <div class="val" id="detailDateTime"></div>
+                        </div>
+                    </div>
+
+                    <div class="detail-meta-card">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                        <div class="detail-meta-text">
+                            <div class="label">Lokasi & Kota</div>
+                            <div class="val" id="detailLocation"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description Block -->
+                <div
+                    style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--border-radius-md); padding:1.75rem; margin-bottom:2rem;">
+                    <h2 style="font-size:1.25rem; font-weight:800; margin-bottom:1rem; color:var(--text-main);">
+                        <i class="fa-solid fa-circle-info" style="color:var(--accent-color);"></i> Tentang Konser Ini
+                    </h2>
+                    <div id="detailDescription"
+                        style="color:#334155; line-height:1.7; font-size:0.975rem; white-space:pre-line;"></div>
+                </div>
+
+                <!-- Organizer Identity Card -->
+                <div
+                    style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:var(--border-radius-md); padding:1.25rem; display:flex; align-items:center; gap:1rem;">
+                    <div
+                        style="width:48px; height:48px; border-radius:50%; background:var(--primary-color); color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.25rem; font-weight:800;">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <div
+                            style="font-size:0.78rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">
+                            Penyelenggara Terverifikasi</div>
+                        <div id="detailOrganizer" style="font-size:1rem; font-weight:800; color:var(--text-main);">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reviews & Ratings Section -->
+                <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:var(--border-radius-md); padding:1.75rem; margin-top:2rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+                        <div>
+                            <h2 style="font-size:1.25rem; font-weight:800; color:var(--text-main); margin:0;">
+                                <i class="fa-solid fa-star" style="color:#F59E0B;"></i> Ulasan & Rating Penonton
+                            </h2>
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.25rem;">Testimoni jujur dari penonton dan pembeli tiket konser ini</p>
+                        </div>
+                        <div id="ratingSummaryBadge" style="display:inline-flex; align-items:center; gap:0.5rem; background:#FEF3C7; color:#92400E; padding:0.4rem 0.85rem; border-radius:10px; font-weight:800; font-size:0.9rem;">
+                            <i class="fa-solid fa-star" style="color:#F59E0B;"></i> <span id="avgRatingVal">5.0</span> / 5.0 (<span id="totalReviewsCount">0</span> Ulasan)
+                        </div>
+                    </div>
+
+                    <!-- Review Form Area -->
+                    <div id="reviewFormArea" style="background:#F8FAFC; border:1px solid var(--border-color); border-radius:14px; padding:1.25rem; margin-bottom:1.75rem;">
+                        <h4 style="font-size:0.95rem; font-weight:800; color:var(--text-main); margin-bottom:0.75rem;">Berikan Penilaian & Ulasan</h4>
+                        <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
+                            <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">Rating:</span>
+                            <div id="starPicker" style="display:flex; gap:0.3rem; font-size:1.4rem; color:#CBD5E1; cursor:pointer;">
+                                <i class="fa-solid fa-star star-item" data-val="1" onclick="setRating(1)" style="color:#F59E0B;"></i>
+                                <i class="fa-solid fa-star star-item" data-val="2" onclick="setRating(2)" style="color:#F59E0B;"></i>
+                                <i class="fa-solid fa-star star-item" data-val="3" onclick="setRating(3)" style="color:#F59E0B;"></i>
+                                <i class="fa-solid fa-star star-item" data-val="4" onclick="setRating(4)" style="color:#F59E0B;"></i>
+                                <i class="fa-solid fa-star star-item" data-val="5" onclick="setRating(5)" style="color:#F59E0B;"></i>
+                            </div>
+                            <span id="starRatingLabel" style="font-size:0.85rem; font-weight:700; color:var(--text-main); margin-left:0.5rem;">5 Bintang (Sempurna)</span>
+                        </div>
+                        <textarea id="reviewCommentInput" class="form-input" rows="3" placeholder="Bagikan kesan dan pengalaman Anda tentang konser ini..." style="width:100%; resize:vertical; padding:0.75rem; font-size:0.875rem; border-radius:10px; border:1px solid var(--border-color);"></textarea>
+                        <div style="display:flex; justify-content:flex-end; margin-top:0.75rem;">
+                            <button class="btn btn-primary" id="btnSubmitReview" onclick="submitReview()" style="width:auto; padding:0.55rem 1.5rem; font-size:0.875rem;">
+                                <i class="fa-solid fa-paper-plane"></i> Kirim Ulasan
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Review Login Notice -->
+                    <div id="reviewLoginNotice" style="display:none; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:12px; padding:1rem 1.25rem; margin-bottom:1.75rem; color:#1E40AF; font-size:0.875rem;">
+                        <i class="fa-solid fa-circle-info"></i> Masuk dengan akun <strong>Pembeli</strong> untuk memberikan rating dan ulasan.
+                        <a href="http://localhost:8081/login.html" class="btn btn-primary" style="display:inline-block; width:auto; padding:0.4rem 1rem; font-size:0.8rem; margin-left:0.75rem; text-decoration:none;">Masuk</a>
+                    </div>
+
+                    <!-- Reviews List Container -->
+                    <div id="reviewsList">
+                        <div style="text-align:center; padding:1.5rem; color:var(--text-muted);">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i> Memuat ulasan...
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Sticky Ticket Booking Widget -->
+            <aside>
+                <div class="ticket-sticky-card">
+                    <div
+                        style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem;">
+                        <h2 style="font-size:1.15rem; font-weight:800; color:var(--text-main); margin:0;">Pemesanan
+                            Tiket</h2>
+                        <span class="status-badge published"><i class="fa-solid fa-lock"></i> Resmi TIKARA</span>
+                    </div>
+
+                    <!-- Price Estimate Box -->
+                    <div class="ticket-price-highlight">
+                        <div class="label">Harga Mulai Dari</div>
+                        <div class="val" id="ticketMinPrice">Memeriksa...</div>
+                    </div>
+
+                    <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.5rem; line-height:1.5;">
+                        <i class="fa-solid fa-shield-check" style="color:var(--success-color);"></i> Transaksi aman
+                        dengan Virtual Queue War Tiket TIKARA.
+                    </div>
+
+                    <!-- Dynamic Role-Based Action Button -->
+                    <div id="ticketActionArea">
+                        <button class="btn btn-primary btn-block" id="btnBuyTicket"
+                            style="padding:0.9rem; font-size:1rem; font-weight:700;">
+                            <i class="fa-solid fa-ticket"></i> Beli Tiket Sekarang
+                        </button>
+                        <div style="text-align:center; margin-top:0.6rem;">
+                            <a id="btnDirectChoose" href="javascript:void(0)" style="font-size:0.8rem; color:var(--text-muted); text-decoration:underline;">
+                                <i class="fa-solid fa-bolt" style="color:var(--accent-color);"></i> Langsung ke pemilihan kategori tiket
+                            </a>
+                        </div>
+                    </div>
+
+                    <div id="organizerWarning"
+                        style="display:none; margin-top:1rem; padding:0.75rem; background:#FEF3C7; border:1px solid #F59E0B; border-radius:8px; font-size:0.82rem; color:#92400E;">
+                        <i class="fa-solid fa-circle-exclamation"></i> Anda sedang masuk sebagai
+                        <strong>Penyelenggara</strong>. Untuk membeli tiket konser, silakan gunakan akun Pembeli.
+                    </div>
+
+                    <div id="adminActionArea" style="display:none; margin-top:1rem;">
+                        <a id="adminModerateLink" href="#" class="btn btn-secondary btn-block"
+                            style="font-size:0.85rem;">
+                            <i class="fa-solid fa-gear"></i> Moderasi di Dashboard Admin
+                        </a>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer
+        style="background:#0F172A; color:#94A3B8; padding:2rem 1.5rem; text-align:center; font-size:0.85rem; border-top:1px solid #1E293B;">
+        &copy; 2026 TIKARA Ecosystem. Seluruh hak cipta dilindungi undang-undang.
+    </footer>
+
+    <!-- App Engine Scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/script.js"></script>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('id');
+
+        async function loadEventDetail() {
+            const loadingState = document.getElementById('loadingState');
+            const notFoundState = document.getElementById('notFoundState');
+            const contentArea = document.getElementById('eventDetailContent');
+
+            if (!eventId || isNaN(eventId)) {
+                loadingState.style.display = 'none';
+                notFoundState.style.display = 'block';
+                return;
+            }
+
+            try {
+                const token = getToken();
+                const headers = {};
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                const res = await fetch(`/api/events/${eventId}`, { headers });
+
+                if (!res.ok) {
+                    loadingState.style.display = 'none';
+                    notFoundState.style.display = 'block';
+                    return;
+                }
+
+                const ev = await res.json();
+
+                document.title = `${ev.nama} - Tiket Konser Resmi TIKARA`;
+                document.getElementById('detailTitle').textContent = ev.nama;
+                document.getElementById('detailPoster').src = ev.gambarUrl || 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1200&q=80';
+                document.getElementById('detailDateTime').textContent = formatEventDateTime(ev.tanggalMulai);
+                document.getElementById('detailLocation').textContent = `${ev.venue}, ${ev.kota}`;
+                document.getElementById('detailDescription').textContent = ev.deskripsi || 'Deskripsi acara belum ditambahkan oleh penyelenggara.';
+                document.getElementById('detailOrganizer').textContent = ev.organizerNama || 'Penyelenggara Resmi TIKARA';
+
+                const badgeContainer = document.getElementById('detailGenreBadges');
+                if (ev.meKategori && ev.meKategori.length > 0) {
+                    badgeContainer.innerHTML = ev.meKategori.map(k => `<span class="status-badge published">${k.nama}</span>`).join('');
+                } else {
+                    badgeContainer.innerHTML = '<span class="status-badge published">Konser Musik</span>';
+                }
+
+                loadTicketEstimate(eventId);
+                setupTicketActions(ev);
+
+                loadingState.style.display = 'none';
+                contentArea.style.display = 'grid';
+
+            } catch (err) {
+                console.error(err);
+                loadingState.style.display = 'none';
+                notFoundState.style.display = 'block';
+            }
+        }
+
+        async function loadTicketEstimate(id) {
+            const priceEl = document.getElementById('ticketMinPrice');
+            const ticketService = window.TIKARA_CONFIG ? window.TIKARA_CONFIG.SERVICES.TICKET : 'http://localhost:8083';
+
+            try {
+                const res = await fetch(`${ticketService}/api/tickets/event/${id}/summary`);
+                if (res.ok) {
+                    const ticketData = await res.json();
+                    if (ticketData && ticketData.minPrice) {
+                        priceEl.textContent = formatCurrency(ticketData.minPrice);
+                        return;
+                    }
+                }
+            } catch (e) {
+                // Graceful fallback
+            }
+            priceEl.textContent = 'Rp 150.000';
+        }
+
+        function setupTicketActions(eventData) {
+            const auth = getAuthState();
+            const btnBuy = document.getElementById('btnBuyTicket');
+            const organizerWarning = document.getElementById('organizerWarning');
+            const adminArea = document.getElementById('adminActionArea');
+            const adminLink = document.getElementById('adminModerateLink');
+
+            const orderService = window.TIKARA_CONFIG ? window.TIKARA_CONFIG.SERVICES.ORDER : 'http://localhost:8084';
+            const adminService = window.TIKARA_CONFIG ? window.TIKARA_CONFIG.SERVICES.ADMIN : 'http://localhost:8089';
+
+            // Case 1: Guest (Unauthenticated) -> Open Redirect Protected Login
+            if (!auth.isAuthenticated || auth.role === 'GUEST') {
+                btnBuy.onclick = () => {
+                    const currentTarget = `/event-detail.html?id=${eventId}`;
+                    const targetUrl = window.TIKARA_CONFIG ? window.TIKARA_CONFIG.getLoginUrl(currentTarget) : `http://localhost:8081/login.html?redirect=${encodeURIComponent(currentTarget)}`;
+                    window.location.href = targetUrl;
+                };
+                return;
+            }
+
+            // Case 2: PEMBELI (Logged In) -> Virtual Waiting Room / Direct Selection
+            if (auth.role === 'PEMBELI') {
+                btnBuy.onclick = () => {
+                    // Masuk ke Virtual Waiting Room resmi TIKARA
+                    window.location.href = `http://localhost:8085/waiting-room.html?eventId=${eventId}`;
+                };
+                const directLink = document.getElementById('btnDirectChoose');
+                if (directLink) {
+                    directLink.onclick = () => {
+                        window.location.href = `http://localhost:8083/pilih-tiket.html?eventId=${eventId}`;
+                    };
+                }
+                return;
+            }
+
+            // Case 3: PENYELENGGARA (Logged In) -> Informative Guard
+            if (auth.role === 'PENYELENGGARA') {
+                organizerWarning.style.display = 'block';
+                btnBuy.disabled = true;
+                btnBuy.style.opacity = '0.6';
+                btnBuy.style.cursor = 'not-allowed';
+                btnBuy.innerHTML = '<i class="fa-solid fa-ban"></i> Mode Penyelenggara';
+                return;
+            }
+
+            // Case 4: ADMIN (Logged In) -> Moderation Shortcut
+            if (auth.role === 'ADMIN') {
+                adminArea.style.display = 'block';
+                adminLink.href = `${adminService}/admin-dashboard.html?tab=approvals&eventId=${eventId}`;
+                btnBuy.onclick = () => {
+                    window.location.href = `${orderService}/checkout.html?eventId=${eventId}`;
+                };
+            }
+        }
+
+        
+        window.selectedRating = 5;
+
+        function setRating(val) {
+            window.selectedRating = val;
+            const stars = document.querySelectorAll('.star-item');
+            stars.forEach((s, idx) => {
+                s.style.color = idx < val ? '#F59E0B' : '#CBD5E1';
+            });
+            const labels = ['', '1 Bintang (Buruk)', '2 Bintang (Kurang)', '3 Bintang (Cukup)', '4 Bintang (Bagus)', '5 Bintang (Sempurna)'];
+            const lbl = document.getElementById('starRatingLabel');
+            if (lbl) lbl.textContent = labels[val] || `${val} Bintang`;
+        }
+        window.setRating = setRating;
+
+        async function loadReviews() {
+            if (!eventId) return;
+            try {
+                const res = await fetch(`/api/acara/${eventId}/ulasan`);
+                if (!res.ok) return;
+                const data = await res.json();
+                const reviews = data.content || [];
+
+                const totalEl = document.getElementById('totalReviewsCount');
+                if (totalEl) totalEl.textContent = reviews.length;
+
+                const avgEl = document.getElementById('avgRatingVal');
+                if (avgEl) {
+                    if (reviews.length > 0) {
+                        const avg = (reviews.reduce((acc, r) => acc + (r.rating || 0), 0) / reviews.length).toFixed(1);
+                        avgEl.textContent = avg;
+                    } else {
+                        avgEl.textContent = '5.0';
+                    }
+                }
+
+                const container = document.getElementById('reviewsList');
+                if (!container) return;
+
+                if (reviews.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align:center; padding:2rem 1rem; color:var(--text-muted);">
+                            <i class="fa-regular fa-comments fa-2x" style="color:#CBD5E1; margin-bottom:0.5rem; display:block;"></i>
+                            <p style="font-size:0.875rem; margin:0;">Belum ada ulasan untuk konser ini. Jadilah yang pertama memberikan testimoni!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = reviews.map(r => {
+                    const dt = r.createdAt ? new Date(r.createdAt).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' }) : '';
+                    let starsHtml = '';
+                    for (let i = 1; i <= 5; i++) {
+                        starsHtml += `<i class="fa-solid fa-star" style="color:${i <= r.rating ? '#F59E0B' : '#E2E8F0'}; font-size:0.85rem;"></i>`;
+                    }
+                    const initial = (r.penggunaNama || 'P')[0].toUpperCase();
+                    return `
+                        <div style="padding:1.25rem 0; border-bottom:1px solid #F1F5F9;">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.4rem;">
+                                <div style="display:flex; align-items:center; gap:0.6rem;">
+                                    <div style="width:36px; height:36px; border-radius:50%; background:#EFF6FF; color:var(--primary-color); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.85rem;">
+                                        ${initial}
+                                    </div>
+                                    <div>
+                                        <div style="font-weight:700; font-size:0.9rem; color:var(--text-main);">${r.penggunaNama || 'Pembeli Tiket'}</div>
+                                        <div style="font-size:0.75rem; color:var(--text-muted);">${dt}</div>
+                                    </div>
+                                </div>
+                                <div style="display:flex; gap:0.2rem;">${starsHtml}</div>
+                            </div>
+                            <p style="color:#334155; font-size:0.875rem; line-height:1.6; margin:0.5rem 0 0 3rem;">
+                                ${r.komentar || ''}
+                            </p>
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.warn('Gagal load ulasan:', e);
+            }
+        }
+        window.loadReviews = loadReviews;
+
+        async function submitReview() {
+            const auth = getAuthState();
+            if (!auth.isAuthenticated) {
+                window.location.href = `http://localhost:8081/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                return;
+            }
+
+            const comment = (document.getElementById('reviewCommentInput').value || '').trim();
+            if (!comment) {
+                alert('Silakan masukkan komentar ulasan Anda.');
+                return;
+            }
+
+            const btn = document.getElementById('btnSubmitReview');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Mengirim...`;
+
+            try {
+                const token = getToken();
+                const res = await fetch(`/api/acara/${eventId}/ulasan`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        rating: window.selectedRating || 5,
+                        komentar: comment
+                    })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.message || 'Gagal mengirim ulasan');
+                }
+
+                document.getElementById('reviewCommentInput').value = '';
+                setRating(5);
+                alert('Ulasan Anda berhasil dikirim! Terima kasih atas partisipasinya.');
+                await loadReviews();
+            } catch (err) {
+                alert(err.message || 'Terjadi kendala saat mengirim ulasan.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Kirim Ulasan`;
+            }
+        }
+        window.submitReview = submitReview;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadEventDetail();
+            await loadReviews();
+            const auth = getAuthState();
+            const formArea = document.getElementById('reviewFormArea');
+            const noticeArea = document.getElementById('reviewLoginNotice');
+            if (formArea && noticeArea) {
+                if (!auth.isAuthenticated) {
+                    formArea.style.display = 'none';
+                    noticeArea.style.display = 'block';
+                } else {
+                    formArea.style.display = 'block';
+                    noticeArea.style.display = 'none';
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

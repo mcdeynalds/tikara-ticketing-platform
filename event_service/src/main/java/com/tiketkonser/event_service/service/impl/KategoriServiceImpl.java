@@ -1,7 +1,7 @@
 package com.tiketkonser.event_service.service.impl;
 
 import com.tiketkonser.event_service.entity.Kategori;
-import com.tiketkonser.event_service.handler.ConflictException;
+import com.tiketkonser.event_service.handler.BadRequestException;
 import com.tiketkonser.event_service.handler.NotFoundException;
 import com.tiketkonser.event_service.payload.req.KategoriReq;
 import com.tiketkonser.event_service.payload.res.KategoriRes;
@@ -27,7 +27,7 @@ public class KategoriServiceImpl implements KategoriService {
     @Transactional
     public KategoriRes create(KategoriReq request) {
         if (kategoriRepository.existsByNamaKategoriIgnoreCase(request.getNamaKategori())) {
-            throw new ConflictException("Nama kategori sudah ada");
+            throw new BadRequestException("Nama kategori sudah ada");
         }
 
         Kategori kategori = Kategori.builder()

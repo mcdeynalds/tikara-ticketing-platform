@@ -1,8 +1,10 @@
 package com.tiketkonser.ticket_service.controller;
 
 import com.tiketkonser.ticket_service.payload.req.IssueTiketReq;
+import com.tiketkonser.ticket_service.payload.req.TransferTiketReq;
 import com.tiketkonser.ticket_service.payload.res.PageResponse;
 import com.tiketkonser.ticket_service.payload.res.TiketRes;
+import com.tiketkonser.ticket_service.payload.res.TransferTiketRes;
 import com.tiketkonser.ticket_service.service.TiketService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,5 +43,13 @@ public class TiketController {
     @PreAuthorize("hasAnyRole('PENYELENGGARA', 'ADMIN')")
     public ResponseEntity<TiketRes> checkIn(@PathVariable String kodeQr) {
         return ResponseEntity.ok(tiketService.validateOrUseTiket(kodeQr));
+    }
+
+    @PostMapping("/{id}/transfer")
+    public ResponseEntity<TransferTiketRes> transferTiket(
+            @PathVariable Long id,
+            @Valid @RequestBody TransferTiketReq request,
+            Authentication authentication) {
+        return ResponseEntity.ok(tiketService.transferTiket(id, request, authentication));
     }
 }

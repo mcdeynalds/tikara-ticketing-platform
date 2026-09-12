@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Pesanan - TIKARA</title>
+    <meta name="description" content="Kelola riwayat pemesanan tiket konser Anda di platform TIKARA.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .orders-page {
+            max-width: 960px;
+            margin: 2.5rem auto;
+            padding: 0 1.5rem;
+        }
+        .filter-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            overflow-x: auto;
+        }
+        .filter-tab-btn {
+            background: white;
+            border: 1px solid var(--border-color);
+            padding: 0.55rem 1.25rem;
+            font-weight: 700;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .filter-tab-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        .filter-tab-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+        }
+        .order-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .order-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        .countdown-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            background: #FEF3C7;
+            color: #B45309;
+            border: 1px solid #FDE68A;
+        }
+        .countdown-pill.urgent {
+            background: #FEE2E2;
+            color: #B91C1C;
+            border-color: #FECACA;
+            animation: pulseUrgent 1s infinite alternate;
+        }
+        @keyframes pulseUrgent {
+            0% { opacity: 0.9; }
+            100% { opacity: 1; transform: scale(1.02); }
+        }
+        .countdown-pill.expired {
+            background: #F1F5F9;
+            color: #64748B;
+            border-color: #CBD5E1;
+        }
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+        .modal-dialog {
+            background: white;
+            border-radius: 20px;
+            max-width: 480px;
+            width: 100%;
+            padding: 2rem;
+            box-shadow: 0 20px 30px -10px rgba(0,0,0,0.25);
+            text-align: center;
+            animation: fadeIn 0.2s ease-out;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Unified Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="http://localhost:8082/index.html" class="navbar-logo" id="navLogoLink">
+                <i class="fa-solid fa-ticket"></i> TIKARA
+            </a>
+            <ul class="navbar-menu" id="mainNavbarMenu"></ul>
+            <div class="navbar-actions">
+                <div id="navUserBox"></div>
+                <button class="navbar-hamburger" id="navbarToggleBtn" aria-label="Buka menu navigasi">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <nav class="navbar-mobile-drawer" id="navbarMobileDrawer"></nav>
+    </header>
+
+    <main class="orders-page">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--text-main); margin: 0 0 0.25rem;">
+                    Riwayat Transaksi Pesanan
+                </h1>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">
+                    Pantau status reservasi tiket, batas waktu bayar, dan rincian e-tiket Anda.
+                </p>
+            </div>
+            <a href="http://localhost:8083/my-tickets.html" class="btn btn-outline" style="width: auto; padding: 0.55rem 1.25rem; font-size: 0.875rem; border-radius: 10px;">
+                <i class="fa-solid fa-qrcode" style="color: var(--primary-color);"></i> Buka E-Tiket Saya
+            </a>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <button class="filter-tab-btn active" onclick="filterOrders('ALL', this)">Semua Pesanan</button>
+            <button class="filter-tab-btn" onclick="filterOrders('PENDING', this)">Menunggu Pembayaran</button>
+            <button class="filter-tab-btn" onclick="filterOrders('PAID', this)">Selesai / Lunas</button>
+            <button class="filter-tab-btn" onclick="filterOrders('CANCELLED', this)">Dibatalkan</button>
+        </div>
+
+        <!-- Orders Container -->
+        <div id="ordersContainer">
+            <div style="text-align: center; padding: 3.5rem 1rem; color: var(--text-muted);">
+                <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary-color);"></i>
+                <p style="margin-top: 0.75rem; font-size: 0.95rem;">Memuat daftar pesanan Anda...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Cancel Order Confirmation Modal -->
+    <div id="cancelOrderModal" class="modal-overlay">
+        <div class="modal-dialog">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background: #FEE2E2; color: #DC2626; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin: 0 auto 1.25rem;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">
+                Batalkan Pesanan?
+            </h3>
+            <p style="font-size: 0.9rem; color: #64748B; margin-bottom: 1.5rem; line-height: 1.5;">
+                Apakah Anda yakin ingin membatalkan pesanan <strong id="cancelModalOrderCode" style="color: var(--text-main);">-</strong>? Kuota tiket yang direservasi akan dilepaskan kembali dan pesanan tidak dapat diaktifkan lagi.
+            </p>
+
+            <div style="display: flex; gap: 0.75rem; justify-content: center;">
+                <button type="button" class="btn btn-outline" onclick="closeCancelModal()" style="width: 50%; padding: 0.75rem;">
+                    Kembali
+                </button>
+                <button type="button" class="btn" id="btnConfirmCancel" onclick="executeCancelOrder()" style="width: 50%; padding: 0.75rem; background: #DC2626; color: white; border: none; font-weight: 700;">
+                    Ya, Batalkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/script.js"></script>
+    <script>
+        let allOrders = [];
+        let activeFilter = 'ALL';
+        let countdownInterval = null;
+        let selectedOrderToCancel = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const auth = getAuthState();
+            if (!auth.isAuthenticated) {
+                showToast('Silakan login terlebih dahulu untuk melihat riwayat pesanan.', 'warning');
+                setTimeout(() => {
+                    window.location.href = `http://localhost:8081/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                }, 1000);
+                return;
+            }
+
+            await fetchMyOrders();
+
+            // Jalankan countdown loop setiap detik
+            countdownInterval = setInterval(updateAllCountdowns, 1000);
+        });
+
+        function formatRupiah(num) {
+            return 'Rp ' + Number(num || 0).toLocaleString('id-ID');
+        }
+
+        async function fetchMyOrders() {
+            try {
+                const token = (typeof getToken === 'function' ? getToken() : null) || (typeof getJwtToken === 'function' ? getJwtToken() : null) || localStorage.getItem('jwt_token');
+                // order_service runs on Port 8084
+                const res = await fetch('http://localhost:8084/api/orders/saya?page=0&size=50', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) throw new Error('Gagal memuat riwayat pesanan dari server');
+                const data = await res.json();
+                allOrders = data.content || [];
+                renderOrdersList();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('ordersContainer').innerHTML = `
+                    <div style="text-align: center; padding: 3rem 1rem; color: var(--danger-color);">
+                        <i class="fa-solid fa-circle-exclamation fa-2x"></i>
+                        <p style="margin-top: 0.75rem;">${err.message || 'Gagal memuat pesanan'}</p>
+                        <button class="btn btn-outline" style="width:auto; margin-top:1rem;" onclick="fetchMyOrders()">Coba Lagi</button>
+                    </div>
+                `;
+            }
+        }
+
+        function filterOrders(filter, btn) {
+            activeFilter = filter;
+            document.querySelectorAll('.filter-tab-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderOrdersList();
+        }
+
+        function renderOrdersList() {
+            const container = document.getElementById('ordersContainer');
+            let filtered = allOrders;
+
+            if (activeFilter !== 'ALL') {
+                filtered = allOrders.filter(o => o.status === activeFilter);
+            }
+
+            if (!filtered || filtered.length === 0) {
+                let emptyMsg = 'Belum Ada Pesanan';
+                let emptySub = 'Jelajahi konser musik favorit dan dapatkan tiket resminya sekarang!';
+                if (activeFilter === 'PENDING') {
+                    emptyMsg = 'Tidak Ada Pesanan Menunggu Pembayaran';
+                    emptySub = 'Semua pesanan Anda telah lunas atau sudah diselesaikan.';
+                } else if (activeFilter === 'PAID') {
+                    emptyMsg = 'Belum Ada Pesanan Selesai';
+                    emptySub = 'Pesanan yang telah dibayar lunas akan tampil di sini beserta link e-tiket.';
+                } else if (activeFilter === 'CANCELLED') {
+                    emptyMsg = 'Tidak Ada Pesanan Dibatalkan';
+                    emptySub = 'Riwayat pesanan yang dibatalkan atau kadaluarsa akan tercatat di sini.';
+                }
+
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 4rem 1rem; background: white; border-radius: 16px; border: 1px dashed var(--border-color);">
+                        <i class="fa-solid fa-receipt fa-3x" style="color: #CBD5E1; margin-bottom: 1rem;"></i>
+                        <h3 style="color: var(--text-main); font-size: 1.15rem; font-weight: 700; margin-bottom: 0.35rem;">${emptyMsg}</h3>
+                        <p style="color: var(--text-muted); font-size: 0.875rem; max-width: 400px; margin: 0 auto 1.25rem;">${emptySub}</p>
+                        <a href="http://localhost:8082/index.html" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; width: auto; padding: 0.6rem 1.5rem; font-size: 0.9rem;">
+                            <i class="fa-solid fa-magnifying-glass"></i> Jelajah Konser Musik
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(order => {
+                let badgeStyle = 'background:#FEF3C7; color:#B45309;';
+                let statusLabel = 'MENUNGGU PEMBAYARAN';
+                const isPending = order.status === 'PENDING';
+
+                if (order.status === 'PAID') {
+                    badgeStyle = 'background:#DCFCE7; color:#15803D;';
+                    statusLabel = 'SELESAI (LUNAS)';
+                } else if (order.status === 'CANCELLED') {
+                    badgeStyle = 'background:#FEE2E2; color:#B91C1C;';
+                    statusLabel = 'DIBATALKAN';
+                }
+
+                const createdDate = order.createdAt ? new Date(order.createdAt).toLocaleDateString('id-ID', {
+                    day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                }) : '-';
+
+                let itemsHtml = '';
+                if (order.items && order.items.length > 0) {
+                    order.items.forEach(item => {
+                        const name = item.namaKategoriTiket || `Kategori Tiket #${item.kategoriTiketId}`;
+                        itemsHtml += `
+                            <div style="display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 0.4rem;">
+                                <span>${name} <strong style="color: var(--primary-color);">× ${item.jumlah}</strong></span>
+                                <span style="font-weight: 700; color: var(--text-main);">${formatRupiah(item.subtotal)}</span>
+                            </div>
+                        `;
+                    });
+                }
+
+                html += `
+                    <div class="order-card" id="orderCard_${order.id}">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.85rem; flex-wrap: wrap; gap: 0.75rem;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem; flex-wrap: wrap;">
+                                    <span class="role-badge" style="${badgeStyle} font-size: 0.75rem; padding: 0.2rem 0.6rem;">
+                                        ${statusLabel}
+                                    </span>
+                                    ${isPending ? `
+                                        <span class="countdown-pill" id="countdown_${order.id}" data-created="${order.createdAt || ''}">
+                                            <i class="fa-solid fa-clock"></i> Sisa waktu: 15:00
+                                        </span>
+                                    ` : ''}
+                                </div>
+                                <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin: 0 0 0.2rem;">
+                                    ${order.nomorPesanan || 'ORD-#' + order.id}
+                                </h3>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">
+                                    <i class="fa-regular fa-calendar"></i> Dibuat: ${createdDate}
+                                </span>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Total Tagihan</span>
+                                <strong style="font-size: 1.3rem; color: var(--primary-color);">${formatRupiah(order.totalHarga)}</strong>
+                            </div>
+                        </div>
+
+                        <!-- Items Summary -->
+                        <div style="background: #F8FAFC; border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;">
+                            ${itemsHtml}
+                        </div>
+
+                        <!-- Card Actions -->
+                        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                            ${isPending ? `
+                                <button type="button" class="btn btn-outline" onclick="openCancelModal(${order.id}, '${order.nomorPesanan || 'ORD-#' + order.id}')" style="width: auto; padding: 0.55rem 1.1rem; font-size: 0.85rem; color: #DC2626; border-color: #FCA5A5;">
+                                    <i class="fa-solid fa-ban"></i> Batalkan
+                                </button>
+                                <a href="/pembayaran.html?orderId=${order.id}" class="btn btn-primary" id="btnPay_${order.id}" style="width: auto; padding: 0.55rem 1.35rem; font-size: 0.85rem; font-weight: 700;">
+                                    <i class="fa-solid fa-credit-card"></i> Bayar Sekarang
+                                </a>
+                            ` : ''}
+                            ${order.status === 'PAID' ? `
+                                <a href="http://localhost:8083/my-tickets.html" class="btn btn-primary" style="width: auto; padding: 0.55rem 1.35rem; font-size: 0.85rem; font-weight: 700;">
+                                    <i class="fa-solid fa-qrcode"></i> Lihat E-Tiket
+                                </a>
+                            ` : ''}
+                            <a href="/pembayaran.html?orderId=${order.id}" class="btn btn-outline" style="width: auto; padding: 0.55rem 1.1rem; font-size: 0.85rem;">
+                                Detail Rincian
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            updateAllCountdowns();
+        }
+
+        function updateAllCountdowns() {
+            const pills = document.querySelectorAll('.countdown-pill');
+            const now = Date.now();
+
+            pills.forEach(pill => {
+                const createdStr = pill.getAttribute('data-created');
+                if (!createdStr) return;
+
+                const createdAt = new Date(createdStr).getTime();
+                // 15 minutes = 900,000 ms
+                const expireAt = createdAt + (15 * 60 * 1000);
+                const remaining = Math.max(0, Math.floor((expireAt - now) / 1000));
+
+                const orderId = pill.id.replace('countdown_', '');
+                const payBtn = document.getElementById(`btnPay_${orderId}`);
+
+                if (remaining <= 0) {
+                    pill.className = 'countdown-pill expired';
+                    pill.innerHTML = '<i class="fa-solid fa-clock-rotate-left"></i> Waktu Habis (Kadaluarsa)';
+                    if (payBtn) {
+                        payBtn.classList.add('disabled');
+                        payBtn.style.opacity = '0.5';
+                        payBtn.style.pointerEvents = 'none';
+                        payBtn.innerText = 'Kadaluarsa';
+                    }
+                } else {
+                    const mins = Math.floor(remaining / 60);
+                    const secs = remaining % 60;
+                    const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+                    pill.innerHTML = `<i class="fa-solid fa-clock"></i> Sisa Waktu: ${timeStr}`;
+
+                    if (remaining < 180) { // < 3 mins
+                        pill.className = 'countdown-pill urgent';
+                    } else {
+                        pill.className = 'countdown-pill';
+                    }
+                }
+            });
+        }
+
+        function openCancelModal(orderId, orderCode) {
+            selectedOrderToCancel = orderId;
+            document.getElementById('cancelModalOrderCode').innerText = orderCode;
+            document.getElementById('cancelOrderModal').style.display = 'flex';
+        }
+
+        function closeCancelModal() {
+            selectedOrderToCancel = null;
+            document.getElementById('cancelOrderModal').style.display = 'none';
+        }
+
+        async function executeCancelOrder() {
+            if (!selectedOrderToCancel) return;
+
+            const btnConfirm = document.getElementById('btnConfirmCancel');
+            btnConfirm.disabled = true;
+            btnConfirm.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Membatalkan...';
+
+            const token = (typeof getToken === 'function' ? getToken() : null) || (typeof getJwtToken === 'function' ? getJwtToken() : null) || localStorage.getItem('jwt_token');
+
+            try {
+                const res = await fetch(`http://localhost:8084/api/orders/${selectedOrderToCancel}/cancel`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.message || 'Gagal membatalkan pesanan');
+                }
+
+                showToast('Pesanan berhasil dibatalkan.', 'success');
+                closeCancelModal();
+
+                // Refresh orders
+                await fetchMyOrders();
+            } catch (err) {
+                console.error(err);
+                showToast(err.message || 'Terjadi kesalahan saat membatalkan pesanan.', 'error');
+            } finally {
+                btnConfirm.disabled = false;
+                btnConfirm.innerHTML = 'Ya, Batalkan';
+            }
+        }
+    </script>
+</body>
+</html>

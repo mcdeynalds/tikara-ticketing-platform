@@ -1,14 +1,11 @@
 package com.tiketkonser.order_service.payload.req;
 
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
 
 @Data
 @Builder
@@ -22,8 +19,4 @@ public class DetailPemesananItemReq {
     @NotNull(message = "Jumlah tiket wajib diisi")
     @Min(value = 1, message = "Jumlah tiket minimal 1")
     private Integer jumlah;
-
-    @NotNull(message = "Harga satuan wajib diisi")
-    @DecimalMin(value = "0.0", message = "Harga satuan minimal 0")
-    private BigDecimal hargaSatuan;
 }

@@ -1,0 +1,12 @@
+package com.tiketkonser.order_service.config;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+@Component
+public class DataSeeder implements CommandLineRunner {
+    @Override
+    public void run(String... args) throws Exception {
+        // Dummy data seeder disabled. Real orders are created by buyers.
+    }
+}

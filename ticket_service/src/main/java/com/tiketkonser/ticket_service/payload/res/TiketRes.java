@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TiketRes {
     private Long id;
+    private Long acaraId;
     private Long kategoriTiketId;
     private String namaKategoriTiket;
     private Long detailPemesananId;
