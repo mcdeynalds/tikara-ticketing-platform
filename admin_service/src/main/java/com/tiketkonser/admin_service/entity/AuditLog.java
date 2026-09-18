@@ -21,7 +21,7 @@ public class AuditLog {
     private Long id;
 
     @Column(name = "pengguna_id", nullable = false)
-    private Long penggunaId; // Referensi ID ke user-service
+    private Long penggunaId;
 
     @Column(name = "aksi", nullable = false)
     private String aksi;

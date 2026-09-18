@@ -20,6 +20,10 @@ public class AcaraRes {
     private LocalDateTime tanggalSelesai;
     private String status;
     private String gambarUrl;
+    private String catatanModerator;
+    private LocalDateTime moderatedAt;
+    private Double averageRating;
+    private Integer totalUlasan;
     private Set<KategoriRes> meKategori;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

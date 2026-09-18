@@ -1,5 +1,6 @@
 package com.tiketkonser.admin_service.security;
 
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,12 +32,55 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
+                        .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
                         .requestMatchers(
+                                "/admin/logout"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/admin-dashboard",
+                                "/admin-dashboard.html",
+                                "/promo-management.html",
+                                "/event-moderation.html"
+                        ).hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers(
+                                "/",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/favicon.ico",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html"
+                                "/swagger-ui.html",
+                                "/organizer/**"
                         ).permitAll()
                         .anyRequest().authenticated()
+                )
+
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            String accept = request.getHeader("Accept");
+                            String uri = request.getRequestURI();
+                            if ((accept != null && accept.contains("text/html")) || uri.endsWith(".html")) {
+                                String redirectUrl = "http://localhost:8081/login.html?redirect=" + java.net.URLEncoder.encode(request.getRequestURL().toString(), java.nio.charset.StandardCharsets.UTF_8);
+                                response.sendRedirect(redirectUrl);
+                            } else {
+                                response.setContentType("application/json");
+                                response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+                                response.getWriter().write("{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Silakan login terlebih dahulu sebagai Administrator\"}");
+                            }
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            String accept = request.getHeader("Accept");
+                            String uri = request.getRequestURI();
+                            if ((accept != null && accept.contains("text/html")) || uri.endsWith(".html")) {
+                                response.sendRedirect("http://localhost:8082/index.html");
+                            } else {
+                                response.setContentType("application/json");
+                                response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN);
+                                response.getWriter().write("{\"status\":403,\"error\":\"Forbidden\",\"message\":\"Akses ditolak. Halaman ini hanya untuk Administrator.\"}");
+                            }
+                        })
                 )
 
                 .addFilterBefore(

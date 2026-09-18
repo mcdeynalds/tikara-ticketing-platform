@@ -21,7 +21,6 @@ public interface PenggunaService {
     PenggunaRes restore(Long id);
     ProfilPenggunaRes uploadAvatar(String email, org.springframework.web.multipart.MultipartFile file);
 
-    // GAP FEATURES
     ProfilPenggunaRes getProfile(String email);
 
     ProfilPenggunaRes updateProfile(String email, UpdateProfilReq request);

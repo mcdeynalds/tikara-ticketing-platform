@@ -56,8 +56,9 @@
                     <label class="form-label" for="namaLengkap">Nama Lengkap</label>
                     <div class="input-wrapper">
                         <i class="fa-solid fa-user input-icon"></i>
-                        <input type="text" id="namaLengkap" class="form-input" placeholder="Masukkan nama lengkap" required autocomplete="name">
+                        <input type="text" id="namaLengkap" class="form-input" placeholder="Masukkan nama lengkap Anda" required minlength="3" maxlength="60" autocomplete="name">
                     </div>
+                    <span class="field-error" id="namaError" style="display:none; font-size:.8rem; color:var(--danger-color); margin-top:.3rem;"></span>
                 </div>
 
                 <div class="form-group">
@@ -213,6 +214,16 @@
 
             passwordError.innerText = '';
 
+            // 0. Name length check (min 3, max 60)
+            if (namaLengkap.length < 3 || namaLengkap.length > 60) {
+                const msg = namaLengkap.length < 3 ? 'Nama minimal 3 karakter' : 'Nama maksimal 60 karakter';
+                const errEl = document.getElementById('namaError');
+                if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+                showToast(msg, 'error');
+                document.getElementById('namaLengkap').focus();
+                return;
+            }
+
             // 1. Strict Password Policy Check
             const passCheck = validatePasswordRequirements(password);
             if (!passCheck.isValid) {
@@ -284,5 +295,136 @@
             processRegister();
         });
     </script>
+
+    <!-- Footer -->
+            <!-- Unified TIKARA Footer (Light Theme) -->
+    <footer class="tikara-footer">
+        <div class="footer-container">
+            <div class="footer-main-grid">
+                <!-- Brand & Security Column -->
+                <div class="footer-col footer-brand-col">
+                    <a href="http://localhost:8082/index.html" class="footer-logo" aria-label="TIKARA Beranda">
+                        <i class="fa-solid fa-ticket"></i> <span>TIKARA</span>
+                    </a>
+                    <p class="footer-desc">
+                        Beli tiket konser, festival musik, dan event seru lainnya dengan mudah &amp; aman di TIKARA. 
+                        <strong>#PASTIBISA</strong> nonton konser &amp; festival idaman!
+                    </p>
+                    <div class="footer-security-section">
+                        <h4 class="footer-subheading"><i class="fa-solid fa-shield-halved"></i> Keamanan dan Privasi</h4>
+                        <div class="footer-badges-wrap">
+                            <a href="http://localhost:8082/terms.html#security" class="footer-iso-badge" title="Tersertifikasi ISO/IEC 27001 &amp; ISO/IEC 27701">
+                                <div class="iso-icon-box">
+                                    <i class="fa-solid fa-award"></i>
+                                </div>
+                                <div class="iso-info-box">
+                                    <span class="iso-title">ISO/IEC 27001 &bull; 27701</span>
+                                    <span class="iso-desc">Information Security &amp; Privacy Management</span>
+                                </div>
+                            </a>
+                            <div class="footer-ssl-badge">
+                                <i class="fa-solid fa-lock"></i> <span>256-Bit SSL Enkripsi Terverifikasi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Columns -->
+                <div class="footer-nav-columns">
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Tentang TIKARA</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/about.html">Tentang Kami</a></li>
+                            <li><a href="http://localhost:8082/blog.html">Blog &amp; Berita Musik</a></li>
+                        </ul>
+                        <h3 class="footer-heading" style="margin-top: 1.75rem;">Produk</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/index.html#catalog">Semua Konser &amp; Festival</a></li>
+                            <li><a href="http://localhost:8083/my-tickets.html">Tiket Saya</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Event Creator</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/creator-guide.html#biaya">Biaya &amp; Komisi</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#kerjasama">Kerjasama dengan Kami</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#panduan">Buku Panduan Creator</a></li>
+                            <li><a href="http://localhost:8082/create-event.html">Buat Event Konser</a></li>
+                            <li><a href="http://localhost:8082/organizer-dashboard.html">Dashboard Penyelenggara</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Dukungan</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/help.html">Pusat Bantuan (FAQ)</a></li>
+                            <li><a href="http://localhost:8082/terms.html#terms">Syarat dan Ketentuan</a></li>
+                            <li><a href="http://localhost:8082/terms.html#privacy">Kebijakan Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#security">Kepatuhan Keamanan &amp; Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#cookies">Kebijakan Cookies</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Action / Payment & Social Column -->
+                <div class="footer-col footer-action-col">
+                    <h3 class="footer-heading">Pilihan Pembayaran</h3>
+                    <div class="footer-payment-grid" title="Metode Pembayaran Resmi TIKARA">
+                        <span class="pay-chip"><i class="fa-solid fa-qrcode"></i> QRIS</span>
+                        <span class="pay-chip">BCA</span>
+                        <span class="pay-chip">Mandiri</span>
+                        <span class="pay-chip">BRI</span>
+                        <span class="pay-chip">BNI</span>
+                        <span class="pay-chip">BTN</span>
+                        <span class="pay-chip">BSI</span>
+                        <span class="pay-chip">Permata</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-visa"></i> VISA</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-mastercard"></i> Master</span>
+                        <span class="pay-chip">ShopeePay</span>
+                        <span class="pay-chip">GoPay</span>
+                        <span class="pay-chip">Alfamart</span>
+                        <span class="pay-chip">Indomaret</span>
+                    </div>
+                    <div>
+                        <a href="http://localhost:8082/help.html#pembayaran" class="footer-pay-guide-link">
+                            <i class="fa-solid fa-circle-question"></i> Panduan &amp; Cara Bayar
+                        </a>
+                    </div>
+
+                    <div class="footer-social-wrap" style="margin-top: 1.75rem;">
+                        <h3 class="footer-heading">Ikuti Kami untuk Update</h3>
+                        <div class="footer-social-links">
+                            <a href="https://www.instagram.com/deafriliart/?__pwa=1" target="_blank" rel="noopener noreferrer" class="social-btn social-ig" aria-label="Instagram TIKARA" title="Instagram">
+                                <i class="fa-brands fa-instagram"></i>
+                            </a>
+                            <a href="https://www.tiktok.com/@realityclubofficial" target="_blank" rel="noopener noreferrer" class="social-btn social-tiktok" aria-label="TikTok TIKARA" title="TikTok">
+                                <i class="fa-brands fa-tiktok"></i>
+                            </a>
+                            <a href="https://x.com/reality_club" target="_blank" rel="noopener noreferrer" class="social-btn social-x" aria-label="X (Twitter) TIKARA" title="X (Twitter)">
+                                <i class="fa-brands fa-x-twitter"></i>
+                            </a>
+                            <a href="https://www.facebook.com/officialrealityclub/?locale=id_ID" target="_blank" rel="noopener noreferrer" class="social-btn social-fb" aria-label="Facebook TIKARA" title="Facebook">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </a>
+                            <a href="https://youtu.be/SlwQyBkCtZE?si=WBPI1nh0A6A2e9Dv" target="_blank" rel="noopener noreferrer" class="social-btn social-yt" aria-label="YouTube TIKARA" title="YouTube">
+                                <i class="fa-brands fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Copyright -->
+            <div class="footer-bottom-bar">
+                <p>&copy; 2026 TIKARA (PT Tikara Nusantara Sejahtera). Seluruh hak cipta dilindungi undang-undang.</p>
+                <div style="display: flex; gap: 1.25rem; font-size: 0.8rem;">
+                    <a href="http://localhost:8082/terms.html#terms">Syarat Layanan</a>
+                    <a href="http://localhost:8082/terms.html#privacy">Privasi</a>
+                    <a href="http://localhost:8082/terms.html#security">Keamanan</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

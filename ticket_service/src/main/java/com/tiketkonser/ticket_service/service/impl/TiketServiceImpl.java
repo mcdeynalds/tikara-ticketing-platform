@@ -7,6 +7,8 @@ import com.tiketkonser.ticket_service.handler.NotFoundException;
 import com.tiketkonser.ticket_service.payload.req.IssueTiketReq;
 import com.tiketkonser.ticket_service.payload.req.TransferTiketReq;
 import com.tiketkonser.ticket_service.payload.res.PageResponse;
+import com.tiketkonser.ticket_service.payload.res.ManifestItemRes;
+import com.tiketkonser.ticket_service.payload.res.TicketStatsRes;
 import com.tiketkonser.ticket_service.payload.res.TiketRes;
 import com.tiketkonser.ticket_service.payload.res.TransferTiketRes;
 import com.tiketkonser.ticket_service.repository.KategoriTiketRepository;
@@ -26,7 +28,10 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -99,8 +104,18 @@ public class TiketServiceImpl implements TiketService {
     @Override
     @Transactional
     public TiketRes validateOrUseTiket(String kodeQr) {
+        return validateOrUseTiket(kodeQr, null);
+    }
+
+    @Override
+    @Transactional
+    public TiketRes validateOrUseTiket(String kodeQr, Long acaraId) {
         Tiket tiket = tiketRepository.findByKodeQrAndDeletedAtIsNull(kodeQr)
                 .orElseThrow(() -> new NotFoundException("Tiket tidak ditemukan"));
+
+        if (acaraId != null && tiket.getKategoriTiket() != null && !acaraId.equals(tiket.getKategoriTiket().getAcaraId())) {
+            throw new BadRequestException("Tiket ini bukan untuk acara/konser ini");
+        }
 
         if ("USED".equalsIgnoreCase(tiket.getStatus())) {
             throw new BadRequestException("Tiket ini sudah pernah digunakan untuk check-in");
@@ -118,9 +133,15 @@ public class TiketServiceImpl implements TiketService {
         return ticketMapper.toTiketRes(tiketRepository.save(tiket));
     }
 
-    @Override
+        @Override
     @Transactional
     public TransferTiketRes transferTiket(Long tiketId, TransferTiketReq request, Authentication authentication) {
+        return transferTiket(tiketId, request, authentication, null);
+    }
+
+    @Override
+    @Transactional
+    public TransferTiketRes transferTiket(Long tiketId, TransferTiketReq request, Authentication authentication, String authHeader) {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AccessDeniedException("Silakan login terlebih dahulu untuk mentransfer tiket");
         }
@@ -151,13 +172,17 @@ public class TiketServiceImpl implements TiketService {
             throw new BadRequestException("Anda tidak dapat mentransfer tiket ke akun Anda sendiri");
         }
 
-        // Verify recipient from user_service
+        // Verify recipient from user_service with forwarded JWT
         Long recipientUserId = null;
         String recipientNama = "Pengguna TIKARA";
+        String effectiveAuthHeader = resolveAuthHeader(authHeader);
+
         try {
             String checkUrl = "http://localhost:8081/api/users/check-recipient?email=" + targetEmail;
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + (authentication.getDetails() != null ? authentication.getDetails().toString() : ""));
+            if (effectiveAuthHeader != null && !effectiveAuthHeader.isEmpty()) {
+                headers.set(HttpHeaders.AUTHORIZATION, effectiveAuthHeader);
+            }
             HttpEntity<?> entity = new HttpEntity<>(headers);
 
             ResponseEntity<Map> userRes = restTemplate.exchange(
@@ -179,8 +204,19 @@ public class TiketServiceImpl implements TiketService {
                     recipientNama = body.get("nama").toString();
                 }
             }
+        } catch (HttpStatusCodeException httpEx) {
+            if (httpEx.getStatusCode().value() == 404) {
+                throw new BadRequestException("Penerima dengan email '" + targetEmail + "' belum terdaftar di TIKARA. Pastikan calon penerima sudah memiliki akun aktif.");
+            }
+            if (httpEx.getStatusCode().value() == 400) {
+                throw new BadRequestException("Anda tidak dapat mentransfer tiket ke akun Anda sendiri");
+            }
+            if (httpEx.getStatusCode().value() == 403 || httpEx.getStatusCode().value() == 401) {
+                throw new AccessDeniedException("Sesi login Anda telah berakhir atau tidak valid. Silakan login kembali.");
+            }
+            throw new BadRequestException("Gagal memverifikasi akun penerima: " + httpEx.getMessage());
         } catch (Exception e) {
-            throw new BadRequestException("Penerima dengan email '" + targetEmail + "' belum terdaftar di TIKARA. Pastikan calon penerima sudah memiliki akun aktif.");
+            throw new BadRequestException("Gagal menghubungi server identitas untuk memverifikasi penerima: " + e.getMessage());
         }
 
         if (recipientUserId == null) {
@@ -241,5 +277,107 @@ public class TiketServiceImpl implements TiketService {
                 .penerimaNama(recipientNama)
                 .transferAt(LocalDateTime.now())
                 .build();
+    }
+
+    private String resolveAuthHeader(String authHeader) {
+        if (authHeader != null && !authHeader.trim().isEmpty()) {
+            return authHeader.trim();
+        }
+        try {
+            ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attrs != null && attrs.getRequest() != null) {
+                String h = attrs.getRequest().getHeader(HttpHeaders.AUTHORIZATION);
+                if (h != null && !h.trim().isEmpty()) {
+                    return h.trim();
+                }
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+
+@Override
+    @Transactional
+    public void refundTiketByDetailPemesananId(Long detailPemesananId) {
+        List<Tiket> tikets = tiketRepository.findByDetailPemesananIdAndDeletedAtIsNull(detailPemesananId);
+        for (Tiket t : tikets) {
+            t.setStatus("REFUNDED");
+            tiketRepository.save(t);
+        }
+    }
+
+
+    @Override
+    public boolean hasTicketForEvent(Long penggunaId, Long acaraId) {
+        if (penggunaId == null || acaraId == null) return false;
+        return tiketRepository.existsByPenggunaIdAndKategoriTiket_AcaraIdAndStatusInAndDeletedAtIsNull(
+                penggunaId, acaraId, List.of("ISSUED", "USED")
+        );
+    }
+
+    @Override
+    public TicketStatsRes getTicketStatsByAcara(Long acaraId) {
+        List<KategoriTiket> kategoriList = kategoriTiketRepository.findByAcaraId(acaraId);
+        List<Tiket> allTikets = tiketRepository.findAllByAcaraId(acaraId);
+
+        Map<Long, List<Tiket>> tiketByKategori = allTikets.stream()
+                .collect(Collectors.groupingBy(t -> t.getKategoriTiket().getId()));
+
+        int totalKuota = 0, totalTerjual = 0, totalUsed = 0;
+        List<TicketStatsRes.KategoriStatsItem> perKategori = new java.util.ArrayList<>();
+
+        for (KategoriTiket kt : kategoriList) {
+            List<Tiket> tikets = tiketByKategori.getOrDefault(kt.getId(), List.of());
+            int terjual = (int) tikets.stream().filter(t ->
+                    List.of("ISSUED", "USED", "TRANSFERRED").contains(t.getStatus())).count();
+            int digunakan = (int) tikets.stream().filter(t -> "USED".equalsIgnoreCase(t.getStatus())).count();
+            int tersisa = Math.max(0, kt.getKuota() - terjual);
+            double persen = kt.getKuota() > 0 ? (double) terjual / kt.getKuota() * 100 : 0;
+
+            totalKuota += kt.getKuota();
+            totalTerjual += terjual;
+            totalUsed += digunakan;
+
+            perKategori.add(TicketStatsRes.KategoriStatsItem.builder()
+                    .kategoriId(kt.getId())
+                    .namaKategori(kt.getNamaKategori())
+                    .harga(kt.getHarga())
+                    .kuota(kt.getKuota())
+                    .terjual(terjual)
+                    .tersisa(tersisa)
+                    .digunakan(digunakan)
+                    .persentaseTerjual(Math.round(persen * 10.0) / 10.0)
+                    .status(kt.getStatus())
+                    .build());
+        }
+
+        int totalTersisa = Math.max(0, totalKuota - totalTerjual);
+        double overallPersen = totalKuota > 0 ? (double) totalTerjual / totalKuota * 100 : 0;
+
+        return TicketStatsRes.builder()
+                .acaraId(acaraId)
+                .totalKuota(totalKuota)
+                .totalTerjual(totalTerjual)
+                .totalTersisa(totalTersisa)
+                .totalUsed(totalUsed)
+                .persentaseTerjual(Math.round(overallPersen * 10.0) / 10.0)
+                .perKategori(perKategori)
+                .build();
+    }
+
+    @Override
+    public List<ManifestItemRes> getManifestByAcara(Long acaraId) {
+        List<Tiket> tikets = tiketRepository.findAllByAcaraId(acaraId);
+        return tikets.stream().map(t -> ManifestItemRes.builder()
+                .tiketId(t.getId())
+                .kodeQr(t.getKodeQr())
+                .penggunaId(t.getPenggunaId())
+                .kategoriTiketId(t.getKategoriTiket().getId())
+                .namaKategori(t.getKategoriTiket().getNamaKategori())
+                .harga(t.getKategoriTiket().getHarga())
+                .status(t.getStatus())
+                .diterbitkanAt(t.getDiterbitkanAt() != null ? t.getDiterbitkanAt().toString() : null)
+                .digunakanAt(t.getDigunakanAt() != null ? t.getDigunakanAt().toString() : null)
+                .build()
+        ).collect(Collectors.toList());
     }
 }

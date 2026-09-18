@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Halaman Tidak Ditemukan | TIKARA</title>
+    <meta name="description" content="Halaman konser atau URL yang Anda tuju tidak ditemukan di platform TIKARA.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0B0F19 0%, #161F36 50%, #0F172A 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #F8FAFC;
+            margin: 0;
+            padding: 1.5rem;
+            box-sizing: border-box;
+        }
+
+        .error-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 28px;
+            padding: 3.5rem 2.5rem;
+            max-width: 560px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(99, 102, 241, 0.15);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.25rem;
+            border-radius: 9999px;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #818CF8;
+            font-size: 0.875rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .error-code {
+            font-size: clamp(4.5rem, 12vw, 6.5rem);
+            font-weight: 900;
+            line-height: 1;
+            margin: 0;
+            background: linear-gradient(135deg, #818CF8 0%, #C084FC 50%, #FB7185 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.05em;
+        }
+
+        .error-title {
+            font-size: 1.65rem;
+            font-weight: 800;
+            margin: 1rem 0 0.75rem;
+            color: #FFFFFF;
+        }
+
+        .error-desc {
+            color: #94A3B8;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .actions-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn-primary-custom {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            padding: 0.85rem 1.75rem;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+            color: #FFFFFF;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.6);
+            color: #FFFFFF;
+        }
+
+        .btn-secondary-custom {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            padding: 0.85rem 1.75rem;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #E2E8F0;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .btn-secondary-custom:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #FFFFFF;
+            transform: translateY(-2px);
+        }
+
+        .brand-footer {
+            margin-top: 2rem;
+            color: #64748B;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-card">
+        <div class="error-badge">
+            <i class="fa-solid fa-magnifying-glass"></i> Konten Tidak Ditemukan
+        </div>
+        <h1 class="error-code">404</h1>
+        <h2 class="error-title">Halaman Tidak Ditemukan</h2>
+        <p class="error-desc">
+            Konser atau halaman yang Anda cari mungkin telah berakhir, tautan URL salah ketik, 
+            atau acara telah dipindahkan oleh penyelenggara.
+        </p>
+
+        <div class="actions-group">
+            <a href="http://localhost:8082/" class="btn-primary-custom">
+                <i class="fa-solid fa-ticket"></i> Jelajahi Konser
+            </a>
+            <button onclick="window.history.back()" class="btn-secondary-custom">
+                <i class="fa-solid fa-arrow-left"></i> Kembali Sebelumnya
+            </button>
+        </div>
+
+        <div class="brand-footer">
+            &copy; 2026 TIKARA Enterprise Microservices. Hak Cipta Dilindungi.
+        </div>
+    </div>
+</body>
+</html>

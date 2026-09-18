@@ -13,10 +13,10 @@ public class PenggunaSpecification {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // 1. Filter soft delete (hanya data yang deletedAt-nya null)
+            // Filter soft delete
             predicates.add(criteriaBuilder.isNull(root.get("deletedAt")));
 
-            // 2. Filter search keyword (nama atau email)
+            // Filter keyword nama atau email
             if (keyword != null && !keyword.trim().isEmpty()) {
                 String searchPattern = "%" + keyword.trim().toLowerCase() + "%";
                 Predicate namaMatch = criteriaBuilder.like(criteriaBuilder.lower(root.get("nama")), searchPattern);
@@ -24,7 +24,7 @@ public class PenggunaSpecification {
                 predicates.add(criteriaBuilder.or(namaMatch, emailMatch));
             }
 
-            // 3. Filter peran (ADMIN / PENYELENGGARA / PEMBELI)
+            // Filter peran
             if (peran != null && !peran.trim().isEmpty()) {
                 predicates.add(criteriaBuilder.equal(
                         criteriaBuilder.upper(root.get("peran")),

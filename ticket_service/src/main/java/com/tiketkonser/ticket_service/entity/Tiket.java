@@ -22,13 +22,13 @@ public class Tiket {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "kategori_tiket_id", nullable = false)
-    private KategoriTiket kategoriTiket; // FK Fisik di DB yang sama
+    private KategoriTiket kategoriTiket;
 
     @Column(name = "detail_pemesanan_id")
-    private Long detailPemesananId; // Referensi ID ke order-service
+    private Long detailPemesananId;
 
     @Column(name = "pengguna_id", nullable = false)
-    private Long penggunaId; // Referensi ID ke user-service
+    private Long penggunaId;
 
     @Column(name = "kode_qr", nullable = false, unique = true)
     private String kodeQr;

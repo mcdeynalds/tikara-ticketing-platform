@@ -25,7 +25,7 @@ public class DetailPemesanan {
     private Pemesanan pemesanan;
 
     @Column(name = "kategori_tiket_id", nullable = false)
-    private Long kategoriTiketId; // Referensi ID ke ticket-service
+    private Long kategoriTiketId;
 
     @Column(name = "nama_kategori_tiket")
     private String namaKategoriTiket;

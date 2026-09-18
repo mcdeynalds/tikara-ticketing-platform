@@ -32,6 +32,7 @@ public class AdminServiceImpl implements AdminService {
     private final AuditLogRepository auditLogRepository;
     private final LaporanPenjualanRepository laporanPenjualanRepository;
     private final AdminMapper adminMapper;
+    private final com.tiketkonser.admin_service.service.RealtimeMetricsService realtimeMetricsService;
 
     @Override
     @Transactional
@@ -51,6 +52,8 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public PageResponse<AuditLogRes> getAllAuditLogs(Authentication authentication, int page, int size) {
         validateAdmin(authentication);
+
+        realtimeMetricsService.syncRealtimeAuditLogsIfEmpty();
 
         Pageable pageable = PageRequest.of(page, size);
         Page<AuditLog> pageData = auditLogRepository.findAllByOrderByCreatedAtDesc(pageable);
@@ -73,34 +76,14 @@ public class AdminServiceImpl implements AdminService {
     public DashboardSummaryRes getDashboardSummary(Authentication authentication) {
         validateAdmin(authentication);
 
-        // Nilai agregasi dashboard executive (Real-time & Mock Data untuk Uji Coba)
-        return DashboardSummaryRes.builder()
-                .totalPengguna(150L)
-                .totalAcara(25L)
-                .totalTiketTerjual(1250L)
-                .totalOmzetPendapatan(new BigDecimal("375000000.00"))
-                .build();
+        return realtimeMetricsService.getRealtimeSummary();
     }
 
     @Override
     public PageResponse<LaporanPenjualanRes> getSalesReport(Authentication authentication, int page, int size) {
         validateAdmin(authentication);
 
-        Pageable pageable = PageRequest.of(page, size);
-        Page<LaporanPenjualan> pageData = laporanPenjualanRepository.findAllByOrderByCreatedAtDesc(pageable);
-
-        List<LaporanPenjualanRes> content = pageData.getContent().stream()
-                .map(adminMapper::toLaporanPenjualanRes)
-                .collect(Collectors.toList());
-
-        return PageResponse.<LaporanPenjualanRes>builder()
-                .content(content)
-                .pageNumber(pageData.getNumber())
-                .pageSize(pageData.getSize())
-                .totalElements(pageData.getTotalElements())
-                .totalPages(pageData.getTotalPages())
-                .isLast(pageData.isLast())
-                .build();
+        return realtimeMetricsService.getRealtimeSalesReport(page, size);
     }
 
     private void validateAdmin(Authentication authentication) {

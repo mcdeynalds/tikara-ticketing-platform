@@ -20,7 +20,6 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendOtpEmail(String toEmail, String otpCode) {
-        // ALWAYS LOG TO CONSOLE FOR INSTANT TESTING & DEBUGGING
         System.out.println("=================================================");
         System.out.println(">>> [TIKARA EMAIL SERVICE] OTP RESET PASSWORD <<<");
         System.out.println(">>> SENDER  : " + fromEmail);

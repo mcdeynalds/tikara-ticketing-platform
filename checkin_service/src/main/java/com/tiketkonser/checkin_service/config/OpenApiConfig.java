@@ -12,6 +12,11 @@ import org.springframework.context.annotation.Configuration;
 public class OpenApiConfig {
 
     @Bean
+    public org.springframework.web.client.RestTemplate restTemplate() {
+        return new org.springframework.web.client.RestTemplate();
+    }
+
+    @Bean
     public OpenAPI customOpenAPI() {
         final String securitySchemeName = "bearerAuth";
 

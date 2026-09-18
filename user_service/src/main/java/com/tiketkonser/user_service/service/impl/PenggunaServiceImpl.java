@@ -76,6 +76,9 @@ public class PenggunaServiceImpl implements PenggunaService {
     @Override
     @Transactional
     public PenggunaRes register(RegisterPenggunaReq request) {
+        if (request.getNama() == null || request.getNama().trim().length() < 3 || request.getNama().trim().length() > 60) {
+            throw new BadRequestException("Nama harus memiliki panjang antara 3 hingga 60 karakter");
+        }
         validatePasswordPolicy(request.getKataSandi());
         if (penggunaRepository.existsByEmailIgnoreCaseAndDeletedAtIsNull(request.getEmail())) {
             throw new ConflictException("Email sudah terdaftar. Silakan gunakan email lain.");
@@ -226,7 +229,11 @@ public class PenggunaServiceImpl implements PenggunaService {
                 .orElseThrow(() -> new NotFoundException("Pengguna tidak ditemukan"));
 
         if (request.getNama() != null && !request.getNama().isBlank()) {
-            pengguna.setNama(request.getNama());
+            String cleanNama = request.getNama().trim();
+            if (cleanNama.length() < 3 || cleanNama.length() > 60) {
+                throw new BadRequestException("Nama harus memiliki panjang antara 3 hingga 60 karakter");
+            }
+            pengguna.setNama(cleanNama);
             pengguna.setUpdatedAt(LocalDateTime.now());
             penggunaRepository.save(pengguna);
         }

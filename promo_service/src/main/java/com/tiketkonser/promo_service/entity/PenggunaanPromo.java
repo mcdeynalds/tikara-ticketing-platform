@@ -26,10 +26,10 @@ public class PenggunaanPromo {
     private KodePromo kodePromo;
 
     @Column(name = "pengguna_id", nullable = false)
-    private Long penggunaId; // Referensi ID ke user-service
+    private Long penggunaId;
 
     @Column(name = "pemesanan_id", nullable = false)
-    private Long pemesananId; // Referensi ID ke order-service
+    private Long pemesananId;
 
     @Column(name = "potongan_didapat", nullable = false, precision = 12, scale = 2)
     private BigDecimal potonganDidapat;

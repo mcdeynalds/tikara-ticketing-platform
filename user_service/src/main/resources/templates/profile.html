@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body style="background-color: #F8FAFC;">
 
     <!-- Global Header Navbar (Dynamic Role-Based) -->
@@ -22,40 +24,53 @@
                 <!-- Dynamically rendered based on role by script.js -->
             </ul>
             <div class="navbar-actions">
-                <a href="http://localhost:8086/notifications.html" class="nav-icon-btn" id="navNotifBtn" title="Notifikasi">
+                <a href="http://localhost:8086/notifications.html" class="nav-icon-btn" id="navNotifBtn"
+                    title="Notifikasi" style="display:none;">
                     <i class="fa-solid fa-bell"></i>
                     <span class="badge-count" id="navUnreadBadge" style="display:none;">0</span>
                 </a>
                 <div id="navUserBox"></div>
+
+                <!-- Mobile Hamburger Toggle Button -->
+                <button class="navbar-hamburger" id="navbarToggleBtn" aria-label="Buka menu navigasi"
+                    aria-expanded="false" aria-controls="navbarMobileDrawer">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
             </div>
+        </div>
+        <div class="nav-overlay" id="navOverlay"></div>
+        <nav class="navbar-mobile-drawer" id="navbarMobileDrawer" aria-label="Menu navigasi mobile"></nav>
         </div>
     </header>
 
     <!-- Main Profile Layout Container -->
     <div class="profile-page-wrapper">
         <div class="profile-container-grid">
-            
+
             <!-- Left Sidebar Navigation -->
             <aside class="profile-sidebar-card">
                 <div class="sidebar-user-brief">
-                    <div class="sidebar-big-avatar" id="sidebarAvatar">U</div>
-                    <h3 class="sidebar-user-name" id="sidebarName">Memuat Pengguna...</h3>
-                    <p class="sidebar-user-email" id="sidebarEmail">user@domain.com</p>
-                    <span class="role-tag role-badge-buyer" id="sidebarRoleBadge">PEMBELI</span>
+                    <div class="sidebar-big-avatar" id="sidebarAvatar">-</div>
+                    <h3 class="sidebar-user-name" id="sidebarName">-</h3>
+                    <p class="sidebar-user-email" id="sidebarEmail">-</p>
+                    <span class="role-tag role-badge-buyer" id="sidebarRoleBadge" style="display:none;"></span>
                 </div>
 
                 <div class="sidebar-menu-nav">
                     <div class="sidebar-section-title">Pengaturan Akun</div>
-                    <button type="button" class="profile-nav-btn active" id="tabNavInfo" onclick="switchProfileTab('info')">
+                    <button type="button" class="profile-nav-btn active" id="tabNavInfo"
+                        onclick="switchProfileTab('info')">
                         <i class="fa-solid fa-user"></i>
                         <span>Informasi Dasar</span>
                     </button>
-                    <button type="button" class="profile-nav-btn" id="tabNavSecurity" onclick="switchProfileTab('security')">
+                    <button type="button" class="profile-nav-btn" id="tabNavSecurity"
+                        onclick="switchProfileTab('security')">
                         <i class="fa-solid fa-shield-halved"></i>
                         <span>Pengaturan Keamanan</span>
                     </button>
 
-                    <div class="sidebar-section-title" id="sidebarSectionTitle" style="margin-top: 0.5rem;">Aktivitas & Layanan</div>
+                    <div class="sidebar-section-title" id="sidebarSectionTitle" style="margin-top: 0.5rem;">Aktivitas &
+                        Layanan</div>
                     <div id="sidebarRoleLinks">
                         <!-- Populated dynamically by JavaScript based on active role -->
                     </div>
@@ -71,7 +86,7 @@
 
             <!-- Right Content Panels -->
             <main class="profile-content-card">
-                
+
                 <!-- TAB 1: INFORMASI DASAR -->
                 <div class="profile-tab-pane active" id="tabPaneInfo">
                     <div class="profile-content-header">
@@ -83,7 +98,8 @@
                             <span style="color: var(--primary-color); font-weight: 600;">Informasi Dasar</span>
                         </div>
                         <h2 id="headerTitleInfo">Informasi Akun</h2>
-                        <p id="headerSubtitleInfo">Kelola data profil, nomor kontak, dan perbarui foto akun TIKARA Anda.</p>
+                        <p id="headerSubtitleInfo">Kelola data profil, nomor kontak, dan perbarui foto akun TIKARA Anda.
+                        </p>
                     </div>
 
                     <div id="profileAlert"></div>
@@ -95,10 +111,14 @@
                         </div>
                         <div class="avatar-edit-info">
                             <h4>Foto Profil</h4>
-                            <p>Gunakan foto formal atau personal berformat JPG, PNG, atau WEBP. Maksimal ukuran file 2MB.</p>
+                            <p>Gunakan foto formal atau personal berformat JPG, PNG, atau WEBP. Maksimal ukuran file
+                                2MB.</p>
                             <div class="avatar-actions-btns">
-                                <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="handleAvatarUpload(event)">
-                                <button type="button" class="btn btn-outline" style="width:auto; padding:0.6rem 1.25rem; font-size:0.875rem; border-color:#CBD5E1; color:#334155;" onclick="document.getElementById('avatarFileInput').click()">
+                                <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp"
+                                    style="display:none;" onchange="handleAvatarUpload(event)">
+                                <button type="button" class="btn btn-outline"
+                                    style="width:auto; padding:0.6rem 1.25rem; font-size:0.875rem; border-color:#CBD5E1; color:#334155;"
+                                    onclick="document.getElementById('avatarFileInput').click()">
                                     <i class="fa-solid fa-camera"></i> Ubah Foto Profil
                                 </button>
                                 <span id="avatarUploadStatus" style="font-size:0.825rem; color:#64748B; display:none;">
@@ -115,21 +135,26 @@
                                 <label class="form-label" for="inputNamaLengkap">Nama Lengkap</label>
                                 <div class="input-wrapper">
                                     <i class="fa-solid fa-user input-icon"></i>
-                                    <input type="text" id="inputNamaLengkap" class="form-input" placeholder="Masukkan nama lengkap Anda" required>
+                                    <input type="text" id="inputNamaLengkap" class="form-input"
+                                        placeholder="Masukkan nama lengkap Anda" required minlength="3" maxlength="60">
                                 </div>
+                                <span class="field-error" id="namaError"
+                                    style="display:none; font-size:.8rem; color:var(--danger-color); margin-top:.3rem;"></span>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label" for="inputEmail">Alamat Email</label>
                                 <div class="input-wrapper" style="position: relative;">
                                     <i class="fa-solid fa-envelope input-icon"></i>
-                                    <input type="email" id="inputEmail" class="form-input" readonly style="background-color:#F8FAFC; color:#64748B; cursor:not-allowed;">
+                                    <input type="email" id="inputEmail" class="form-input" readonly
+                                        style="background-color:#F8FAFC; color:#64748B; cursor:not-allowed;">
                                     <span class="input-verified-badge">
                                         <i class="fa-solid fa-circle-check"></i> Terverifikasi
                                     </span>
                                 </div>
                                 <span style="font-size: 0.75rem; color: #94A3B8; margin-top: 0.35rem; display: block;">
-                                    <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> Email terdaftar tidak dapat diubah demi keamanan akun.
+                                    <i class="fa-solid fa-lock" style="font-size: 0.7rem;"></i> Email terdaftar tidak
+                                    dapat diubah demi keamanan akun.
                                 </span>
                             </div>
 
@@ -137,7 +162,8 @@
                                 <label class="form-label" for="inputTelepon">Nomor Telepon / WhatsApp</label>
                                 <div class="input-wrapper">
                                     <i class="fa-solid fa-phone input-icon"></i>
-                                    <input type="tel" id="inputTelepon" class="form-input" placeholder="Contoh: 081234567890">
+                                    <input type="tel" id="inputTelepon" class="form-input"
+                                        placeholder="Contoh: 081234567890">
                                 </div>
                             </div>
 
@@ -145,13 +171,16 @@
                                 <label class="form-label" for="inputPeran">Peran Pengguna</label>
                                 <div class="input-wrapper">
                                     <i class="fa-solid fa-id-badge input-icon"></i>
-                                    <input type="text" id="inputPeran" class="form-input" readonly style="background-color:#F8FAFC; color:#64748B; cursor:not-allowed;">
+                                    <input type="text" id="inputPeran" class="form-input" readonly
+                                        style="background-color:#F8FAFC; color:#64748B; cursor:not-allowed;">
                                 </div>
                             </div>
                         </div>
 
-                        <div style="margin-top: 2rem; display: flex; align-items: center; justify-content: flex-start; gap: 1rem;">
-                            <button type="submit" class="btn btn-primary" id="btnSaveProfile" style="width:auto; padding:0.75rem 2.25rem;">
+                        <div
+                            style="margin-top: 2rem; display: flex; align-items: center; justify-content: flex-start; gap: 1rem;">
+                            <button type="submit" class="btn btn-primary" id="btnSaveProfile"
+                                style="width:auto; padding:0.75rem 2.25rem;">
                                 <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
                             </button>
                         </div>
@@ -169,7 +198,8 @@
                             <span style="color: var(--primary-color); font-weight: 600;">Pengaturan Keamanan</span>
                         </div>
                         <h2 id="headerTitleSecurity">Keamanan Akun</h2>
-                        <p id="headerSubtitleSecurity">Perbarui kata sandi Anda secara berkala demi melindungi transaksi dan akses tiket Anda.</p>
+                        <p id="headerSubtitleSecurity">Perbarui kata sandi Anda secara berkala demi melindungi transaksi
+                            dan akses tiket Anda.</p>
                     </div>
 
                     <div id="securityAlert"></div>
@@ -179,8 +209,10 @@
                             <label class="form-label" for="oldPassword">Kata Sandi Saat Ini</label>
                             <div class="input-wrapper">
                                 <i class="fa-solid fa-lock input-icon"></i>
-                                <input type="password" id="oldPassword" class="form-input" placeholder="Masukkan kata sandi saat ini" required>
-                                <i class="fa-solid fa-eye toggle-password" id="toggleOldPassword" onclick="togglePasswordVisibility('oldPassword', 'toggleOldPassword')"></i>
+                                <input type="password" id="oldPassword" class="form-input"
+                                    placeholder="Masukkan kata sandi saat ini" required>
+                                <i class="fa-solid fa-eye toggle-password" id="toggleOldPassword"
+                                    onclick="togglePasswordVisibility('oldPassword', 'toggleOldPassword')"></i>
                             </div>
                         </div>
 
@@ -188,8 +220,10 @@
                             <label class="form-label" for="newPassword">Kata Sandi Baru</label>
                             <div class="input-wrapper">
                                 <i class="fa-solid fa-key input-icon"></i>
-                                <input type="password" id="newPassword" class="form-input" placeholder="Minimal 8 karakter baru" minlength="8" required>
-                                <i class="fa-solid fa-eye toggle-password" id="toggleNewPassword" onclick="togglePasswordVisibility('newPassword', 'toggleNewPassword')"></i>
+                                <input type="password" id="newPassword" class="form-input"
+                                    placeholder="Minimal 8 karakter baru" minlength="8" required>
+                                <i class="fa-solid fa-eye toggle-password" id="toggleNewPassword"
+                                    onclick="togglePasswordVisibility('newPassword', 'toggleNewPassword')"></i>
                             </div>
                         </div>
 
@@ -197,27 +231,34 @@
                             <label class="form-label" for="confirmNewPassword">Konfirmasi Kata Sandi Baru</label>
                             <div class="input-wrapper">
                                 <i class="fa-solid fa-shield-halved input-icon"></i>
-                                <input type="password" id="confirmNewPassword" class="form-input" placeholder="Ulangi kata sandi baru" minlength="8" required>
-                                <i class="fa-solid fa-eye toggle-password" id="toggleConfirmNewPassword" onclick="togglePasswordVisibility('confirmNewPassword', 'toggleConfirmNewPassword')"></i>
+                                <input type="password" id="confirmNewPassword" class="form-input"
+                                    placeholder="Ulangi kata sandi baru" minlength="8" required>
+                                <i class="fa-solid fa-eye toggle-password" id="toggleConfirmNewPassword"
+                                    onclick="togglePasswordVisibility('confirmNewPassword', 'toggleConfirmNewPassword')"></i>
                             </div>
                         </div>
 
                         <!-- Security Note Card -->
-                        <div style="background-color:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:1.1rem 1.25rem; margin:1.5rem 0;">
-                            <h5 style="font-size:0.85rem; font-weight:700; color:#1E293B; margin-bottom:0.4rem; display:flex; align-items:center; gap:0.45rem;">
-                                <i class="fa-solid fa-circle-info" style="color:var(--primary-color);"></i> Ketentuan Kata Sandi:
+                        <div
+                            style="background-color:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:1.1rem 1.25rem; margin:1.5rem 0;">
+                            <h5
+                                style="font-size:0.85rem; font-weight:700; color:#1E293B; margin-bottom:0.4rem; display:flex; align-items:center; gap:0.45rem;">
+                                <i class="fa-solid fa-circle-info" style="color:var(--primary-color);"></i> Ketentuan
+                                Kata Sandi:
                             </h5>
                             <ul style="font-size:0.8rem; color:#64748B; padding-left:1.4rem; line-height:1.6;">
                                 <li>Panjang minimal 8 karakter.</li>
                                 <li>Diawali dengan huruf kapital (A-Z).</li>
                                 <li>Memiliki minimal 1 angka dan 1 simbol.</li>
-                                <li>Gunakan kombinasi huruf kapital, angka, atau simbol untuk keamanan lebih maksimal.</li>
+                                <li>Gunakan kombinasi huruf kapital, angka, atau simbol untuk keamanan lebih maksimal.
+                                </li>
                                 <li>Setelah kata sandi diperbarui, Anda tetap masuk pada sesi aktif ini.</li>
                             </ul>
                         </div>
 
                         <div style="margin-top: 1.75rem;">
-                            <button type="submit" class="btn btn-primary" id="btnSavePassword" style="width:auto; padding:0.75rem 2.25rem;">
+                            <button type="submit" class="btn btn-primary" id="btnSavePassword"
+                                style="width:auto; padding:0.75rem 2.25rem;">
                                 <i class="fa-solid fa-shield-halved"></i> Perbarui Kata Sandi
                             </button>
                         </div>
@@ -229,6 +270,7 @@
     </div>
 
     <!-- Script dependencies -->
+    <script src="/js/validator.js"></script>
     <script src="/js/script.js"></script>
     <script>
         let currentRole = 'PEMBELI';
@@ -259,7 +301,8 @@
         function renderAvatarElements(user) {
             const name = user.namaLengkap || user.nama || 'Pengguna';
             const initial = name.trim().charAt(0).toUpperCase() || 'U';
-            const avatarUrl = user.fotoProfilUrl || user.fotoProfil || user.fotoUrl || user.avatarUrl;
+            const rawAvatar = user.fotoProfilUrl || user.fotoProfil || user.fotoUrl || user.avatarUrl;
+            const avatarUrl = typeof normalizeAvatarUrl === 'function' ? normalizeAvatarUrl(rawAvatar) : rawAvatar;
 
             const sidebarAvatar = document.getElementById('sidebarAvatar');
             const previewAvatar = document.getElementById('previewAvatarImg');
@@ -326,7 +369,7 @@
             } else if (role === 'PENYELENGGARA') {
                 if (breadcrumbInfo) {
                     breadcrumbInfo.innerHTML = `
-                        <a href="${API_ADMIN_SERVICE}/admin-dashboard.html">Portal Penyelenggara</a>
+                        <a href="${API_EVENT_SERVICE}/organizer-dashboard.html">Portal Penyelenggara</a>
                         <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
                         <span>Profil Penyelenggara</span>
                         <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
@@ -335,7 +378,7 @@
                 }
                 if (breadcrumbSecurity) {
                     breadcrumbSecurity.innerHTML = `
-                        <a href="${API_ADMIN_SERVICE}/admin-dashboard.html">Portal Penyelenggara</a>
+                        <a href="${API_EVENT_SERVICE}/organizer-dashboard.html">Portal Penyelenggara</a>
                         <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
                         <span>Profil Penyelenggara</span>
                         <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
@@ -397,13 +440,13 @@
                 `;
             } else if (role === 'PENYELENGGARA') {
                 linksHtml = `
-                    <a href="${API_ADMIN_SERVICE}/admin-dashboard.html" class="profile-nav-btn">
+                    <a href="${API_EVENT_SERVICE}/organizer-dashboard.html" class="profile-nav-btn">
                         <i class="fa-solid fa-chart-line"></i> <span>Dashboard Penyelenggara</span>
                     </a>
-                    <a href="${API_ADMIN_SERVICE}/admin-dashboard.html?tab=events" class="profile-nav-btn">
-                        <i class="fa-solid fa-guitar"></i> <span>Event Saya</span>
+                    <a href="${API_EVENT_SERVICE}/my-events.html" class="profile-nav-btn">
+                        <i class="fa-solid fa-calendar-days"></i> <span>Event Saya</span>
                     </a>
-                    <a href="${API_ADMIN_SERVICE}/admin-dashboard.html?action=create" class="profile-nav-btn">
+                    <a href="${API_EVENT_SERVICE}/create-event.html" class="profile-nav-btn">
                         <i class="fa-solid fa-plus-circle"></i> <span>Buat Event Baru</span>
                     </a>
                     <a href="${API_EVENT_SERVICE}/index.html" class="profile-nav-btn">
@@ -430,12 +473,87 @@
             container.innerHTML = linksHtml;
         }
 
-        // Fetch and load profile data
+        // Instant profile hydration from local storage / shared cookie
+        function hydrateProfileFromCache() {
+            const auth = getAuthState();
+            if (!auth.isAuthenticated || !auth.user) return false;
+
+            const user = auth.user;
+            const nama = user.nama || user.namaLengkap || 'Pengguna TIKARA';
+            const email = user.email || '';
+            const noHp = user.nomorTelepon || user.noTelepon || '';
+            const role = auth.role || 'PEMBELI';
+            const initial = nama.charAt(0).toUpperCase() || 'U';
+
+            currentRole = role;
+
+            // Immediately set sidebar info (No waiting, no stuck 'Memuat...')
+            const nameEl = document.getElementById('sidebarName');
+            const emailEl = document.getElementById('sidebarEmail');
+            const roleEl = document.getElementById('sidebarRoleBadge');
+            const avatarEl = document.getElementById('sidebarAvatar');
+
+            if (nameEl) nameEl.textContent = nama;
+            if (emailEl) emailEl.textContent = email;
+            if (roleEl) {
+                roleEl.textContent = role === 'ADMIN' ? 'ADMINISTRATOR' : role;
+                roleEl.className = 'role-tag ' + (
+                    role === 'ADMIN' ? 'role-badge-admin' :
+                        role === 'PENYELENGGARA' ? 'role-badge-organizer' : 'role-badge-buyer'
+                );
+            }
+            if (avatarEl) avatarEl.textContent = initial;
+
+            // Fill form inputs
+            const inputNama = document.getElementById('inputNamaLengkap');
+            const inputEmail = document.getElementById('inputEmail');
+            const inputTelepon = document.getElementById('inputTelepon');
+            const inputPeran = document.getElementById('inputPeran');
+            if (inputNama) inputNama.value = nama;
+            if (inputEmail) inputEmail.value = email;
+            if (inputTelepon) inputTelepon.value = noHp;
+            if (inputPeran) inputPeran.value = role;
+
+            applyRoleSpecificUI(role);
+            renderSidebarLinks(role);
+            renderTIKARANavbar();
+            return true;
+        }
+
+        function showProfileErrorState(msg) {
+            let retryBanner = document.getElementById('profileRetryBanner');
+            if (!retryBanner) {
+                retryBanner = document.createElement('div');
+                retryBanner.id = 'profileRetryBanner';
+                retryBanner.style.cssText = 'background:#FEF2F2; border:1px solid #FCA5A5; border-radius:12px; padding:1rem 1.25rem; margin-bottom:1.5rem; display:flex; align-items:center; justify-content:space-between; gap:1rem;';
+                const mainWrapper = document.querySelector('.profile-content-panels');
+                if (mainWrapper) mainWrapper.prepend(retryBanner);
+            }
+            retryBanner.innerHTML = `
+                <div style="display:flex; align-items:center; gap:0.75rem; color:#991B1B; font-size:0.925rem; font-weight:600;">
+                    <i class="fa-solid fa-circle-exclamation" style="font-size:1.2rem; color:#DC2626;"></i>
+                    <span>${msg}</span>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="loadUserProfile()" style="padding:0.4rem 0.9rem; font-size:0.85rem;">
+                    <i class="fa-solid fa-rotate-right"></i> Coba Lagi
+                </button>
+            `;
+            retryBanner.style.display = 'flex';
+        }
+
+        // Fetch authoritative profile data from backend
         async function loadUserProfile() {
-            if (!getToken()) {
-                window.location.href = '/login.html';
+            const token = getToken();
+            if (!token) {
+                window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.href);
                 return;
             }
+
+            // 1. Instant hydration from cached session
+            hydrateProfileFromCache();
+
+            const retryBanner = document.getElementById('profileRetryBanner');
+            if (retryBanner) retryBanner.style.display = 'none';
 
             try {
                 const res = await authFetch(`${API_USER_SERVICE}/api/users/profile`);
@@ -443,47 +561,40 @@
                     const data = await res.json();
                     setUserData(data);
 
-                    const nama = data.namaLengkap || data.nama || 'Pengguna';
+                    const nama = data.namaLengkap || data.nama || 'Pengguna TIKARA';
                     const email = data.email || '-';
                     const noHp = data.nomorTelepon || data.noTelepon || '';
                     const role = (data.peran || data.role || 'PEMBELI').toUpperCase();
                     currentRole = role;
 
-                    // Sidebar User Info
                     document.getElementById('sidebarName').textContent = nama;
                     document.getElementById('sidebarEmail').textContent = email;
-                    
+
                     const roleBadge = document.getElementById('sidebarRoleBadge');
                     roleBadge.textContent = role === 'ADMIN' ? 'ADMINISTRATOR' : role;
                     roleBadge.className = 'role-tag ' + (
                         role === 'ADMIN' ? 'role-badge-admin' :
-                        role === 'PENYELENGGARA' ? 'role-badge-organizer' : 'role-badge-buyer'
+                            role === 'PENYELENGGARA' ? 'role-badge-organizer' : 'role-badge-buyer'
                     );
 
-                    // Form info
                     document.getElementById('inputNamaLengkap').value = nama;
                     document.getElementById('inputEmail').value = email;
                     document.getElementById('inputTelepon').value = noHp;
                     document.getElementById('inputPeran').value = role;
 
-                    // Apply Role-Specific UI titles & breadcrumbs
                     applyRoleSpecificUI(role);
-
-                    // Avatars
                     renderAvatarElements(data);
-
-                    // Sidebar links
                     renderSidebarLinks(role);
-
-                    // Re-render Dynamic Top Navbar Menu & Dropdown
-                    renderNavbarMenu();
-                    renderNavbarUser();
+                    renderTIKARANavbar();
+                } else if (res.status === 401 || res.status === 403) {
+                    clearAuthState();
+                    window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.href);
                 } else {
-                    showToast('Gagal memuat informasi akun.', 'error');
+                    showProfileErrorState('Gagal menyinkronkan data profil dari server.');
                 }
             } catch (err) {
-                console.error('Error fetching profile:', err);
-                showToast('Terjadi gangguan koneksi ke server.', 'error');
+                console.warn('Error fetching profile from backend:', err);
+                showProfileErrorState('Tidak dapat terhubung ke server. Menampilkan data sesi.');
             }
         }
 
@@ -496,9 +607,26 @@
 
             const namaLengkap = document.getElementById('inputNamaLengkap').value.trim();
             const nomorTelepon = document.getElementById('inputTelepon').value.trim();
+            // Validate phone number
+            if (nomorTelepon) {
+                const phoneValidation = TikaraValidator.validatePhone(nomorTelepon);
+                if (!phoneValidation.valid) {
+                    showToast(phoneValidation.message, 'error');
+                    document.getElementById('inputTelepon').focus();
+                    return;
+                }
+            }
 
-            if (!namaLengkap) {
-                alertBox.innerHTML = `<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Nama lengkap tidak boleh kosong.</div>`;
+            if (!namaLengkap || namaLengkap.length < 3 || namaLengkap.length > 60) {
+                const msg = (!namaLengkap || namaLengkap.length < 3)
+                    ? 'Nama lengkap minimal 3 karakter.'
+                    : 'Nama lengkap maksimal 60 karakter.';
+                alertBox.innerHTML = `<div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> ${msg}</div>`;
+                showToast(msg, 'error');
+                const errEl = document.getElementById('namaError');
+                if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+                document.getElementById('inputNamaLengkap').style.borderColor = 'var(--danger-color)';
+                document.getElementById('inputNamaLengkap').focus();
                 return;
             }
 
@@ -521,7 +649,7 @@
                     const updated = await res.json();
                     showToast('Profil Anda berhasil diperbarui!');
                     alertBox.innerHTML = `<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Perubahan profil berhasil disimpan.</div>`;
-                    
+
                     // Update cache
                     const currentCache = getUserData() || {};
                     const merged = {
@@ -548,6 +676,51 @@
                 btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan`;
             }
         });
+
+        // Real-time input validation for inputNamaLengkap (min 3, max 60)
+        const inputNamaEl = document.getElementById('inputNamaLengkap');
+        if (inputNamaEl) {
+            inputNamaEl.addEventListener('input', function () {
+                const val = this.value.trim();
+                const errEl = document.getElementById('namaError');
+                if (val.length > 0) {
+                    if (window.TikaraValidator) {
+                        const v = TikaraValidator.validateFullName(val);
+                        if (errEl) { errEl.textContent = v.valid ? '' : v.message; errEl.style.display = v.valid ? 'none' : 'block'; }
+                        this.style.borderColor = v.valid ? '' : 'var(--danger-color)';
+                    } else {
+                        if (val.length < 3 || val.length > 60) {
+                            const msg = val.length < 3 ? 'Nama lengkap minimal 3 karakter.' : 'Nama lengkap maksimal 60 karakter.';
+                            if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+                            this.style.borderColor = 'var(--danger-color)';
+                        } else {
+                            if (errEl) errEl.style.display = 'none';
+                            this.style.borderColor = '';
+                        }
+                    }
+                } else {
+                    if (errEl) errEl.style.display = 'none';
+                    this.style.borderColor = '';
+                }
+            });
+
+            inputNamaEl.addEventListener('blur', function () {
+                const val = this.value.trim();
+                const errEl = document.getElementById('namaError');
+                if (window.TikaraValidator) {
+                    const v = TikaraValidator.validateFullName(val);
+                    if (errEl) { errEl.textContent = v.valid ? '' : v.message; errEl.style.display = v.valid ? 'none' : 'block'; }
+                    this.style.borderColor = v.valid ? '' : 'var(--danger-color)';
+                } else if (val.length < 3 || val.length > 60) {
+                    const msg = val.length < 3 ? 'Nama lengkap minimal 3 karakter.' : 'Nama lengkap maksimal 60 karakter.';
+                    if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+                    this.style.borderColor = 'var(--danger-color)';
+                } else {
+                    if (errEl) errEl.style.display = 'none';
+                    this.style.borderColor = '';
+                }
+            });
+        }
 
         // Handle Avatar Upload
         async function handleAvatarUpload(event) {
@@ -588,7 +761,8 @@
                     const result = await res.json();
                     showToast('Foto profil berhasil diperbarui!');
 
-                    const newAvatarUrl = result.fotoProfilUrl || result.fotoProfil || result.avatarUrl || result.fotoUrl;
+                    const rawNewAvatar = result.fotoProfilUrl || result.fotoProfil || result.avatarUrl || result.fotoUrl;
+                    const newAvatarUrl = typeof normalizeAvatarUrl === 'function' ? normalizeAvatarUrl(rawNewAvatar) : rawNewAvatar;
                     const cached = getUserData() || {};
                     cached.fotoProfil = newAvatarUrl;
                     cached.fotoProfilUrl = newAvatarUrl;
@@ -680,5 +854,151 @@
             loadUserProfile();
         });
     </script>
+
+    <!-- Footer -->
+    <!-- Unified TIKARA Footer (Light Theme) -->
+    <footer class="tikara-footer">
+        <div class="footer-container">
+            <div class="footer-main-grid">
+                <!-- Brand & Security Column -->
+                <div class="footer-col footer-brand-col">
+                    <a href="http://localhost:8082/index.html" class="footer-logo" aria-label="TIKARA Beranda">
+                        <i class="fa-solid fa-ticket"></i> <span>TIKARA</span>
+                    </a>
+                    <p class="footer-desc">
+                        Beli tiket konser, festival musik, dan event seru lainnya dengan mudah &amp; aman di TIKARA.
+                        <strong>#PASTIBISA</strong> nonton konser &amp; festival idaman!
+                    </p>
+                    <div class="footer-security-section">
+                        <h4 class="footer-subheading"><i class="fa-solid fa-shield-halved"></i> Keamanan dan Privasi
+                        </h4>
+                        <div class="footer-badges-wrap">
+                            <a href="http://localhost:8082/terms.html#security" class="footer-iso-badge"
+                                title="Tersertifikasi ISO/IEC 27001 &amp; ISO/IEC 27701">
+                                <div class="iso-icon-box">
+                                    <i class="fa-solid fa-award"></i>
+                                </div>
+                                <div class="iso-info-box">
+                                    <span class="iso-title">ISO/IEC 27001 &bull; 27701</span>
+                                    <span class="iso-desc">Information Security &amp; Privacy Management</span>
+                                </div>
+                            </a>
+                            <div class="footer-ssl-badge">
+                                <i class="fa-solid fa-lock"></i> <span>256-Bit SSL Enkripsi Terverifikasi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Columns -->
+                <div class="footer-nav-columns">
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Tentang TIKARA</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/about.html">Tentang Kami</a></li>
+                            <li><a href="http://localhost:8082/blog.html">Blog &amp; Berita Musik</a></li>
+                        </ul>
+                        <h3 class="footer-heading" style="margin-top: 1.75rem;">Produk</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/index.html#catalog">Semua Konser &amp; Festival</a></li>
+                            <li><a href="http://localhost:8083/my-tickets.html">Tiket Saya</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Event Creator</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/creator-guide.html#biaya">Biaya &amp; Komisi</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#kerjasama">Kerjasama dengan Kami</a>
+                            </li>
+                            <li><a href="http://localhost:8082/creator-guide.html#panduan">Buku Panduan Creator</a></li>
+                            <li><a href="http://localhost:8082/create-event.html">Buat Event Konser</a></li>
+                            <li><a href="http://localhost:8082/organizer-dashboard.html">Dashboard Penyelenggara</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Dukungan</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/help.html">Pusat Bantuan (FAQ)</a></li>
+                            <li><a href="http://localhost:8082/terms.html#terms">Syarat dan Ketentuan</a></li>
+                            <li><a href="http://localhost:8082/terms.html#privacy">Kebijakan Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#security">Kepatuhan Keamanan &amp; Privasi</a>
+                            </li>
+                            <li><a href="http://localhost:8082/terms.html#cookies">Kebijakan Cookies</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Action / Payment & Social Column -->
+                <div class="footer-col footer-action-col">
+                    <h3 class="footer-heading">Pilihan Pembayaran</h3>
+                    <div class="footer-payment-grid" title="Metode Pembayaran Resmi TIKARA">
+                        <span class="pay-chip"><i class="fa-solid fa-qrcode"></i> QRIS</span>
+                        <span class="pay-chip">BCA</span>
+                        <span class="pay-chip">Mandiri</span>
+                        <span class="pay-chip">BRI</span>
+                        <span class="pay-chip">BNI</span>
+                        <span class="pay-chip">BTN</span>
+                        <span class="pay-chip">BSI</span>
+                        <span class="pay-chip">Permata</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-visa"></i> VISA</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-mastercard"></i> Master</span>
+                        <span class="pay-chip">ShopeePay</span>
+                        <span class="pay-chip">GoPay</span>
+                        <span class="pay-chip">Alfamart</span>
+                        <span class="pay-chip">Indomaret</span>
+                    </div>
+                    <div>
+                        <a href="http://localhost:8082/help.html#pembayaran" class="footer-pay-guide-link">
+                            <i class="fa-solid fa-circle-question"></i> Panduan &amp; Cara Bayar
+                        </a>
+                    </div>
+
+                    <div class="footer-social-wrap" style="margin-top: 1.75rem;">
+                        <h3 class="footer-heading">Ikuti Kami untuk Update</h3>
+                        <div class="footer-social-links">
+                            <a href="https://www.instagram.com/deafriliart/?__pwa=1" target="_blank"
+                                rel="noopener noreferrer" class="social-btn social-ig" aria-label="Instagram TIKARA"
+                                title="Instagram">
+                                <i class="fa-brands fa-instagram"></i>
+                            </a>
+                            <a href="https://www.tiktok.com/@realityclubofficial" target="_blank"
+                                rel="noopener noreferrer" class="social-btn social-tiktok" aria-label="TikTok TIKARA"
+                                title="TikTok">
+                                <i class="fa-brands fa-tiktok"></i>
+                            </a>
+                            <a href="https://x.com/reality_club" target="_blank" rel="noopener noreferrer"
+                                class="social-btn social-x" aria-label="X (Twitter) TIKARA" title="X (Twitter)">
+                                <i class="fa-brands fa-x-twitter"></i>
+                            </a>
+                            <a href="https://www.facebook.com/officialrealityclub/?locale=id_ID" target="_blank"
+                                rel="noopener noreferrer" class="social-btn social-fb" aria-label="Facebook TIKARA"
+                                title="Facebook">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </a>
+                            <a href="https://youtu.be/SlwQyBkCtZE?si=WBPI1nh0A6A2e9Dv" target="_blank"
+                                rel="noopener noreferrer" class="social-btn social-yt" aria-label="YouTube TIKARA"
+                                title="YouTube">
+                                <i class="fa-brands fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Copyright -->
+            <div class="footer-bottom-bar">
+                <p>&copy; 2026 TIKARA (PT Tikara Nusantara Sejahtera). Seluruh hak cipta dilindungi undang-undang.</p>
+                <div style="display: flex; gap: 1.25rem; font-size: 0.8rem;">
+                    <a href="http://localhost:8082/terms.html#terms">Syarat Layanan</a>
+                    <a href="http://localhost:8082/terms.html#privacy">Privasi</a>
+                    <a href="http://localhost:8082/terms.html#security">Keamanan</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
+
 </html>

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * TIKARA - Centralized Input Validation Library
  * Provides real-world validators for NIK, phone, email, bank account, and more.
  * Usage: window.TikaraValidator.validateNik('3201...') => { valid: bool, message: string }
@@ -115,8 +115,8 @@
     Validator.validateFullName = function(name) {
         if (!name || !name.trim()) return { valid: false, message: 'Nama tidak boleh kosong' };
         const clean = name.trim();
-        if (clean.length < 3)   return { valid: false, message: 'Nama minimal 3 karakter' };
-        if (clean.length > 100) return { valid: false, message: 'Nama maksimal 100 karakter' };
+        if (clean.length < 3)  return { valid: false, message: 'Nama minimal 3 karakter' };
+        if (clean.length > 60) return { valid: false, message: 'Nama maksimal 60 karakter' };
         if (/\d/.test(clean))   return { valid: false, message: 'Nama tidak boleh mengandung angka' };
         if (/[!@#$%^&*()_+=\[\]{};:"\\|<>\/?]/.test(clean)) {
             return { valid: false, message: 'Nama tidak boleh mengandung simbol khusus' };
@@ -178,3 +178,4 @@
     window.TikaraValidator = Validator;
 
 })(window);
+

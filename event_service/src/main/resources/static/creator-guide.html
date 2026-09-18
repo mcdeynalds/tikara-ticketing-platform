@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panduan & Layanan Event Creator - TIKARA</title>
+    <meta name="description" content="Solusi ticketing dan manajemen konser terlengkap untuk promotor dan event creator di TIKARA. Sistem manajemen tiket, gate scanner, dan pencairan dana transparan.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body style="background-color: #F8FAFC; color: #0F172A; min-height: 100vh; display: flex; flex-direction: column;">
+
+    <!-- Unified Responsive Header Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="http://localhost:8082/index.html" class="navbar-logo" id="navLogoLink" aria-label="TIKARA Beranda">
+                <i class="fa-solid fa-ticket" style="color: #FF5A5F;"></i> <span class="logo-text" style="color: #FFFFFF;">TIKARA</span>
+            </a>
+            <ul class="navbar-menu" id="mainNavbarMenu"></ul>
+            <div class="navbar-actions">
+                <a href="http://localhost:8086/notifications.html" class="nav-icon-btn" id="navNotifBtn" title="Notifikasi" style="display:none;">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="badge-count" id="navUnreadBadge" style="display:none;">0</span>
+                </a>
+                <div id="navUserBox"></div>
+                <button class="navbar-hamburger" id="navbarToggleBtn" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="navbarMobileDrawer">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <div class="nav-overlay" id="navOverlay"></div>
+    <nav class="navbar-mobile-drawer" id="navbarMobileDrawer" aria-label="Menu navigasi mobile"></nav>
+    </header>
+
+    <!-- Main Content -->
+    <main style="flex: 1; padding: 2rem 1.5rem 5rem;">
+        <div class="content-main-container">
+            <!-- Breadcrumbs -->
+            <div style="font-size: 0.85rem; color: #64748B; margin-bottom: 2rem;">
+                <a href="http://localhost:8082/index.html" style="color: #475569; text-decoration: none;">Beranda</a> &rsaquo; 
+                <span style="color: #1B365D; font-weight: 600;">Event Creator</span>
+            </div>
+
+            <!-- Hero Section -->
+            <section class="content-hero">
+                <span class="content-hero-badge">
+                    Solusi Terpadu Event Creator &amp; Promotor
+                </span>
+                <h1 class="content-hero-title">
+                    Wujudkan Konser Spektakuler dengan Teknologi Ticketing TIKARA
+                </h1>
+                <p class="content-hero-desc">
+                    Mulai dari pembuatan halaman event, penetapan kuota kategori tiket, pemantauan real-time penjualan tiket, hingga pemindaian pintu masuk (gate check-in).
+                </p>
+                <div class="content-cta-buttons" style="margin-top: 1.5rem;">
+                    <a href="http://localhost:8082/create-event.html" style="background: #FF5A5F; color: #FFFFFF; padding: 0.85rem 2rem; border-radius: 999px; text-decoration: none; font-weight: 700; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 15px rgba(255, 90, 95, 0.35);">
+                        <i class="fa-solid fa-plus-circle"></i> Buat Event Konser Sekarang
+                    </a>
+                    <a href="http://localhost:8082/organizer-dashboard.html" style="background: #FFFFFF; color: #1B365D; border: 1.5px solid #1B365D; padding: 0.85rem 2rem; border-radius: 999px; text-decoration: none; font-weight: 700; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-chart-line"></i> Dashboard Penyelenggara
+                    </a>
+                </div>
+            </section>
+
+            <!-- Biaya & Komisi -->
+            <section id="biaya" style="margin-bottom: 4.5rem; scroll-margin-top: 100px;">
+                <h2 style="font-size: 2rem; font-weight: 800; text-align: center; margin-bottom: 1rem; color: #0F172A;">
+                    Struktur Biaya Transparan Tanpa Biaya Tersembunyi
+                </h2>
+                <p style="color: #64748B; text-align: center; max-width: 620px; margin: 0 auto 3rem;">
+                    Kami hanya mengenakan biaya platform saat tiket Anda berhasil terjual. Tidak ada biaya pendaftaran atau biaya bulanan.
+                </p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px; padding: 2.5rem; text-align: center; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);">
+                        <h3 style="font-size: 1.25rem; font-weight: 700; color: #0F172A; margin-bottom: 0.5rem;">Event Komunitas &amp; Indie</h3>
+                        <div style="font-size: 2.5rem; font-weight: 800; color: #0284C7; margin: 1rem 0;">3.5%</div>
+                        <p style="color: #64748B; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem;">
+                            Per tiket terjual. Cocok untuk pertunjukan intim, festival lokal, dan showcase musisi independen.
+                        </p>
+                        <ul style="list-style: none; padding: 0; text-align: left; font-size: 0.88rem; color: #475569; display: flex; flex-direction: column; gap: 0.6rem;">
+                            <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 0.5rem;"></i> Dashboard penjualan real-time</li>
+                            <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 0.5rem;"></i> Aplikasi TIKARA Screen gate scan</li>
+                            <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 0.5rem;"></i> QRIS &amp; Virtual Account</li>
+                        </ul>
+                    </div>
+
+                    <div style="background: #FFFFFF; border: 2px solid #FF5A5F; border-radius: 16px; padding: 2.5rem; text-align: center; position: relative; box-shadow: 0 8px 24px rgba(255, 90, 95, 0.12);">
+                        <span style="position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: #FF5A5F; color: #FFFFFF; padding: 0.25rem 1rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px;">PALING POPULER</span>
+                        <h3 style="font-size: 1.25rem; font-weight: 700; color: #0F172A; margin-bottom: 0.5rem;">Festival Musik Skala Besar</h3>
+                        <div style="font-size: 2.5rem; font-weight: 800; color: #FF5A5F; margin: 1rem 0;">Kustom</div>
+                        <p style="color: #64748B; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem;">
+                            Untuk konser stadion, tur internasional, dan festival multi-hari dengan kuota di atas 5.000 tiket.
+                        </p>
+                        <ul style="list-style: none; padding: 0; text-align: left; font-size: 0.88rem; color: #475569; display: flex; flex-direction: column; gap: 0.6rem;">
+                            <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 0.5rem;"></i> Dedicated virtual waiting room</li>
+                            <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 0.5rem;"></i> Dukungan on-site technical support</li>
+                            <li><i class="fa-solid fa-check" style="color: #10B981; margin-right: 0.5rem;"></i> SLA Uptime 99.99% garansi server</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Panduan Creator -->
+            <section id="panduan" style="margin-bottom: 4.5rem; scroll-margin-top: 100px;">
+                <h2 style="font-size: 2rem; font-weight: 800; text-align: center; margin-bottom: 2.5rem; color: #0F172A;">
+                    Langkah Mudah Menyelenggarakan Konser di TIKARA
+                </h2>
+                <div class="content-grid-3">
+                    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 2rem; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #EFF6FF; color: #1B365D; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; font-size: 1.1rem; border: 1px solid #DBEAFE;">1</div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; color: #0F172A;">Buat Akun Penyelenggara</h3>
+                        <p style="color: #475569; font-size: 0.9rem; line-height: 1.6;">
+                            Daftar di TIKARA dan verifikasi identitas lembaga atau perorangan Anda secara cepat dan otomatis.
+                        </p>
+                    </div>
+
+                    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 2rem; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #EFF6FF; color: #1B365D; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; font-size: 1.1rem; border: 1px solid #DBEAFE;">2</div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; color: #0F172A;">Unggah Informasi Event</h3>
+                        <p style="color: #475569; font-size: 0.9rem; line-height: 1.6;">
+                            Isi detail nama konser, venue, waktu, poster banner, serta kategori tiket beserta kuota harga masing-masing.
+                        </p>
+                    </div>
+
+                    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 2rem; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #EFF6FF; color: #1B365D; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; font-size: 1.1rem; border: 1px solid #DBEAFE;">3</div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; color: #0F172A;">Buka Penjualan &amp; Pantau</h3>
+                        <p style="color: #475569; font-size: 0.9rem; line-height: 1.6;">
+                            Tiket siap dijual secara online. Pantau grafik penjualan tiket dan status pembayaran calon penonton di dashboard Anda.
+                        </p>
+                    </div>
+
+                    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 2rem; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #EFF6FF; color: #1B365D; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; font-size: 1.1rem; border: 1px solid #DBEAFE;">4</div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; color: #0F172A;">Check-in Gate Hari H</h3>
+                        <p style="color: #475569; font-size: 0.9rem; line-height: 1.6;">
+                            Gunakan TIKARA Screen scanner untuk validasi QR e-tiket pengunjung secara kilat tanpa antrean menumpuk.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Kerjasama Kemitraan -->
+            <section id="kerjasama" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 18px; padding: 3rem; text-align: center; scroll-margin-top: 100px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);">
+                <h2 style="font-size: 1.85rem; font-weight: 800; margin-bottom: 1rem; color: #0F172A;">Tertarik Menjalin Kemitraan Resmi?</h2>
+                <p style="color: #475569; max-width: 650px; margin: 0 auto 2rem; font-size: 1rem; line-height: 1.65;">
+                    Hubungi tim business development kami untuk konsultasi promosi event, sponsorship, atau integrasi API penjualan tiket skala enterprise.
+                </p>
+                <a href="mailto:partner@tikara.id" style="background: #1B365D; color: #FFFFFF; padding: 0.85rem 2rem; border-radius: 999px; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(27, 54, 93, 0.25);">
+                    <i class="fa-solid fa-envelope"></i> Hubungi Tim Kemitraan
+                </a>
+            </section>
+        </div>
+    </main>
+
+    <!-- Unified TIKARA Footer (Light Theme) -->
+    <footer class="tikara-footer"></footer>
+
+    <!-- Scripts -->
+    <script src="/js/script.js"></script>
+</body>
+</html>

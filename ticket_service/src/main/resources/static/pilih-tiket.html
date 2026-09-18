@@ -8,6 +8,14 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
         .selection-container {
             max-width: 1080px;
             margin: 2.5rem auto;
@@ -16,11 +24,9 @@
             grid-template-columns: 1.65fr 1fr;
             gap: 2rem;
             align-items: start;
-        }
-        @media (max-width: 860px) {
-            .selection-container {
-                grid-template-columns: 1fr;
-            }
+            width: 100%;
+            box-sizing: border-box;
+            min-width: 0;
         }
         .event-banner-card {
             background: white;
@@ -29,20 +35,37 @@
             overflow: hidden;
             box-shadow: var(--shadow-sm);
             margin-bottom: 1.5rem;
+            width: 100%;
+            box-sizing: border-box;
         }
         .event-banner-flex {
             display: flex;
             gap: 1.25rem;
             padding: 1.25rem;
             align-items: center;
+            box-sizing: border-box;
+            width: 100%;
         }
         .event-thumb {
             width: 100px;
             height: 100px;
+            min-width: 80px;
+            min-height: 80px;
             border-radius: 12px;
             object-fit: cover;
             background: #e2e8f0;
             flex-shrink: 0;
+            display: block;
+        }
+        .profile-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            padding: 1.75rem;
+            width: 100%;
+            box-sizing: border-box;
         }
         .category-item {
             background: white;
@@ -52,16 +75,27 @@
             margin-bottom: 1rem;
             transition: all 0.2s ease;
             position: relative;
+            width: 100%;
+            box-sizing: border-box;
         }
         .category-item.selected {
             border-color: var(--primary-color);
             background: #FAF5FF;
-            box-shadow: 0 4px 14px rgba(124, 58, 237, 0.08);
+            box-shadow: 0 4px 14px rgba(27, 54, 93, 0.08);
         }
         .category-item.disabled {
             opacity: 0.6;
             background: #F8FAFC;
             cursor: not-allowed;
+        }
+        .category-item-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 0.85rem;
+            flex-wrap: wrap;
+            width: 100%;
+            box-sizing: border-box;
         }
         .qty-control {
             display: inline-flex;
@@ -107,6 +141,64 @@
             box-shadow: var(--shadow-sm);
             position: sticky;
             top: 90px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* TABLET RESPONSIVE (769px - 1024px) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .selection-container {
+                grid-template-columns: 1.35fr 1fr;
+                gap: 1.5rem;
+                padding: 0 1.25rem;
+            }
+            .profile-card,
+            .sticky-summary {
+                padding: 1.35rem;
+            }
+        }
+
+        /* MOBILE RESPONSIVE (<= 768px) */
+        @media (max-width: 768px) {
+            .selection-container {
+                grid-template-columns: 1fr !important;
+                gap: 1.5rem;
+                padding: 0 0.875rem !important;
+                margin: 1.25rem auto 3rem !important;
+            }
+            .event-banner-flex {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 0.85rem !important;
+                padding: 1rem !important;
+            }
+            .event-thumb {
+                width: 100% !important;
+                height: 160px !important;
+                border-radius: 12px !important;
+            }
+            #eventTitle {
+                white-space: normal !important;
+                word-break: break-word !important;
+                font-size: 1.2rem !important;
+                line-height: 1.35 !important;
+            }
+            .profile-card {
+                padding: 1.15rem 0.875rem !important;
+            }
+            .category-item {
+                padding: 1rem 0.875rem !important;
+                border-radius: 12px !important;
+                margin-bottom: 0.75rem !important;
+            }
+            .sticky-summary {
+                position: static !important;
+                padding: 1.25rem 1rem !important;
+            }
+            #btnProceedCheckout {
+                padding: 0.85rem !important;
+                font-size: 0.95rem !important;
+            }
         }
     </style>
 </head>
@@ -126,7 +218,8 @@
                 </button>
             </div>
         </div>
-        <nav class="navbar-mobile-drawer" id="navbarMobileDrawer"></nav>
+        <div class="nav-overlay" id="navOverlay"></div>
+    <nav class="navbar-mobile-drawer" id="navbarMobileDrawer"></nav>
     </header>
 
     <main class="selection-container">
@@ -135,7 +228,7 @@
             <!-- Event Card -->
             <div class="event-banner-card">
                 <div class="event-banner-flex">
-                    <img id="eventPoster" src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=300" alt="Poster Konser" class="event-thumb">
+                    <img id="eventPoster" src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=400&q=80" alt="Poster Konser" class="event-thumb" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=400&q=80';">
                     <div style="flex: 1; min-width: 0;">
                         <span class="role-badge pembeli" style="font-size: 0.72rem; padding: 0.2rem 0.6rem; margin-bottom: 0.35rem; display: inline-block;">
                             GARANSI TIKET RESMI
@@ -155,12 +248,12 @@
 
             <!-- Categories Section -->
             <div class="profile-card" style="padding: 1.75rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-                    <div>
-                        <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin: 0;">Pilih Kategori Tiket</h2>
-                        <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.2rem 0 0;">Maksimal pembelian 4 lembar tiket per akun pengguna</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.6rem;">
+                    <div style="flex: 1; min-width: 0;">
+                        <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin: 0; word-break: break-word;">Pilih Kategori Tiket</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.2rem 0 0; word-break: break-word;">Maksimal pembelian 4 lembar tiket per akun pengguna</p>
                     </div>
-                    <span style="font-size: 0.8rem; color: var(--primary-color); font-weight: 700;">
+                    <span style="font-size: 0.8rem; color: var(--primary-color); font-weight: 700; white-space: nowrap;">
                         <i class="fa-solid fa-shield-halved"></i> Stok Realtime
                     </span>
                 </div>
@@ -259,8 +352,14 @@
                     document.getElementById('eventDate').innerHTML = `<i class="fa-regular fa-calendar" style="color:var(--primary-color);"></i> ${dt.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
                 }
                 if (currentEvent.gambarUrl) {
-                    const poster = currentEvent.gambarUrl.startsWith('http') ? currentEvent.gambarUrl : `http://localhost:8082${currentEvent.gambarUrl}`;
-                    document.getElementById('eventPoster').src = poster;
+                    let poster = currentEvent.gambarUrl.trim();
+                    if (!poster.startsWith('http://') && !poster.startsWith('https://') && !poster.startsWith('data:image/')) {
+                        poster = `http://localhost:8082${poster.startsWith('/') ? '' : '/'}${poster}`;
+                    }
+                    const posterEl = document.getElementById('eventPoster');
+                    if (posterEl) {
+                        posterEl.src = poster;
+                    }
                 }
 
                 // 2. Fetch Ticket Categories from ticket_service (Port 8083)
@@ -331,21 +430,21 @@
 
                 html += `
                     <div class="category-item ${qty > 0 ? 'selected' : ''} ${isUnavailable ? 'disabled' : ''}" id="catItem_${cat.id}">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
-                            <div style="flex: 1;">
+                        <div class="category-item-flex">
+                            <div style="flex: 1; min-width: 180px;">
                                 <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem; flex-wrap: wrap;">
-                                    <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin: 0;">${cat.namaKategori}</h3>
+                                    <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0; word-break: break-word;">${cat.namaKategori}</h3>
                                     ${statusBadge}
                                 </div>
-                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0 0 0.5rem;">
+                                <p style="font-size: 0.825rem; color: var(--text-muted); margin: 0 0 0.5rem; word-break: break-word; line-height: 1.45;">
                                     ${cat.deskripsi || 'Akses resmi konser TIKARA dengan fasilitas tempat duduk/berdiri sesuai denah.'}
                                 </p>
-                                <strong style="font-size: 1.25rem; color: var(--primary-color); display: block;">
+                                <strong style="font-size: 1.2rem; color: var(--primary-color); display: block;">
                                     ${formatRupiah(cat.harga)}
                                 </strong>
                             </div>
 
-                            <div>
+                            <div style="flex-shrink: 0; align-self: center; margin-top: 0.25rem;">
                                 ${isUnavailable ? `
                                     <button class="btn btn-outline" style="font-size: 0.8rem; padding: 0.45rem 0.85rem;" disabled>Tidak Tersedia</button>
                                 ` : `
@@ -459,5 +558,135 @@
             window.location.href = `http://localhost:8084/checkout.html?eventId=${eventId}&catId=${firstCatId}&qty=${firstQty}`;
         }
     </script>
+
+        <!-- Unified TIKARA Footer (Light Theme) -->
+    <footer class="tikara-footer">
+        <div class="footer-container">
+            <div class="footer-main-grid">
+                <!-- Brand & Security Column -->
+                <div class="footer-col footer-brand-col">
+                    <a href="http://localhost:8082/index.html" class="footer-logo" aria-label="TIKARA Beranda">
+                        <i class="fa-solid fa-ticket"></i> <span>TIKARA</span>
+                    </a>
+                    <p class="footer-desc">
+                        Beli tiket konser, festival musik, dan event seru lainnya dengan mudah &amp; aman di TIKARA. 
+                        <strong>#PASTIBISA</strong> nonton konser &amp; festival idaman!
+                    </p>
+                    <div class="footer-security-section">
+                        <h4 class="footer-subheading"><i class="fa-solid fa-shield-halved"></i> Keamanan dan Privasi</h4>
+                        <div class="footer-badges-wrap">
+                            <a href="http://localhost:8082/terms.html#security" class="footer-iso-badge" title="Tersertifikasi ISO/IEC 27001 &amp; ISO/IEC 27701">
+                                <div class="iso-icon-box">
+                                    <i class="fa-solid fa-award"></i>
+                                </div>
+                                <div class="iso-info-box">
+                                    <span class="iso-title">ISO/IEC 27001 &bull; 27701</span>
+                                    <span class="iso-desc">Information Security &amp; Privacy Management</span>
+                                </div>
+                            </a>
+                            <div class="footer-ssl-badge">
+                                <i class="fa-solid fa-lock"></i> <span>256-Bit SSL Enkripsi Terverifikasi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Columns -->
+                <div class="footer-nav-columns">
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Tentang TIKARA</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/about.html">Tentang Kami</a></li>
+                            <li><a href="http://localhost:8082/blog.html">Blog &amp; Berita Musik</a></li>
+                        </ul>
+                        <h3 class="footer-heading" style="margin-top: 1.75rem;">Produk</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/index.html#catalog">Semua Konser &amp; Festival</a></li>
+                            <li><a href="http://localhost:8083/my-tickets.html">Tiket Saya</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Event Creator</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/creator-guide.html#biaya">Biaya &amp; Komisi</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#kerjasama">Kerjasama dengan Kami</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#panduan">Buku Panduan Creator</a></li>
+                            <li><a href="http://localhost:8082/create-event.html">Buat Event Konser</a></li>
+                            <li><a href="http://localhost:8082/organizer-dashboard.html">Dashboard Penyelenggara</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Dukungan</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/help.html">Pusat Bantuan (FAQ)</a></li>
+                            <li><a href="http://localhost:8082/terms.html#terms">Syarat dan Ketentuan</a></li>
+                            <li><a href="http://localhost:8082/terms.html#privacy">Kebijakan Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#security">Kepatuhan Keamanan &amp; Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#cookies">Kebijakan Cookies</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Action / Payment & Social Column -->
+                <div class="footer-col footer-action-col">
+                    <h3 class="footer-heading">Pilihan Pembayaran</h3>
+                    <div class="footer-payment-grid" title="Metode Pembayaran Resmi TIKARA">
+                        <span class="pay-chip"><i class="fa-solid fa-qrcode"></i> QRIS</span>
+                        <span class="pay-chip">BCA</span>
+                        <span class="pay-chip">Mandiri</span>
+                        <span class="pay-chip">BRI</span>
+                        <span class="pay-chip">BNI</span>
+                        <span class="pay-chip">BTN</span>
+                        <span class="pay-chip">BSI</span>
+                        <span class="pay-chip">Permata</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-visa"></i> VISA</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-mastercard"></i> Master</span>
+                        <span class="pay-chip">ShopeePay</span>
+                        <span class="pay-chip">GoPay</span>
+                        <span class="pay-chip">Alfamart</span>
+                        <span class="pay-chip">Indomaret</span>
+                    </div>
+                    <div>
+                        <a href="http://localhost:8082/help.html#pembayaran" class="footer-pay-guide-link">
+                            <i class="fa-solid fa-circle-question"></i> Panduan &amp; Cara Bayar
+                        </a>
+                    </div>
+
+                    <div class="footer-social-wrap" style="margin-top: 1.75rem;">
+                        <h3 class="footer-heading">Ikuti Kami untuk Update</h3>
+                        <div class="footer-social-links">
+                            <a href="https://www.instagram.com/deafriliart/?__pwa=1" target="_blank" rel="noopener noreferrer" class="social-btn social-ig" aria-label="Instagram TIKARA" title="Instagram">
+                                <i class="fa-brands fa-instagram"></i>
+                            </a>
+                            <a href="https://www.tiktok.com/@realityclubofficial" target="_blank" rel="noopener noreferrer" class="social-btn social-tiktok" aria-label="TikTok TIKARA" title="TikTok">
+                                <i class="fa-brands fa-tiktok"></i>
+                            </a>
+                            <a href="https://x.com/reality_club" target="_blank" rel="noopener noreferrer" class="social-btn social-x" aria-label="X (Twitter) TIKARA" title="X (Twitter)">
+                                <i class="fa-brands fa-x-twitter"></i>
+                            </a>
+                            <a href="https://www.facebook.com/officialrealityclub/?locale=id_ID" target="_blank" rel="noopener noreferrer" class="social-btn social-fb" aria-label="Facebook TIKARA" title="Facebook">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </a>
+                            <a href="https://youtu.be/SlwQyBkCtZE?si=WBPI1nh0A6A2e9Dv" target="_blank" rel="noopener noreferrer" class="social-btn social-yt" aria-label="YouTube TIKARA" title="YouTube">
+                                <i class="fa-brands fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Copyright -->
+            <div class="footer-bottom-bar">
+                <p>&copy; 2026 TIKARA (PT Tikara Nusantara Sejahtera). Seluruh hak cipta dilindungi undang-undang.</p>
+                <div style="display: flex; gap: 1.25rem; font-size: 0.8rem;">
+                    <a href="http://localhost:8082/terms.html#terms">Syarat Layanan</a>
+                    <a href="http://localhost:8082/terms.html#privacy">Privasi</a>
+                    <a href="http://localhost:8082/terms.html#security">Keamanan</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

@@ -33,9 +33,6 @@ public class PenggunaController {
 
     private final PenggunaService penggunaService;
 
-    // =========================
-    // REGISTER (USER BARU)
-    // =========================
     @PostMapping("/register")
     public ResponseEntity<PenggunaRes> register(
             @Valid @RequestBody RegisterPenggunaReq request) {
@@ -47,9 +44,6 @@ public class PenggunaController {
                 .body(response);
     }
 
-    // =========================
-    // LOGIN
-    // =========================
     @PostMapping("/login")
     public ResponseEntity<LoginRes> login(
             @Valid @RequestBody LoginReq request) {
@@ -59,9 +53,6 @@ public class PenggunaController {
         return ResponseEntity.ok(response);
     }
 
-    // =========================
-    // REFRESH TOKEN
-    // =========================
     @PostMapping("/refresh-token")
     public ResponseEntity<LoginRes> refreshToken(
             @Valid @RequestBody RefreshTokenReq request) {
@@ -71,9 +62,6 @@ public class PenggunaController {
         return ResponseEntity.ok(response);
     }
 
-    // =========================
-    // LOGOUT
-    // =========================
     @PostMapping("/logout")
     public ResponseEntity<Map<String, Object>> logout() {
         return ResponseEntity.ok(Map.of(
@@ -82,9 +70,6 @@ public class PenggunaController {
         ));
     }
 
-    // =========================
-    // GET PROFILE (LOGGED IN USER)
-    // =========================
     @GetMapping({"/profile", "/me"})
     public ResponseEntity<ProfilPenggunaRes> getProfile(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -97,9 +82,6 @@ public class PenggunaController {
         return ResponseEntity.ok(response);
     }
 
-    // =========================
-    // UPDATE PROFILE (LOGGED IN USER)
-    // =========================
     @PutMapping({"/profile", "/profile/update"})
     public ResponseEntity<ProfilPenggunaRes> updateProfile(
             @Valid @RequestBody UpdateProfilReq request,
@@ -115,9 +97,6 @@ public class PenggunaController {
         return ResponseEntity.ok(response);
     }
 
-    // =========================
-    // CHANGE PASSWORD (LOGGED IN USER)
-    // =========================
     @PutMapping({"/change-password", "/profile/change-password"})
     public ResponseEntity<Map<String, String>> changePassword(
             @Valid @RequestBody ChangePasswordReq request,
@@ -133,9 +112,6 @@ public class PenggunaController {
         return ResponseEntity.ok(Map.of("message", "Kata sandi berhasil diperbarui"));
     }
 
-    // =========================
-    // UPLOAD AVATAR (LOGGED IN USER)
-    // =========================
     @PostMapping(value = {"/profile/upload-avatar", "/avatar", "/profile/avatar"}, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProfilPenggunaRes> uploadAvatar(
             @RequestParam("file") MultipartFile file,
@@ -150,9 +126,6 @@ public class PenggunaController {
         return ResponseEntity.ok(response);
     }
 
-    // =========================
-    // GET ALL (SEARCH, FILTER, SORT, PAGINATION - ADMIN ONLY)
-    // =========================
     @GetMapping
     public ResponseEntity<PageResponse<PenggunaRes>> getAll(
             @RequestParam(required = false) String search,
@@ -170,9 +143,6 @@ public class PenggunaController {
         return ResponseEntity.ok(response);
     }
 
-    // =========================
-    // GET BY ID (WITH OWNERSHIP / ADMIN CHECK)
-    // =========================
     @GetMapping("/{id}")
     public ResponseEntity<PenggunaRes> getById(
             @PathVariable Long id,
@@ -185,9 +155,6 @@ public class PenggunaController {
         return ResponseEntity.ok(response);
     }
 
-    // =========================
-    // GET BY EMAIL (WITH OWNERSHIP / ADMIN CHECK)
-    // =========================
     @GetMapping("/email/{email}")
     public ResponseEntity<PenggunaRes> getByEmail(
             @PathVariable String email,
@@ -199,9 +166,6 @@ public class PenggunaController {
         return ResponseEntity.ok(targetUser);
     }
 
-    // =========================
-    // UPDATE BY ID (WITH OWNERSHIP / ADMIN CHECK)
-    // =========================
     @PutMapping("/{id}")
     public ResponseEntity<PenggunaRes> update(
             @PathVariable Long id,
@@ -215,9 +179,6 @@ public class PenggunaController {
         return ResponseEntity.ok(response);
     }
 
-    // =========================
-    // DELETE (WITH OWNERSHIP / ADMIN CHECK)
-    // =========================
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable Long id,
@@ -230,9 +191,6 @@ public class PenggunaController {
         return ResponseEntity.noContent().build();
     }
 
-    // =========================
-    // HELPER: VALIDATE ADMIN
-    // =========================
     private void validateAdmin(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AccessDeniedException("Akses ditolak. Silakan login terlebih dahulu.");
@@ -246,9 +204,6 @@ public class PenggunaController {
         }
     }
 
-    // =========================
-    // HELPER: VALIDATE OWNERSHIP OR ADMIN
-    // =========================
     private void validateOwnershipOrAdmin(Long targetUserId, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AccessDeniedException("Akses ditolak. Silakan login terlebih dahulu.");
@@ -259,7 +214,7 @@ public class PenggunaController {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
         if (isAdmin) {
-            return; // Admin bebas mengakses data pengguna manapun
+            return;
         }
 
         PenggunaRes currentUser = penggunaService.getByEmail(currentEmail);
@@ -268,9 +223,6 @@ public class PenggunaController {
         }
     }
 
-    // =========================
-    // RESTORE SOFT DELETED USER (ADMIN ONLY)
-    // =========================
     @PatchMapping("/{id}/restore")
     public ResponseEntity<PenggunaRes> restore(
             @PathVariable Long id,
@@ -281,9 +233,6 @@ public class PenggunaController {
         return ResponseEntity.ok(response);
     }
 
-    // =========================
-    // CHECK RECIPIENT FOR TICKET TRANSFER
-    // =========================
     @GetMapping("/check-recipient")
     public ResponseEntity<Map<String, Object>> checkRecipient(
             @RequestParam String email,

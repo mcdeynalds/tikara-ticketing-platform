@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promo Campaign Hub - TIKARA Admin</title>
+    <meta name="description" content="Pusat manajemen dan distribusi kode voucher promo platform TIKARA.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        (function () {
+            function getCookie(name) {
+                const ca = document.cookie.split(';');
+                for (let i = 0; i < ca.length; i++) {
+                    let c = ca[i].trim();
+                    if (c.indexOf(name + "=") === 0) {
+                        try { return decodeURIComponent(c.substring(name.length + 1)); } catch (e) { return c.substring(name.length + 1); }
+                    }
+                }
+                return null;
+            }
+            function parseJwt(token) {
+                if (!token || typeof token !== 'string') return null;
+                const parts = token.split('.');
+                if (parts.length !== 3) return null;
+                try {
+                    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+                    return JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+                } catch (e) { return null; }
+            }
+            const token = getCookie('tikara_token') || localStorage.getItem('jwt_token');
+            const payload = parseJwt(token);
+            const isExpired = payload && payload.exp && (payload.exp * 1000 < Date.now());
+            const role = payload ? (payload.role || payload.peran || '').toUpperCase() : '';
+
+            if (!token || !payload || isExpired || role !== 'ADMIN') {
+                window.location.replace('http://localhost:8081/login.html?redirect=' + encodeURIComponent(window.location.href));
+            }
+        })();
+    </script>
+    <style>
+        /* Base Viewport & Layout Constraints */
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .promo-page {
+            width: 100%;
+            max-width: 1200px;
+            margin: 2.5rem auto;
+            padding: 0 1.5rem;
+            min-width: 0;
+            box-sizing: border-box;
+        }
+
+        /* Header Area */
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+            min-width: 0;
+        }
+
+        .admin-header-info {
+            flex: 1 1 480px;
+            min-width: 0;
+        }
+
+        .admin-header-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0;
+            line-height: 1.25;
+            word-break: break-word;
+        }
+
+        .admin-header-desc {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0.35rem 0 0;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .admin-header-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .admin-action-btn {
+            width: auto;
+            padding: 0.55rem 1.15rem;
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            white-space: nowrap;
+            border-radius: 8px;
+            font-weight: 700;
+        }
+
+        .btn-outline.admin-action-btn {
+            background: #FFFFFF !important;
+            border: 1.5px solid #93C5FD !important;
+            color: #2563EB !important;
+        }
+
+        .btn-outline.admin-action-btn:hover {
+            background: #EFF6FF !important;
+            border-color: #3B82F6 !important;
+            color: #1D4ED8 !important;
+        }
+
+        /* Metric Cards Grid — Desktop (> 1024px): 4 cols */
+        .metric-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+            min-width: 0;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 1.35rem 1.25rem;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+            min-width: 0;
+            box-sizing: border-box;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .metric-card-val {
+            font-size: 1.85rem;
+            font-weight: 800;
+            margin: 0;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        /* Table & Responsive Container */
+        .table-responsive-wrapper {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: white;
+        }
+
+        .promo-table {
+            width: 100%;
+            min-width: 720px;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+
+        .promo-table th {
+            padding: 0.85rem 1rem;
+            border-bottom: 2px solid var(--border-color);
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            background: #F8FAFC;
+            white-space: nowrap;
+        }
+
+        .promo-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+            vertical-align: middle;
+        }
+
+        .promo-table tr:hover {
+            background: #F8FAFC;
+        }
+
+        .table-scroll-hint {
+            display: none;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.6rem;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .code-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #EDE9FE;
+            color: var(--primary-color);
+            font-family: monospace;
+            font-weight: 800;
+            font-size: 0.95rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 8px;
+            border: 1px dashed #C4B5FD;
+            white-space: nowrap;
+        }
+
+        .progress-bar-bg {
+            background: #E2E8F0;
+            border-radius: 999px;
+            height: 6px;
+            width: 100%;
+            overflow: hidden;
+            margin-top: 0.35rem;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #1B365D 0%, #FF5A5F 100%);
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.3s ease;
+        }
+
+        /* Mobile Drawer & Overlay Styles */
+        .nav-overlay.open {
+            display: block !important;
+        }
+
+        .navbar-mobile-drawer.open {
+            display: flex !important;
+        }
+
+        /* ==========================================================================
+           BREAKPOINT 1: TABLET (769px – 1024px)
+           ========================================================================== */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .promo-page {
+                margin: 1.75rem auto;
+                padding: 0 1.25rem;
+            }
+
+            .admin-header {
+                margin-bottom: 1.5rem;
+                gap: 1rem;
+            }
+
+            .admin-header-title {
+                font-size: 1.55rem;
+            }
+
+            .metric-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+                margin-bottom: 1.5rem;
+            }
+        }
+
+        /* ==========================================================================
+           BREAKPOINT 2: MOBILE (≤ 768px)
+           ========================================================================== */
+        @media (max-width: 768px) {
+            .promo-page {
+                margin: 1rem auto;
+                padding: 0 0.875rem;
+            }
+
+            .navbar {
+                padding: 0.75rem 1rem !important;
+            }
+
+            .navbar-logo {
+                font-size: 1.15rem !important;
+                gap: 0.4rem !important;
+            }
+
+            .navbar-menu {
+                display: none !important;
+            }
+
+            .navbar-hamburger {
+                display: flex !important;
+            }
+
+            .admin-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .admin-header-info {
+                flex: none;
+                width: 100%;
+            }
+
+            .admin-header-title {
+                font-size: 1.35rem;
+            }
+
+            .admin-header-desc {
+                font-size: 0.825rem;
+                line-height: 1.45;
+            }
+
+            .admin-header-actions {
+                width: 100%;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0.6rem;
+            }
+
+            .admin-action-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 0.65rem 0.75rem;
+                font-size: 0.825rem;
+            }
+
+            .metric-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .metric-card {
+                padding: 1.1rem 0.9rem;
+                border-radius: 14px;
+            }
+
+            .metric-card-val {
+                font-size: 1.45rem;
+            }
+
+            .filter-bar-box {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 0.85rem !important;
+                padding: 1rem 0.85rem !important;
+            }
+
+            .search-input-wrap {
+                width: 100% !important;
+            }
+
+            .search-input-wrap input {
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            .table-scroll-hint {
+                display: flex;
+            }
+
+            .promo-table {
+                font-size: 0.8rem;
+            }
+
+            .promo-table th,
+            .promo-table td {
+                padding: 0.65rem 0.75rem;
+            }
+
+            .modal-dialog {
+                padding: 1.25rem !important;
+                border-radius: 16px !important;
+            }
+        }
+
+        /* Extra compact mobile (≤ 480px) */
+        @media (max-width: 480px) {
+            .admin-header-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .metric-cards-grid {
+                grid-template-columns: 1fr;
+
+                /* Modal Overlay Explicit Styles & Visibility */
+                .modal-overlay {
+                    position: fixed !important;
+                    inset: 0 !important;
+                    width: 100vw !important;
+                    height: 100vh !important;
+                    background: rgba(15, 23, 42, 0.65) !important;
+                    backdrop-filter: blur(4px) !important;
+                    z-index: 99999 !important;
+                    display: none;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    padding: 1.5rem !important;
+                    opacity: 0;
+                    visibility: hidden;
+                    transition: opacity 0.2s ease, visibility 0.2s ease;
+                }
+
+                .modal-overlay.active,
+                .modal-overlay.show,
+                .modal-overlay[style*="display: flex"] {
+                    display: flex !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    pointer-events: auto !important;
+                }
+
+                .modal-dialog {
+                    background: white !important;
+                    border-radius: 20px !important;
+                    max-width: 540px !important;
+                    width: 100% !important;
+                    padding: 2rem !important;
+                    box-shadow: var(--shadow-lg) !important;
+                    max-height: 90vh !important;
+                    overflow-y: auto !important;
+                    transform: scale(0.95);
+                    transition: transform 0.25s ease;
+                }
+
+                .modal-overlay.active .modal-dialog,
+                .modal-overlay.show .modal-dialog,
+                .modal-overlay[style*="display: flex"] .modal-dialog {
+                    transform: scale(1) !important;
+                }
+    </style>
+</head>
+
+<body style="background-color: #F8FAFC; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden;">
+
+    <!-- Unified Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="/admin-dashboard.html" class="navbar-logo" id="navLogoLink">
+                <i class="fa-solid fa-gauge-high"></i> TIKARA ADMIN
+            </a>
+            <ul class="navbar-menu" id="mainNavbarMenu"></ul>
+            <div class="navbar-actions">
+                <div id="navUserBox"></div>
+                <button class="navbar-hamburger" id="navbarToggleBtn" aria-label="Buka menu navigasi"
+                    aria-expanded="false" aria-controls="navbarMobileDrawer">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <div class="nav-overlay" id="navOverlay"></div>
+        <nav class="navbar-mobile-drawer" id="navbarMobileDrawer"></nav>
+    </header>
+
+    <main class="promo-page" style="flex: 1;">
+        <!-- Header -->
+        <div class="admin-header">
+            <div class="admin-header-info">
+                <span class="role-badge"
+                    style="background: #FDF2F8; color: #DB2777; font-size: 0.75rem; padding: 0.25rem 0.65rem; margin-bottom: 0.35rem; display: inline-block;">
+                    <i class="fa-solid fa-tags"></i> KAMPANYE PEMASARAN
+                </span>
+                <h1 class="admin-header-title">
+                    Promo Campaign & Voucher Hub
+                </h1>
+                <p class="admin-header-desc">
+                    Buat kode promo, atur batas kuota, tentukan minimal transaksi, dan pantau efektivitas voucher.
+                </p>
+            </div>
+            <div class="admin-header-actions">
+                <a href="/admin-dashboard.html" class="btn btn-outline admin-action-btn">
+                    <i class="fa-solid fa-arrow-left"></i> Dashboard Utama
+                </a>
+                <button type="button" class="btn btn-primary admin-action-btn" id="btnOpenPromoModal"
+                    onclick="openCreatePromoModal()" style="background: var(--primary-color); cursor: pointer;">
+                    <i class="fa-solid fa-plus"></i> Buat Promo Baru
+                </button>
+            </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="metric-cards-grid">
+            <div class="metric-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Total
+                        Kode Promo</span>
+                    <span
+                        style="width: 36px; height: 36px; border-radius: 10px; background: #EDE9FE; color: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                        <i class="fa-solid fa-ticket-simple"></i>
+                    </span>
+                </div>
+                <h2 class="metric-card-val" id="metricTotalPromo">...</h2>
+                <span
+                    style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-top: 0.35rem;">
+                    Semua kampanye tercatat
+                </span>
+            </div>
+
+            <div class="metric-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Promo
+                        Aktif</span>
+                    <span
+                        style="width: 36px; height: 36px; border-radius: 10px; background: #DCFCE7; color: #15803D; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                        <i class="fa-solid fa-bolt"></i>
+                    </span>
+                </div>
+                <h2 class="metric-card-val" style="color: #15803D;" id="metricPromoAktif">...</h2>
+                <span
+                    style="font-size: 0.75rem; color: var(--success-color); font-weight: 600; display: block; margin-top: 0.35rem;">
+                    Siap digunakan di checkout
+                </span>
+            </div>
+
+            <div class="metric-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Total
+                        Klaim Terpakai</span>
+                    <span
+                        style="width: 36px; height: 36px; border-radius: 10px; background: #FEF3C7; color: #B45309; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </span>
+                </div>
+                <h2 class="metric-card-val" id="metricTerpakai">...</h2>
+                <span
+                    style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-top: 0.35rem;">
+                    Transaksi terdiskon
+                </span>
+            </div>
+
+            <div class="metric-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span
+                        style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Total
+                        Penghematan User</span>
+                    <span
+                        style="width: 36px; height: 36px; border-radius: 10px; background: #DBEAFE; color: #1D4ED8; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                        <i class="fa-solid fa-wallet"></i>
+                    </span>
+                </div>
+                <h2 class="metric-card-val" style="color: #1D4ED8;" id="metricPenghematan">...</h2>
+                <span
+                    style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-top: 0.35rem;">
+                    Nominal subsidi platform
+                </span>
+            </div>
+        </div>
+
+        <!-- Filter & Search Bar -->
+        <div class="profile-card filter-bar-box"
+            style="padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                <button class="filter-tab-btn active" onclick="filterPromo('ALL', this)"
+                    style="background:var(--primary-color); color:white; border:none; border-radius:999px; padding:0.45rem 1rem; font-weight:700; cursor:pointer;">Semua</button>
+                <button class="filter-tab-btn" onclick="filterPromo('ACTIVE', this)"
+                    style="background:white; color:var(--text-muted); border:1px solid var(--border-color); border-radius:999px; padding:0.45rem 1rem; font-weight:700; cursor:pointer;">Aktif</button>
+                <button class="filter-tab-btn" onclick="filterPromo('INACTIVE', this)"
+                    style="background:white; color:var(--text-muted); border:1px solid var(--border-color); border-radius:999px; padding:0.45rem 1rem; font-weight:700; cursor:pointer;">Nonaktif</button>
+            </div>
+            <div style="position: relative; width: 280px;" class="search-input-wrap">
+                <input type="text" id="searchPromoInput" placeholder="Cari kode promo..." oninput="handleSearchPromo()"
+                    style="width: 100%; padding: 0.5rem 0.85rem 0.5rem 2.2rem; border-radius: 999px; border: 1px solid var(--border-color); font-size: 0.875rem;">
+                <i class="fa-solid fa-magnifying-glass"
+                    style="position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: #94A3B8; font-size: 0.85rem;"></i>
+            </div>
+        </div>
+
+        <div class="table-scroll-hint">
+            <i class="fa-solid fa-arrows-left-right"></i> Geser tabel ke samping untuk melihat detail promo dan tindakan
+        </div>
+
+        <!-- Promo List Table -->
+        <div class="profile-card" style="padding: 1.5rem; margin-bottom: 2rem;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+                <h3
+                    style="font-size: 1.2rem; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-list-check" style="color: var(--primary-color);"></i> Daftar Kampanye Voucher
+                    Promo
+                </h3>
+                <button type="button" class="btn btn-outline admin-action-btn" onclick="fetchPromos()">
+                    <i class="fa-solid fa-rotate"></i> Refresh
+                </button>
+            </div>
+
+            <div class="table-responsive-wrapper">
+                <table class="promo-table">
+                    <thead>
+                        <tr>
+                            <th>Kode Promo</th>
+                            <th>Besaran Diskon</th>
+                            <th>Min. Belanja & Max Potongan</th>
+                            <th style="min-width: 160px;">Kuota & Terpakai</th>
+                            <th>Periode Berlaku</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="promoTableTbody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+                                <i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary-color);"></i>
+                                <p style="margin-top: 0.75rem;">Memuat daftar kode promo...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Promo Modal -->
+    <div id="createPromoModal" class="modal-overlay"
+        style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 1.5rem;">
+        <div class="modal-dialog"
+            style="background: white; border-radius: 20px; max-width: 540px; width: 100%; padding: 2rem; box-shadow: var(--shadow-lg); max-height: 90vh; overflow-y: auto;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+                <h3
+                    style="font-size: 1.3rem; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-ticket-simple" style="color: var(--primary-color);"></i> Buat Kode Promo Baru
+                </h3>
+                <button type="button" onclick="closeCreatePromoModal()"
+                    style="background: none; border: none; font-size: 1.25rem; color: var(--text-muted); cursor: pointer;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="createPromoForm" onsubmit="submitCreatePromo(event)">
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                    <label
+                        style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                        Kode Promo <span style="color: #DC2626;">*</span>
+                    </label>
+                    <input type="text" id="inputKode" placeholder="CONTOH: KONSERHEMAT50" required maxlength="50"
+                        style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 10px; border: 1px solid var(--border-color); text-transform: uppercase; font-family: monospace; font-weight: 700; font-size: 0.95rem;">
+                    <small style="color: var(--text-muted); font-size: 0.75rem;">Otomatis kapital, min 4 karakter
+                        (huruf/angka tanpa spasi).</small>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                    <div class="form-group">
+                        <label
+                            style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                            Persen Diskon (%) <span style="color: #DC2626;">*</span>
+                        </label>
+                        <input type="number" id="inputPersen" placeholder="10" required min="0.01" max="100" step="0.01"
+                            style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 10px; border: 1px solid var(--border-color);">
+                    </div>
+                    <div class="form-group">
+                        <label
+                            style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                            Potongan Maksimal (Rp) <span style="color: #DC2626;">*</span>
+                        </label>
+                        <input type="number" id="inputMaxPotongan" placeholder="50000" required min="0" step="1000"
+                            style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 10px; border: 1px solid var(--border-color);">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                    <div class="form-group">
+                        <label
+                            style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                            Min. Transaksi (Rp) <span style="color: #DC2626;">*</span>
+                        </label>
+                        <input type="number" id="inputMinTransaksi" placeholder="100000" required min="0" step="1000"
+                            style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 10px; border: 1px solid var(--border-color);">
+                    </div>
+                    <div class="form-group">
+                        <label
+                            style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                            Kuota Klaim <span style="color: #DC2626;">*</span>
+                        </label>
+                        <input type="number" id="inputKuota" placeholder="200" required min="1" step="1"
+                            style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 10px; border: 1px solid var(--border-color);">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label
+                            style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                            Mulai Berlaku <span style="color: #DC2626;">*</span>
+                        </label>
+                        <input type="datetime-local" id="inputMulai" required
+                            style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 10px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+                    </div>
+                    <div class="form-group">
+                        <label
+                            style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
+                            Selesai Berlaku <span style="color: #DC2626;">*</span>
+                        </label>
+                        <input type="datetime-local" id="inputSelesai" required
+                            style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 10px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-outline" onclick="closeCreatePromoModal()"
+                        style="width: auto; padding: 0.65rem 1.25rem;">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitPromo"
+                        style="width: auto; padding: 0.65rem 1.5rem; font-weight: 700;">
+                        <i class="fa-solid fa-floppy-disk"></i> Simpan & Publikasikan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/script.js"></script>
+    <script>
+        let allPromos = [];
+        let activeFilter = 'ALL';
+        const PROMO_SERVICE_URL = 'http://localhost:8088';
+
+        function formatDateTimeLocal(d) {
+            const pad = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
+
+        function setDefaultDates() {
+            const now = new Date();
+            const startStr = formatDateTimeLocal(now);
+            const end = new Date();
+            end.setDate(end.getDate() + 30);
+            const endStr = formatDateTimeLocal(end);
+
+            const inputMulai = document.getElementById('inputMulai');
+            const inputSelesai = document.getElementById('inputSelesai');
+            if (inputMulai) inputMulai.value = startStr;
+            if (inputSelesai) inputSelesai.value = endStr;
+        }
+
+        function getAppToken() {
+            function getCookie(name) {
+                const ca = document.cookie.split(';');
+                for (let i = 0; i < ca.length; i++) {
+                    let c = ca[i].trim();
+                    if (c.indexOf(name + "=") === 0) {
+                        try { return decodeURIComponent(c.substring(name.length + 1)); } catch (e) { return c.substring(name.length + 1); }
+                    }
+                }
+                return null;
+            }
+            return (typeof getToken === 'function' ? getToken() : null)
+                || (typeof getJwtToken === 'function' ? getJwtToken() : null)
+                || getCookie('tikara_token')
+                || localStorage.getItem('jwt_token')
+                || sessionStorage.getItem('jwt_token')
+                || '';
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const auth = getAuthState();
+            const isAdmin = auth.isAuthenticated && (auth.role === 'ADMIN' || (auth.user && (auth.user.role === 'ADMIN' || auth.user.peran === 'ADMIN')));
+            if (!isAdmin) {
+                showToast('Halaman ini khusus Administrator platform TIKARA.', 'warning');
+                setTimeout(() => {
+                    window.location.href = `http://localhost:8081/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                }, 1200);
+                return;
+            }
+
+            // Bind create promo button explicitly
+            const btnOpen = document.getElementById('btnOpenPromoModal');
+            if (btnOpen) {
+                btnOpen.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openCreatePromoModal();
+                });
+            }
+
+            // Close modal when clicking backdrop
+            const modalEl = document.getElementById('createPromoModal');
+            if (modalEl) {
+                modalEl.addEventListener('click', function (e) {
+                    if (e.target === this) {
+                        closeCreatePromoModal();
+                    }
+                });
+            }
+
+            // Close modal on ESC key
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    closeCreatePromoModal();
+                }
+            });
+
+            setDefaultDates();
+            await Promise.all([fetchPromoStats(), fetchPromos()]);
+        });
+
+        function formatRupiah(num) {
+            return 'Rp ' + Number(num || 0).toLocaleString('id-ID');
+        }
+
+        async function fetchPromoStats() {
+            try {
+                const res = await fetch(`${PROMO_SERVICE_URL}/api/promo/stats`);
+                if (!res.ok) return;
+                const stats = await res.json();
+                document.getElementById('metricTotalPromo').innerText = stats.totalPromos || '0';
+                document.getElementById('metricPromoAktif').innerText = stats.activePromos || '0';
+                document.getElementById('metricTerpakai').innerText = stats.totalTerpakai || '0';
+                document.getElementById('metricPenghematan').innerText = formatRupiah(stats.totalPenghematan);
+            } catch (err) {
+                console.warn('Gagal memuat stats promo:', err);
+            }
+        }
+
+        async function fetchPromos() {
+            try {
+                const res = await fetch(`${PROMO_SERVICE_URL}/api/promo/all`);
+                if (!res.ok) throw new Error('Gagal mengambil daftar kode promo dari promo-service');
+                allPromos = await res.json();
+                renderPromoTable();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('promoTableTbody').innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2.5rem; color: #DC2626;">
+                            <i class="fa-solid fa-circle-exclamation fa-2x"></i>
+                            <p style="margin-top: 0.75rem;">${err.message || 'Gagal memuat promo'}</p>
+                            <button class="btn btn-outline" onclick="fetchPromos()" style="width: auto; margin-top: 0.5rem;">Coba Lagi</button>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function filterPromo(filter, btn) {
+            activeFilter = filter;
+            document.querySelectorAll('.filter-tab-btn').forEach(b => {
+                b.style.background = 'white';
+                b.style.color = 'var(--text-muted)';
+                b.style.border = '1px solid var(--border-color)';
+            });
+            if (btn) {
+                btn.style.background = 'var(--primary-color)';
+                btn.style.color = 'white';
+                btn.style.border = 'none';
+            }
+            renderPromoTable();
+        }
+
+        function handleSearchPromo() {
+            renderPromoTable();
+        }
+
+        function renderPromoTable() {
+            const tbody = document.getElementById('promoTableTbody');
+            const query = (document.getElementById('searchPromoInput').value || '').trim().toUpperCase();
+
+            let list = allPromos;
+            if (activeFilter !== 'ALL') {
+                list = list.filter(p => p.status === activeFilter);
+            }
+            if (query) {
+                list = list.filter(p => p.kode.includes(query));
+            }
+
+            if (!list || list.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+                            <i class="fa-solid fa-tags fa-2x" style="color: #CBD5E1; margin-bottom: 0.5rem;"></i>
+                            <p>Tidak ada kode promo yang sesuai kriteria.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            list.forEach(p => {
+                const isActive = p.status === 'ACTIVE';
+                const terpakai = p.terpakai || 0;
+                const kuota = p.kuotaPromo || 1;
+                const percent = Math.min(100, Math.round((terpakai / kuota) * 100));
+
+                const mulai = p.mulaiBerlaku ? new Date(p.mulaiBerlaku).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+                const selesai = p.selesaiBerlaku ? new Date(p.selesaiBerlaku).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+
+                html += `
+                    <tr>
+                        <td>
+                            <span class="code-pill">
+                                <i class="fa-solid fa-tag"></i> ${p.kode}
+                            </span>
+                        </td>
+                        <td>
+                            <strong style="color: #059669; font-size: 1.05rem;">${p.persenDiskon}% OFF</strong>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.85rem;">
+                                <div>Min: <strong>${formatRupiah(p.minimalTransaksi)}</strong></div>
+                                <div style="color: var(--text-muted);">Max Diskon: <strong>${formatRupiah(p.potonganMaksimal)}</strong></div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700;">
+                                <span>${terpakai} dipakai</span>
+                                <span style="color: var(--text-muted);">Kuota ${kuota}</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: ${percent}%;"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.8rem;">
+                                <div><i class="fa-regular fa-clock" style="color: #94A3B8;"></i> ${mulai}</div>
+                                <div style="color: var(--text-muted);">s/d ${selesai}</div>
+                            </div>
+                        </td>
+                        <td>
+                            ${isActive ?
+                        `<span class="role-badge" style="background: #DCFCE7; color: #15803D; font-size: 0.75rem; padding: 0.2rem 0.6rem;">AKTIF</span>` :
+                        `<span class="role-badge" style="background: #F1F5F9; color: #64748B; font-size: 0.75rem; padding: 0.2rem 0.6rem;">NONAKTIF</span>`
+                    }
+                        </td>
+                        <td style="text-align: right;">
+                            <button type="button" class="btn btn-outline" onclick="toggleStatus(${p.id}, '${p.kode}', '${p.status}')" style="width: auto; padding: 0.4rem 0.85rem; font-size: 0.8rem; ${isActive ? 'color: #DC2626; border-color: #FCA5A5;' : 'color: #059669; border-color: #86EFAC;'}">
+                                <i class="fa-solid ${isActive ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
+                                ${isActive ? 'Nonaktifkan' : 'Aktifkan'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function openCreatePromoModal() {
+            const modal = document.getElementById('createPromoModal');
+            if (!modal) {
+                console.error('Modal createPromoModal tidak ditemukan!');
+                return;
+            }
+            setDefaultDates();
+            modal.style.display = 'flex';
+            modal.style.opacity = '1';
+            modal.style.visibility = 'visible';
+            modal.classList.add('active');
+            modal.classList.add('show');
+            setTimeout(() => {
+                const inputKode = document.getElementById('inputKode');
+                if (inputKode) inputKode.focus();
+            }, 100);
+        }
+
+        function closeCreatePromoModal() {
+            const modal = document.getElementById('createPromoModal');
+            if (!modal) return;
+            modal.classList.remove('active');
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+            modal.style.opacity = '0';
+            modal.style.visibility = 'hidden';
+        }
+
+        window.openCreatePromoModal = openCreatePromoModal;
+        window.closeCreatePromoModal = closeCreatePromoModal;
+
+        async function submitCreatePromo(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitPromo');
+            const token = getAppToken();
+
+            const kode = document.getElementById('inputKode').value.trim().toUpperCase();
+            const persenDiskon = parseFloat(document.getElementById('inputPersen').value);
+            const potonganMaksimal = parseFloat(document.getElementById('inputMaxPotongan').value);
+            const minimalTransaksi = parseFloat(document.getElementById('inputMinTransaksi').value);
+            const kuotaPromo = parseInt(document.getElementById('inputKuota').value);
+            const mulaiBerlaku = document.getElementById('inputMulai').value;
+            const selesaiBerlaku = document.getElementById('inputSelesai').value;
+
+            if (new Date(selesaiBerlaku) <= new Date(mulaiBerlaku)) {
+                showToast('Tanggal selesai harus lebih besar dari tanggal mulai', 'danger');
+                return;
+            }
+
+            const payload = {
+                kode,
+                persenDiskon,
+                potonganMaksimal,
+                minimalTransaksi,
+                kuotaPromo,
+                mulaiBerlaku: mulaiBerlaku + ':00',
+                selesaiBerlaku: selesaiBerlaku + ':00'
+            };
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+
+            try {
+                const res = await fetch(`${PROMO_SERVICE_URL}/api/promo`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.message || 'Gagal membuat kode promo');
+                }
+
+                showToast(`Kode promo ${kode} berhasil dibuat!`, 'success');
+                closeCreatePromoModal();
+                document.getElementById('createPromoForm').reset();
+                setDefaultDates();
+                await Promise.all([fetchPromoStats(), fetchPromos()]);
+            } catch (err) {
+                showToast(err.message, 'danger');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan & Publikasikan';
+            }
+        }
+
+        async function toggleStatus(id, kode, currentStatus) {
+            const isDeactivating = currentStatus === 'ACTIVE';
+            const confirmMsg = isDeactivating
+                ? `Yakin ingin MENONAKTIFKAN kode promo ${kode}? Pengguna tidak akan bisa menggunakan kode ini di checkout.`
+                : `Aktifkan kembali kode promo ${kode}?`;
+
+            if (!confirm(confirmMsg)) return;
+
+            const token = getAppToken();
+
+            try {
+                const res = await fetch(`${PROMO_SERVICE_URL}/api/promo/${id}/toggle-status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.message || 'Gagal mengubah status promo');
+                }
+
+                showToast(`Status promo ${kode} berhasil diperbarui!`, 'success');
+                await Promise.all([fetchPromoStats(), fetchPromos()]);
+            } catch (err) {
+                showToast(err.message, 'danger');
+            }
+        }
+    </script>
+
+    <!-- Footer -->
+    <!-- Unified TIKARA Footer (Light Theme) -->
+    <footer class="tikara-footer">
+        <div class="footer-container">
+            <div class="footer-main-grid">
+                <!-- Brand & Security Column -->
+                <div class="footer-col footer-brand-col">
+                    <a href="http://localhost:8082/index.html" class="footer-logo" aria-label="TIKARA Beranda">
+                        <i class="fa-solid fa-ticket"></i> <span>TIKARA</span>
+                    </a>
+                    <p class="footer-desc">
+                        Beli tiket konser, festival musik, dan event seru lainnya dengan mudah &amp; aman di TIKARA.
+                        <strong>#PASTIBISA</strong> nonton konser &amp; festival idaman!
+                    </p>
+                    <div class="footer-security-section">
+                        <h4 class="footer-subheading"><i class="fa-solid fa-shield-halved"></i> Keamanan dan Privasi
+                        </h4>
+                        <div class="footer-badges-wrap">
+                            <a href="http://localhost:8082/terms.html#security" class="footer-iso-badge"
+                                title="Tersertifikasi ISO/IEC 27001 &amp; ISO/IEC 27701">
+                                <div class="iso-icon-box">
+                                    <i class="fa-solid fa-award"></i>
+                                </div>
+                                <div class="iso-info-box">
+                                    <span class="iso-title">ISO/IEC 27001 &bull; 27701</span>
+                                    <span class="iso-desc">Information Security &amp; Privacy Management</span>
+                                </div>
+                            </a>
+                            <div class="footer-ssl-badge">
+                                <i class="fa-solid fa-lock"></i> <span>256-Bit SSL Enkripsi Terverifikasi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Columns -->
+                <div class="footer-nav-columns">
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Tentang TIKARA</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/about.html">Tentang Kami</a></li>
+                            <li><a href="http://localhost:8082/blog.html">Blog &amp; Berita Musik</a></li>
+                        </ul>
+                        <h3 class="footer-heading" style="margin-top: 1.75rem;">Produk</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/index.html#catalog">Semua Konser &amp; Festival</a></li>
+                            <li><a href="http://localhost:8083/my-tickets.html">Tiket Saya</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Event Creator</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/creator-guide.html#biaya">Biaya &amp; Komisi</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#kerjasama">Kerjasama dengan Kami</a>
+                            </li>
+                            <li><a href="http://localhost:8082/creator-guide.html#panduan">Buku Panduan Creator</a></li>
+                            <li><a href="http://localhost:8082/create-event.html">Buat Event Konser</a></li>
+                            <li><a href="http://localhost:8082/organizer-dashboard.html">Dashboard Penyelenggara</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Dukungan</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/help.html">Pusat Bantuan (FAQ)</a></li>
+                            <li><a href="http://localhost:8082/terms.html#terms">Syarat dan Ketentuan</a></li>
+                            <li><a href="http://localhost:8082/terms.html#privacy">Kebijakan Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#security">Kepatuhan Keamanan &amp; Privasi</a>
+                            </li>
+                            <li><a href="http://localhost:8082/terms.html#cookies">Kebijakan Cookies</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Action / Payment & Social Column -->
+                <div class="footer-col footer-action-col">
+                    <h3 class="footer-heading">Pilihan Pembayaran</h3>
+                    <div class="footer-payment-grid" title="Metode Pembayaran Resmi TIKARA">
+                        <span class="pay-chip"><i class="fa-solid fa-qrcode"></i> QRIS</span>
+                        <span class="pay-chip">BCA</span>
+                        <span class="pay-chip">Mandiri</span>
+                        <span class="pay-chip">BRI</span>
+                        <span class="pay-chip">BNI</span>
+                        <span class="pay-chip">BTN</span>
+                        <span class="pay-chip">BSI</span>
+                        <span class="pay-chip">Permata</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-visa"></i> VISA</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-mastercard"></i> Master</span>
+                        <span class="pay-chip">ShopeePay</span>
+                        <span class="pay-chip">GoPay</span>
+                        <span class="pay-chip">Alfamart</span>
+                        <span class="pay-chip">Indomaret</span>
+                    </div>
+                    <div>
+                        <a href="http://localhost:8082/help.html#pembayaran" class="footer-pay-guide-link">
+                            <i class="fa-solid fa-circle-question"></i> Panduan &amp; Cara Bayar
+                        </a>
+                    </div>
+
+                    <div class="footer-social-wrap" style="margin-top: 1.75rem;">
+                        <h3 class="footer-heading">Ikuti Kami untuk Update</h3>
+                        <div class="footer-social-links">
+                            <a href="https://www.instagram.com/deafriliart/?__pwa=1" target="_blank"
+                                rel="noopener noreferrer" class="social-btn social-ig" aria-label="Instagram TIKARA"
+                                title="Instagram">
+                                <i class="fa-brands fa-instagram"></i>
+                            </a>
+                            <a href="https://www.tiktok.com/@realityclubofficial" target="_blank"
+                                rel="noopener noreferrer" class="social-btn social-tiktok" aria-label="TikTok TIKARA"
+                                title="TikTok">
+                                <i class="fa-brands fa-tiktok"></i>
+                            </a>
+                            <a href="https://x.com/reality_club" target="_blank" rel="noopener noreferrer"
+                                class="social-btn social-x" aria-label="X (Twitter) TIKARA" title="X (Twitter)">
+                                <i class="fa-brands fa-x-twitter"></i>
+                            </a>
+                            <a href="https://www.facebook.com/officialrealityclub/?locale=id_ID" target="_blank"
+                                rel="noopener noreferrer" class="social-btn social-fb" aria-label="Facebook TIKARA"
+                                title="Facebook">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </a>
+                            <a href="https://youtu.be/SlwQyBkCtZE?si=WBPI1nh0A6A2e9Dv" target="_blank"
+                                rel="noopener noreferrer" class="social-btn social-yt" aria-label="YouTube TIKARA"
+                                title="YouTube">
+                                <i class="fa-brands fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Copyright -->
+            <div class="footer-bottom-bar">
+                <p>&copy; 2026 TIKARA (PT Tikara Nusantara Sejahtera). Seluruh hak cipta dilindungi undang-undang.</p>
+                <div style="display: flex; gap: 1.25rem; font-size: 0.8rem;">
+                    <a href="http://localhost:8082/terms.html#terms">Syarat Layanan</a>
+                    <a href="http://localhost:8082/terms.html#privacy">Privasi</a>
+                    <a href="http://localhost:8082/terms.html#security">Keamanan</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

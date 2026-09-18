@@ -21,7 +21,7 @@ public class Notifikasi {
     private Long id;
 
     @Column(name = "pengguna_id", nullable = false)
-    private Long penggunaId; // Referensi ID ke user-service
+    private Long penggunaId;
 
     @Column(name = "judul", nullable = false)
     private String judul;
@@ -30,10 +30,10 @@ public class Notifikasi {
     private String pesan;
 
     @Column(name = "tipe", nullable = false)
-    private String tipe; // EMAIL, IN_APP, SMS
+    private String tipe;
 
     @Column(name = "status", nullable = false)
-    private String status; // SENT, PENDING, FAILED
+    private String status;
 
     @Column(name = "dibaca", nullable = false)
     private Boolean dibaca;

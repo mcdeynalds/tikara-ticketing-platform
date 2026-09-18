@@ -7,6 +7,5 @@ import org.springframework.stereotype.Component;
 public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
-        // Dummy data seeder disabled. Real tickets are created by organizers.
     }
 }

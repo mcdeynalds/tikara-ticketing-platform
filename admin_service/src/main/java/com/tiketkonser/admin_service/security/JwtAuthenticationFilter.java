@@ -27,22 +27,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
-    ) throws ServletException, IOException {
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String userEmail;
+        String jwt = null;
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwt = authHeader.substring(7);
+        } else if (request.getCookies() != null) {
+            for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                if ("tikara_token".equals(cookie.getName())) {
+                    try {
+                        jwt = java.net.URLDecoder.decode(cookie.getValue(), java.nio.charset.StandardCharsets.UTF_8);
+                    } catch (Exception e) {
+                        jwt = cookie.getValue();
+                    }
+                    break;
+                }
+            }
+        }
+
+        if (jwt == null || jwt.trim().isEmpty()) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        jwt = authHeader.substring(7);
-
         try {
-            userEmail = jwtService.extractEmail(jwt);
+            final String userEmail = jwtService.extractEmail(jwt);
 
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (!jwtService.isTokenExpired(jwt)) {
@@ -50,22 +61,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     Long userId = jwtService.extractUserId(jwt);
 
                     List<SimpleGrantedAuthority> authorities = Collections.emptyList();
-                    if (role != null) {
-                        authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                    if (role != null && !role.trim().isEmpty()) {
+                        String cleanRole = role.trim().toUpperCase();
+                        if (!cleanRole.startsWith("ROLE_")) {
+                            cleanRole = "ROLE_" + cleanRole;
+                        }
+                        authorities = List.of(new SimpleGrantedAuthority(cleanRole));
                     }
 
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userEmail,
                             userId,
-                            authorities
-                    );
+                            authorities);
 
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
         } catch (Exception e) {
-            // Biarkan unauthenticated jika token invalid
         }
 
         filterChain.doFilter(request, response);

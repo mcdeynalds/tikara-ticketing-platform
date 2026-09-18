@@ -8,7 +8,12 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
         .checkout-container {
+            width: 100%;
             max-width: 1100px;
             margin: 2.5rem auto;
             padding: 0 1.5rem;
@@ -16,10 +21,86 @@
             grid-template-columns: 1.6fr 1fr;
             gap: 2rem;
             align-items: start;
+            min-width: 0;
+            box-sizing: border-box;
         }
-        @media (max-width: 860px) {
+
+        /* ==========================================================================
+           BREAKPOINT 1: TABLET (769px – 1024px)
+           ========================================================================== */
+        @media (min-width: 769px) and (max-width: 1024px) {
             .checkout-container {
                 grid-template-columns: 1fr;
+                gap: 1.5rem;
+                margin: 1.75rem auto;
+                padding: 0 1.25rem;
+            }
+            .summary-card {
+                position: static !important;
+            }
+        }
+
+        /* ==========================================================================
+           BREAKPOINT 2: MOBILE (≤ 768px)
+           ========================================================================== */
+        @media (max-width: 768px) {
+            .checkout-container {
+                grid-template-columns: 1fr;
+                gap: 1.25rem;
+                margin: 1rem auto;
+                padding: 0 0.875rem;
+            }
+            .event-banner-card {
+                margin-bottom: 1rem;
+                border-radius: 14px;
+            }
+            .event-banner-flex {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            .event-thumb {
+                width: 100% !important;
+                height: 180px !important;
+                border-radius: 10px;
+            }
+            .profile-card {
+                padding: 1.25rem 1rem !important;
+                border-radius: 14px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr !important;
+                gap: 0.75rem !important;
+            }
+            .form-input {
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            .category-card {
+                padding: 1rem !important;
+            }
+            .category-card-inner {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 0.75rem;
+            }
+            .category-qty-wrap {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .summary-card {
+                position: static !important;
+                padding: 1.25rem 1rem !important;
+                border-radius: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .event-thumb {
+                height: 150px !important;
             }
         }
         .event-banner-card {
@@ -39,10 +120,13 @@
         .event-thumb {
             width: 110px;
             height: 110px;
+            min-width: 80px;
+            min-height: 80px;
             border-radius: 12px;
             object-fit: cover;
             background: #e2e8f0;
             flex-shrink: 0;
+            display: block;
         }
         .category-card {
             border: 2px solid var(--border-color);
@@ -121,7 +205,8 @@
                 </button>
             </div>
         </div>
-        <nav class="navbar-mobile-drawer" id="navbarMobileDrawer"></nav>
+        <div class="nav-overlay" id="navOverlay"></div>
+    <nav class="navbar-mobile-drawer" id="navbarMobileDrawer"></nav>
     </header>
 
     <main class="checkout-container">
@@ -130,7 +215,7 @@
             <!-- Event Overview Header -->
             <div class="event-banner-card" id="eventCardBox">
                 <div class="event-banner-flex">
-                    <img id="eventPoster" src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=300" alt="Poster Konser" class="event-thumb">
+                    <img id="eventPoster" src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=400&q=80" alt="Poster Konser" class="event-thumb" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=400&q=80';">
                     <div style="flex:1;">
                         <span class="role-badge pembeli" style="font-size:0.75rem; padding:0.2rem 0.6rem; margin-bottom:0.4rem; display:inline-block;" id="eventStatusBadge">RESMI TERVERIFIKASI</span>
                         <h2 style="font-size:1.35rem; font-weight:800; color:var(--text-main); margin-bottom:0.3rem;" id="eventTitle">Memuat Konser...</h2>
@@ -164,26 +249,49 @@
 
             <!-- Purchaser Details Form -->
             <div class="profile-card" style="padding:1.75rem;">
-                <h3 style="font-size:1.2rem; font-weight:800; color:var(--text-main); margin-bottom:0.3rem;">Informasi Pemesan</h3>
-                <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.25rem;">E-Tiket resmi dengan QR Code akan diterbitkan atas nama data identitas berikut:</p>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.4rem;">
+                    <h3 style="font-size:1.2rem; font-weight:800; color:var(--text-main); margin:0;">Identitas Pemesan Tiket</h3>
+                    <span style="font-size:0.75rem; background:rgba(124,58,237,0.1); color:var(--primary-color); padding:0.25rem 0.6rem; border-radius:6px; font-weight:700;">
+                        <i class="fa-solid fa-id-card"></i> Data Resmi e-KTP
+                    </span>
+                </div>
+                <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.25rem;">E-Tiket resmi dan QR Code gate access diterbitkan sesuai data identitas yang dimasukkan berikut:</p>
 
                 <div class="form-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
                     <div class="form-group">
-                        <label class="form-label">Nama Lengkap Sesuai ID <span style="color:var(--danger-color);">*</span></label>
-                        <input type="text" id="buyerName" class="form-input" placeholder="Masukkan nama lengkap" required>
+                        <label class="form-label" for="buyerName">Nama Lengkap Sesuai ID/KTP <span style="color:var(--danger-color);">*</span></label>
+                        <input type="text" id="buyerName" class="form-input" placeholder="Nama lengkap tanpa gelar/angka" required autocomplete="name">
+                        <span class="field-error" id="buyerNameError" style="display:none;"></span>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Alamat Email <span style="color:var(--danger-color);">*</span></label>
-                        <input type="email" id="buyerEmail" class="form-input" placeholder="contoh@email.com" required>
+                        <label class="form-label" for="buyerNik">Nomor Induk Kependudukan (NIK) <span style="color:var(--danger-color);">*</span></label>
+                        <input type="text" id="buyerNik" class="form-input" placeholder="16 digit angka e-KTP" maxlength="16" required inputmode="numeric">
+                        <span class="field-error" id="buyerNikError" style="display:none;"></span>
+                        <small style="color:var(--text-muted); font-size:0.75rem; display:block; margin-top:0.25rem;">
+                            <i class="fa-solid fa-shield-check"></i> 16 digit NIK resmi untuk verifikasi barcode gate
+                        </small>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Nomor WhatsApp / HP <span style="color:var(--danger-color);">*</span></label>
-                        <input type="tel" id="buyerPhone" class="form-input" placeholder="08123456789" required>
+                        <label class="form-label" for="buyerEmail">Alamat Email Konfirmasi <span style="color:var(--danger-color);">*</span></label>
+                        <input type="email" id="buyerEmail" class="form-input" placeholder="nama@domain.com" required autocomplete="email">
+                        <span class="field-error" id="buyerEmailError" style="display:none;"></span>
+                        <small style="color:var(--text-muted); font-size:0.75rem; display:block; margin-top:0.25rem;">
+                            File e-tiket PDF & invoice akan dikirim ke alamat ini
+                        </small>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Nomor Identitas (NIK / Paspor)</label>
-                        <input type="text" id="buyerIdentity" class="form-input" placeholder="3271xxxxxxxxxxxx">
+                        <label class="form-label" for="buyerPhone">Nomor WhatsApp / HP Aktif <span style="color:var(--danger-color);">*</span></label>
+                        <input type="tel" id="buyerPhone" class="form-input" placeholder="08xxxxxxxxxx" required autocomplete="tel" inputmode="tel">
+                        <span class="field-error" id="buyerPhoneError" style="display:none;"></span>
+                        <small style="color:var(--text-muted); font-size:0.75rem; display:block; margin-top:0.25rem;">
+                            Untuk notifikasi instan status pembayaran & e-tiket
+                        </small>
                     </div>
+                </div>
+
+                <div style="margin-top:1rem; padding:0.75rem 1rem; background:#F8FAFC; border-radius:8px; border-left:3px solid var(--primary-color); font-size:0.8rem; color:#64748B; display:flex; align-items:center; gap:0.5rem;">
+                    <i class="fa-solid fa-lock" style="color:var(--primary-color);"></i>
+                    <span>Data identitas Anda dilindungi enkripsi standar industri dan hanya digunakan untuk verifikasi e-tiket konser resmi.</span>
                 </div>
             </div>
         </div>
@@ -220,7 +328,7 @@
                     </div>
                     <div id="rowDiskon" style="display:none; justify-content:space-between; margin-bottom:0.5rem; font-size:0.9rem; color:#10B981;">
                         <span><i class="fa-solid fa-tag"></i> Diskon Promo (<span id="promoCodeLabel">-</span>)</span>
-                        <span id="summaryDiskon" style="font-weight:700;">- Rp 0</span>
+                        <span id="summaryDiskon" style="font-weight:700;">- 0</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.9rem; color:var(--text-muted);">
                         <span>Biaya Layanan Sistem (2%)</span>
@@ -241,13 +349,25 @@
                     <span>Stok tiket akan di-reservasi selama <strong>15 menit</strong> setelah Anda mengklik tombol lanjut pembayaran.</span>
                 </div>
 
-                <button class="btn btn-primary" id="btnSubmitOrder" style="width:100%; padding:0.95rem; font-size:1rem;" onclick="submitOrder()" disabled>
+                <!-- Terms & Conditions Agreement -->
+                <div style="margin-bottom:1rem; padding-top:0.5rem; border-top:1px dashed var(--border-color);">
+                    <label style="display:flex; align-items:flex-start; gap:0.65rem; font-size:0.82rem; color:var(--text-main); cursor:pointer;">
+                        <input type="checkbox" id="agreeTerms" style="margin-top:0.2rem; width:17px; height:17px; accent-color:var(--primary-color); cursor:pointer;">
+                        <span style="line-height:1.4;">
+                            Saya telah membaca dan menyetujui <a href="javascript:void(0)" onclick="openTermsModal()" style="color:var(--primary-color); font-weight:700; text-decoration:underline;">Syarat & Ketentuan Pembelian</a> TIKARA serta menjamin kebenaran data identitas di atas.
+                        </span>
+                    </label>
+                    <span class="field-error" id="agreeTermsError" style="display:none; margin-top:0.35rem; font-size:0.8rem;"></span>
+                </div>
+
+                <button class="btn btn-primary" id="btnSubmitOrder" style="width:100%; padding:0.95rem; font-size:1rem; font-weight:700;" onclick="submitOrder()" disabled>
                     Lanjut ke Pembayaran <i class="fa-solid fa-arrow-right" style="margin-left:0.4rem;"></i>
                 </button>
             </div>
         </div>
     </main>
 
+    <script src="/js/validator.js"></script>
     <script src="/js/script.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
@@ -255,6 +375,8 @@
         let currentEvent = null;
         let categoriesData = [];
         let selectedQuantities = {}; // { [kategoriTiketId]: number }
+
+        let currentUserProfile = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
             const auth = getAuthState();
@@ -274,12 +396,11 @@
                 return;
             }
 
-            // Autofill user details from authenticated user
-            if (auth.user) {
-                document.getElementById('buyerName').value = auth.user.nama || auth.user.namaLengkap || '';
-                document.getElementById('buyerEmail').value = auth.user.email || '';
-                document.getElementById('buyerPhone').value = auth.user.noHp || '';
-            }
+            // Inisialisasi realtime validation
+            initPurchaserValidation();
+
+            // Load profile dari user-service untuk data paling update
+            await loadUserProfile(auth);
 
             if (!eventId) {
                 alert('ID Event tidak ditemukan pada URL tautan.');
@@ -289,6 +410,155 @@
 
             await loadEventAndCategories();
         });
+
+        async function loadUserProfile(auth) {
+            const token = (typeof getToken === 'function' ? getToken() : null) || (typeof getJwtToken === 'function' ? getJwtToken() : null) || localStorage.getItem('jwt_token');
+            if (token) {
+                try {
+                    const res = await fetch('http://localhost:8081/api/users/profile', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        currentUserProfile = await res.json();
+                    }
+                } catch(e) {
+                    console.warn('Gagal memuat profil pengguna:', e);
+                }
+            }
+
+            const nameEl = document.getElementById('buyerName');
+            const emailEl = document.getElementById('buyerEmail');
+            const phoneEl = document.getElementById('buyerPhone');
+            const nikEl = document.getElementById('buyerNik');
+
+            const initialName = (currentUserProfile && (currentUserProfile.nama || currentUserProfile.namaLengkap)) || (auth.user && (auth.user.nama || auth.user.namaLengkap)) || '';
+            const initialEmail = (currentUserProfile && currentUserProfile.email) || (auth.user && auth.user.email) || '';
+            const initialPhone = (currentUserProfile && currentUserProfile.nomorTelepon) || (auth.user && auth.user.noHp) || '';
+            const initialNik = (currentUserProfile && currentUserProfile.nik) || '';
+
+            if (nameEl && initialName) {
+                nameEl.value = initialName;
+                if (window.TikaraValidator) TikaraValidator.applyState(nameEl, TikaraValidator.validateFullName(initialName), 'buyerNameError');
+            }
+            if (emailEl && initialEmail) {
+                emailEl.value = initialEmail;
+                if (window.TikaraValidator) TikaraValidator.applyState(emailEl, TikaraValidator.validateEmail(initialEmail), 'buyerEmailError');
+            }
+            if (phoneEl && initialPhone) {
+                phoneEl.value = initialPhone;
+                if (window.TikaraValidator) TikaraValidator.applyState(phoneEl, TikaraValidator.validatePhone(initialPhone), 'buyerPhoneError');
+            }
+            if (nikEl && initialNik) {
+                nikEl.value = initialNik;
+                if (window.TikaraValidator) TikaraValidator.applyState(nikEl, TikaraValidator.validateNik(initialNik), 'buyerNikError');
+            }
+        }
+
+        function initPurchaserValidation() {
+            const nameEl = document.getElementById('buyerName');
+            const nikEl = document.getElementById('buyerNik');
+            const emailEl = document.getElementById('buyerEmail');
+            const phoneEl = document.getElementById('buyerPhone');
+            const promoInput = document.getElementById('promoCodeInput');
+            const agreeTerms = document.getElementById('agreeTerms');
+
+            if (nikEl) {
+                nikEl.addEventListener('input', () => {
+                    if (window.TikaraValidator) TikaraValidator.formatNikInput(nikEl);
+                    if (nikEl.value.length === 16 && window.TikaraValidator) {
+                        TikaraValidator.applyState(nikEl, TikaraValidator.validateNik(nikEl.value), 'buyerNikError');
+                    } else {
+                        nikEl.classList.remove('input-valid');
+                    }
+                });
+                nikEl.addEventListener('blur', () => {
+                    if (window.TikaraValidator && nikEl.value) {
+                        TikaraValidator.applyState(nikEl, TikaraValidator.validateNik(nikEl.value), 'buyerNikError');
+                    }
+                });
+            }
+
+            if (nameEl) {
+                nameEl.addEventListener('blur', () => {
+                    if (window.TikaraValidator && nameEl.value) {
+                        TikaraValidator.applyState(nameEl, TikaraValidator.validateFullName(nameEl.value), 'buyerNameError');
+                    }
+                });
+                nameEl.addEventListener('input', () => {
+                    if (nameEl.classList.contains('input-error') && window.TikaraValidator) {
+                        TikaraValidator.applyState(nameEl, TikaraValidator.validateFullName(nameEl.value), 'buyerNameError');
+                    }
+                });
+            }
+
+            if (emailEl) {
+                emailEl.addEventListener('blur', () => {
+                    if (window.TikaraValidator && emailEl.value) {
+                        TikaraValidator.applyState(emailEl, TikaraValidator.validateEmail(emailEl.value), 'buyerEmailError');
+                    }
+                });
+                emailEl.addEventListener('input', () => {
+                    if (emailEl.classList.contains('input-error') && window.TikaraValidator) {
+                        TikaraValidator.applyState(emailEl, TikaraValidator.validateEmail(emailEl.value), 'buyerEmailError');
+                    }
+                });
+            }
+
+            if (phoneEl) {
+                phoneEl.addEventListener('input', () => {
+                    if (window.TikaraValidator) TikaraValidator.formatPhoneInput(phoneEl);
+                    if (phoneEl.classList.contains('input-error') && window.TikaraValidator) {
+                        TikaraValidator.applyState(phoneEl, TikaraValidator.validatePhone(phoneEl.value), 'buyerPhoneError');
+                    }
+                });
+                phoneEl.addEventListener('blur', () => {
+                    if (window.TikaraValidator && phoneEl.value) {
+                        TikaraValidator.applyState(phoneEl, TikaraValidator.validatePhone(phoneEl.value), 'buyerPhoneError');
+                    }
+                });
+            }
+
+            if (agreeTerms) {
+                agreeTerms.addEventListener('change', () => {
+                    const err = document.getElementById('agreeTermsError');
+                    if (err && agreeTerms.checked) err.style.display = 'none';
+                });
+            }
+
+            if (promoInput) {
+                promoInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        applyPromo();
+                    }
+                });
+                promoInput.addEventListener('input', () => {
+                    promoInput.classList.remove('input-error');
+                    const notice = document.getElementById('promoNotice');
+                    if (notice && !appliedPromo) notice.style.display = 'none';
+                });
+            }
+        }
+
+        function openTermsModal() {
+            const m = document.getElementById('termsModal');
+            if (m) m.style.display = 'flex';
+        }
+
+        function closeTermsModal() {
+            const m = document.getElementById('termsModal');
+            if (m) m.style.display = 'none';
+        }
+
+        function agreeAndCloseTerms() {
+            const chk = document.getElementById('agreeTerms');
+            if (chk) {
+                chk.checked = true;
+                const err = document.getElementById('agreeTermsError');
+                if (err) err.style.display = 'none';
+            }
+            closeTermsModal();
+        }
 
         async function loadEventAndCategories() {
             try {
@@ -306,8 +576,14 @@
                     document.getElementById('eventDate').innerHTML = `<i class="fa-regular fa-calendar" style="color:var(--primary-color);"></i> ${dt.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour:'2-digit', minute:'2-digit' })}`;
                 }
                 if (currentEvent.gambarUrl) {
-                    const posterUrl = currentEvent.gambarUrl.startsWith('http') ? currentEvent.gambarUrl : `http://localhost:8082${currentEvent.gambarUrl}`;
-                    document.getElementById('eventPoster').src = posterUrl;
+                    let posterUrl = currentEvent.gambarUrl.trim();
+                    if (!posterUrl.startsWith('http://') && !posterUrl.startsWith('https://') && !posterUrl.startsWith('data:image/')) {
+                        posterUrl = `http://localhost:8082${posterUrl.startsWith('/') ? '' : '/'}${posterUrl}`;
+                    }
+                    const posterEl = document.getElementById('eventPoster');
+                    if (posterEl) {
+                        posterEl.src = posterUrl;
+                    }
                 }
 
                 // 2. Fetch Ticket Categories from ticket_service (Port 8083)
@@ -316,6 +592,17 @@
                     throw new Error('Gagal memuat kategori tiket konser ini');
                 }
                 categoriesData = await catRes.json();
+
+                // Auto pre-select category & quantity if passed from pilih-tiket.html
+                const preCatId = urlParams.get('catId') || urlParams.get('kategoriId');
+                const preQty = parseInt(urlParams.get('qty')) || 0;
+                if (preCatId && preQty > 0) {
+                    const matched = categoriesData.find(c => c.id == preCatId);
+                    if (matched) {
+                        selectedQuantities[matched.id] = Math.min(preQty, 4);
+                    }
+                }
+
                 renderCategories();
             } catch (err) {
                 console.error(err);
@@ -380,9 +667,9 @@
 
                 html += `
                     <div class="category-card ${qty > 0 ? 'selected' : ''} ${isUnavailable ? 'disabled' : ''}" id="catCard_${cat.id}">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div class="category-card-inner" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem;">
                             <div>
-                                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem; flex-wrap:wrap;">
                                     <h4 style="font-size:1.15rem; font-weight:800; color:var(--text-main); margin:0;">${cat.namaKategori}</h4>
                                     ${statusBadge}
                                 </div>
@@ -392,7 +679,7 @@
                             </div>
 
                             <!-- Qty Stepper -->
-                            <div>
+                            <div class="category-qty-wrap">
                                 ${isUnavailable ? `
                                     <button class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 0.8rem;" disabled>Tidak Tersedia</button>
                                 ` : `
@@ -486,7 +773,7 @@
                 if (appliedPromo && diskon > 0) {
                     rowDiskon.style.display = 'flex';
                     document.getElementById('promoCodeLabel').textContent = appliedPromo.kode;
-                    document.getElementById('summaryDiskon').textContent = `- Rp ${formatRupiah(diskon)}`;
+                    document.getElementById('summaryDiskon').textContent = `- ${formatRupiah(diskon)}`;
                 } else {
                     rowDiskon.style.display = 'none';
                 }
@@ -525,12 +812,24 @@
             const notice = document.getElementById('promoNotice');
             const code = (input.value || '').trim().toUpperCase();
 
-            if (!code) {
+            // Client-side format validation using TikaraValidator
+            if (window.TikaraValidator) {
+                const clientVal = TikaraValidator.validatePromoCode(code);
+                if (!clientVal.valid) {
+                    notice.style.display = 'block';
+                    notice.style.color = 'var(--danger-color)';
+                    notice.textContent = clientVal.message;
+                    input.classList.add('input-error');
+                    return;
+                }
+            } else if (!code) {
                 notice.style.display = 'block';
                 notice.style.color = 'var(--danger-color)';
                 notice.textContent = 'Masukkan kode promo terlebih dahulu';
                 return;
             }
+
+            input.classList.remove('input-error');
 
             const subtotal = getTicketSubtotal();
             if (subtotal <= 0) {
@@ -540,7 +839,12 @@
                 return;
             }
 
+            const btnPromo = document.getElementById('btnApplyPromo');
+            btnPromo.disabled = true;
+            btnPromo.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
             try {
+                // promo_service runs on Port 8088
                 const res = await fetch('http://localhost:8088/api/promo/validate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -553,29 +857,42 @@
                     notice.style.color = '#10B981';
                     notice.innerHTML = `<i class="fa-solid fa-circle-check"></i> Promo <strong>${data.kode}</strong> aktif! Hemat Rp ${formatRupiah(data.potongan)} <a href="javascript:void(0)" onclick="removePromo()" style="color:var(--danger-color); margin-left:0.5rem; text-decoration:underline;">Hapus</a>`;
                     input.disabled = true;
-                    document.getElementById('btnApplyPromo').disabled = true;
+                    btnPromo.disabled = true;
+                    btnPromo.textContent = 'Aktif';
                     updateSummary();
+                    showToast(`Kode promo ${data.kode} berhasil digunakan!`, 'success');
                 } else {
                     appliedPromo = null;
                     notice.style.display = 'block';
                     notice.style.color = 'var(--danger-color)';
-                    notice.textContent = data.message || 'Kode promo tidak valid atau belum memenuhi syarat';
+                    notice.textContent = data.message || 'Kode promo tidak valid atau syarat belum terpenuhi';
+                    input.classList.add('input-error');
+                    btnPromo.disabled = false;
+                    btnPromo.textContent = 'Gunakan';
                     updateSummary();
                 }
             } catch (e) {
+                console.error(e);
                 notice.style.display = 'block';
                 notice.style.color = 'var(--danger-color)';
-                notice.textContent = 'Gagal menghubungi server promo';
+                notice.textContent = 'Gagal menghubungi server promo. Silakan coba kembali.';
+                btnPromo.disabled = false;
+                btnPromo.textContent = 'Gunakan';
             }
         }
 
         function removePromo() {
             appliedPromo = null;
-            document.getElementById('promoCodeInput').disabled = false;
-            document.getElementById('promoCodeInput').value = '';
-            document.getElementById('btnApplyPromo').disabled = false;
+            const input = document.getElementById('promoCodeInput');
+            const btn = document.getElementById('btnApplyPromo');
+            input.disabled = false;
+            input.value = '';
+            input.classList.remove('input-error', 'input-valid');
+            btn.disabled = false;
+            btn.textContent = 'Gunakan';
             document.getElementById('promoNotice').style.display = 'none';
             updateSummary();
+            showToast('Kode promo dibatalkan', 'info');
         }
 
         async function submitOrder() {
@@ -585,18 +902,85 @@
                 return;
             }
 
-            const buyerName = document.getElementById('buyerName').value.trim();
-            const buyerEmail = document.getElementById('buyerEmail').value.trim();
-            const buyerPhone = document.getElementById('buyerPhone').value.trim();
+            const nameEl = document.getElementById('buyerName');
+            const nikEl = document.getElementById('buyerNik');
+            const emailEl = document.getElementById('buyerEmail');
+            const phoneEl = document.getElementById('buyerPhone');
+            const agreeTerms = document.getElementById('agreeTerms');
+            const agreeTermsError = document.getElementById('agreeTermsError');
 
-            if (!buyerName || !buyerEmail || !buyerPhone) {
-                showToast('Mohon lengkapi data pemesan (Nama, Email, dan No HP).', 'warning');
+            const buyerName = nameEl.value.trim();
+            const buyerNik = nikEl.value.trim();
+            const buyerEmail = emailEl.value.trim();
+            const buyerPhone = phoneEl.value.trim();
+
+            let isValid = true;
+            let firstInvalidEl = null;
+
+            // 1. Validasi Nama
+            if (window.TikaraValidator) {
+                const vName = TikaraValidator.validateFullName(buyerName);
+                TikaraValidator.applyState(nameEl, vName, 'buyerNameError');
+                if (!vName.valid) { isValid = false; if (!firstInvalidEl) firstInvalidEl = nameEl; }
+            } else if (!buyerName) {
+                nameEl.classList.add('input-error');
+                isValid = false; if (!firstInvalidEl) firstInvalidEl = nameEl;
+            }
+
+            // 2. Validasi NIK
+            if (window.TikaraValidator) {
+                const vNik = TikaraValidator.validateNik(buyerNik);
+                TikaraValidator.applyState(nikEl, vNik, 'buyerNikError');
+                if (!vNik.valid) { isValid = false; if (!firstInvalidEl) firstInvalidEl = nikEl; }
+            } else if (!buyerNik || buyerNik.length !== 16) {
+                nikEl.classList.add('input-error');
+                isValid = false; if (!firstInvalidEl) firstInvalidEl = nikEl;
+            }
+
+            // 3. Validasi Email
+            if (window.TikaraValidator) {
+                const vEmail = TikaraValidator.validateEmail(buyerEmail);
+                TikaraValidator.applyState(emailEl, vEmail, 'buyerEmailError');
+                if (!vEmail.valid) { isValid = false; if (!firstInvalidEl) firstInvalidEl = emailEl; }
+            } else if (!buyerEmail) {
+                emailEl.classList.add('input-error');
+                isValid = false; if (!firstInvalidEl) firstInvalidEl = emailEl;
+            }
+
+            // 4. Validasi Nomor Telepon
+            if (window.TikaraValidator) {
+                const vPhone = TikaraValidator.validatePhone(buyerPhone);
+                TikaraValidator.applyState(phoneEl, vPhone, 'buyerPhoneError');
+                if (!vPhone.valid) { isValid = false; if (!firstInvalidEl) firstInvalidEl = phoneEl; }
+            } else if (!buyerPhone) {
+                phoneEl.classList.add('input-error');
+                isValid = false; if (!firstInvalidEl) firstInvalidEl = phoneEl;
+            }
+
+            // 5. Validasi Syarat & Ketentuan
+            if (!agreeTerms || !agreeTerms.checked) {
+                if (agreeTermsError) {
+                    agreeTermsError.textContent = 'Anda wajib menyetujui syarat & ketentuan sebelum melanjutkan.';
+                    agreeTermsError.style.display = 'block';
+                }
+                isValid = false;
+                if (!firstInvalidEl) firstInvalidEl = agreeTerms;
+            } else {
+                if (agreeTermsError) agreeTermsError.style.display = 'none';
+            }
+
+            if (!isValid) {
+                showToast('Mohon periksa dan lengkapi data pemesan dengan benar.', 'warning');
+                if (firstInvalidEl) {
+                    firstInvalidEl.focus();
+                    firstInvalidEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
                 return;
             }
 
             const btnSubmit = document.getElementById('btnSubmitOrder');
             btnSubmit.disabled = true;
-            btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memproses Reservasi...`;
+            btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Memproses Reservasi Tiket...`;
 
             // Prepare items payload
             const itemsPayload = selectedCatIds.map(id => ({
@@ -611,6 +995,24 @@
 
             try {
                 const token = (typeof getToken === 'function' ? getToken() : null) || (typeof getJwtToken === 'function' ? getJwtToken() : null) || localStorage.getItem('jwt_token');
+                
+                // Simpan NIK ke profil user di background jika sebelumnya profil belum memiliki NIK
+                if (token && currentUserProfile && !currentUserProfile.nik && buyerNik) {
+                    fetch('http://localhost:8081/api/users/profile/update', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            nama: buyerName,
+                            nomorTelepon: buyerPhone,
+                            nik: buyerNik
+                        })
+                    }).catch(err => console.warn('Background sync NIK warning:', err));
+                }
+
+                // Kirim order ke order_service (Port 8084)
                 const res = await fetch('http://localhost:8084/api/orders', {
                     method: 'POST',
                     headers: {
@@ -622,13 +1024,13 @@
 
                 const data = await res.json();
                 if (!res.ok) {
-                    throw new Error(data.message || 'Gagal membuat pesanan');
+                    throw new Error(data.message || 'Gagal membuat reservasi tiket');
                 }
 
-                showToast('Pesanan berhasil dibuat! Mengarahkan ke pembayaran...', 'success');
+                showToast('Reservasi berhasil! Mengarahkan ke halaman konfirmasi pembayaran...', 'success');
                 setTimeout(() => {
                     window.location.href = `/pembayaran.html?orderId=${data.id}`;
-                }, 800);
+                }, 700);
             } catch (err) {
                 console.error(err);
                 showToast(err.message || 'Terjadi kesalahan saat memproses pesanan', 'error');
@@ -637,5 +1039,172 @@
             }
         }
     </script>
+    <!-- Terms & Conditions Modal -->
+    <div id="termsModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.65); backdrop-filter:blur(4px); z-index:9999; align-items:center; justify-content:center; padding:1.5rem;">
+        <div style="background:white; border-radius:18px; max-width:620px; width:100%; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2); overflow:hidden; animation:fadeIn 0.2s ease-out;">
+            <div style="padding:1.25rem 1.5rem; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <i class="fa-solid fa-file-contract fa-lg" style="color:var(--primary-color);"></i>
+                    <h3 style="font-size:1.15rem; font-weight:800; color:var(--text-main); margin:0;">Syarat & Ketentuan Pembelian Tiket</h3>
+                </div>
+                <button type="button" onclick="closeTermsModal()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1.25rem;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div style="padding:1.5rem; overflow-y:auto; font-size:0.875rem; color:#475569; line-height:1.6;">
+                <h4 style="font-size:0.95rem; font-weight:700; color:var(--text-main); margin-bottom:0.4rem;">1. Ketentuan Umum & Tiket Resmi</h4>
+                <p style="margin-bottom:0.75rem;">Setiap tiket yang dibeli melalui platform TIKARA adalah tiket resmi berlisensi promotor. 1 (satu) e-tiket hanya berlaku untuk 1 (satu) orang penonton untuk 1 kali akses masuk gate konser.</p>
+
+                <h4 style="font-size:0.95rem; font-weight:700; color:var(--text-main); margin-bottom:0.4rem;">2. Validasi Identitas (NIK e-KTP)</h4>
+                <p style="margin-bottom:0.75rem;">Pembeli wajib mengisi Nomor Induk Kependudukan (NIK) asli yang masih berlaku. Petugas gate berhak meminta pembeli menunjukkan e-KTP fisik / identitas resmi yang sesuai dengan data pada e-tiket sebelum diizinkan masuk.</p>
+
+                <h4 style="font-size:0.95rem; font-weight:700; color:var(--text-main); margin-bottom:0.4rem;">3. Batas Waktu Pembayaran</h4>
+                <p style="margin-bottom:0.75rem;">Setelah pesanan dibuat, pembeli memiliki batas waktu 15 menit untuk menyelesaikan pembayaran. Jika pembayaran tidak diterima dalam kurun waktu tersebut, reservasi tiket akan otomatis dibatalkan dan dikembalikan ke stok publik.</p>
+
+                <h4 style="font-size:0.95rem; font-weight:700; color:var(--text-main); margin-bottom:0.4rem;">4. Kebijakan Pengembalian Dana (Refund)</h4>
+                <p style="margin-bottom:0.75rem;">Tiket yang sudah dibeli bersifat non-refundable (tidak dapat dikembalikan), kecuali acara konser dibatalkan secara sepihak oleh pihak promotor atau penyelenggara resmi.</p>
+
+                <h4 style="font-size:0.95rem; font-weight:700; color:var(--text-main); margin-bottom:0.4rem;">5. Larangan Calo / Penjualan Kembali</h4>
+                <p>Dilarang keras memperjualbelikan tiket kembali dengan harga lebih tinggi untuk tujuan komersial atau calo. Tiket yang terindikasi manipulatif dapat dibatalkan secara sepihak tanpa pengembalian dana.</p>
+            </div>
+            <div style="padding:1rem 1.5rem; border-top:1px solid var(--border-color); background:#F8FAFC; text-align:right;">
+                <button type="button" class="btn btn-primary" onclick="agreeAndCloseTerms()" style="width:auto; padding:0.6rem 1.5rem; font-size:0.9rem;">
+                    Saya Mengerti & Setuju
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+            <!-- Unified TIKARA Footer (Light Theme) -->
+    <footer class="tikara-footer">
+        <div class="footer-container">
+            <div class="footer-main-grid">
+                <!-- Brand & Security Column -->
+                <div class="footer-col footer-brand-col">
+                    <a href="http://localhost:8082/index.html" class="footer-logo" aria-label="TIKARA Beranda">
+                        <i class="fa-solid fa-ticket"></i> <span>TIKARA</span>
+                    </a>
+                    <p class="footer-desc">
+                        Beli tiket konser, festival musik, dan event seru lainnya dengan mudah &amp; aman di TIKARA. 
+                        <strong>#PASTIBISA</strong> nonton konser &amp; festival idaman!
+                    </p>
+                    <div class="footer-security-section">
+                        <h4 class="footer-subheading"><i class="fa-solid fa-shield-halved"></i> Keamanan dan Privasi</h4>
+                        <div class="footer-badges-wrap">
+                            <a href="http://localhost:8082/terms.html#security" class="footer-iso-badge" title="Tersertifikasi ISO/IEC 27001 &amp; ISO/IEC 27701">
+                                <div class="iso-icon-box">
+                                    <i class="fa-solid fa-award"></i>
+                                </div>
+                                <div class="iso-info-box">
+                                    <span class="iso-title">ISO/IEC 27001 &bull; 27701</span>
+                                    <span class="iso-desc">Information Security &amp; Privacy Management</span>
+                                </div>
+                            </a>
+                            <div class="footer-ssl-badge">
+                                <i class="fa-solid fa-lock"></i> <span>256-Bit SSL Enkripsi Terverifikasi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Columns -->
+                <div class="footer-nav-columns">
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Tentang TIKARA</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/about.html">Tentang Kami</a></li>
+                            <li><a href="http://localhost:8082/blog.html">Blog &amp; Berita Musik</a></li>
+                        </ul>
+                        <h3 class="footer-heading" style="margin-top: 1.75rem;">Produk</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/index.html#catalog">Semua Konser &amp; Festival</a></li>
+                            <li><a href="http://localhost:8083/my-tickets.html">Tiket Saya</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Event Creator</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/creator-guide.html#biaya">Biaya &amp; Komisi</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#kerjasama">Kerjasama dengan Kami</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#panduan">Buku Panduan Creator</a></li>
+                            <li><a href="http://localhost:8082/create-event.html">Buat Event Konser</a></li>
+                            <li><a href="http://localhost:8082/organizer-dashboard.html">Dashboard Penyelenggara</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Dukungan</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/help.html">Pusat Bantuan (FAQ)</a></li>
+                            <li><a href="http://localhost:8082/terms.html#terms">Syarat dan Ketentuan</a></li>
+                            <li><a href="http://localhost:8082/terms.html#privacy">Kebijakan Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#security">Kepatuhan Keamanan &amp; Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#cookies">Kebijakan Cookies</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Action / Payment & Social Column -->
+                <div class="footer-col footer-action-col">
+                    <h3 class="footer-heading">Pilihan Pembayaran</h3>
+                    <div class="footer-payment-grid" title="Metode Pembayaran Resmi TIKARA">
+                        <span class="pay-chip"><i class="fa-solid fa-qrcode"></i> QRIS</span>
+                        <span class="pay-chip">BCA</span>
+                        <span class="pay-chip">Mandiri</span>
+                        <span class="pay-chip">BRI</span>
+                        <span class="pay-chip">BNI</span>
+                        <span class="pay-chip">BTN</span>
+                        <span class="pay-chip">BSI</span>
+                        <span class="pay-chip">Permata</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-visa"></i> VISA</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-mastercard"></i> Master</span>
+                        <span class="pay-chip">ShopeePay</span>
+                        <span class="pay-chip">GoPay</span>
+                        <span class="pay-chip">Alfamart</span>
+                        <span class="pay-chip">Indomaret</span>
+                    </div>
+                    <div>
+                        <a href="http://localhost:8082/help.html#pembayaran" class="footer-pay-guide-link">
+                            <i class="fa-solid fa-circle-question"></i> Panduan &amp; Cara Bayar
+                        </a>
+                    </div>
+
+                    <div class="footer-social-wrap" style="margin-top: 1.75rem;">
+                        <h3 class="footer-heading">Ikuti Kami untuk Update</h3>
+                        <div class="footer-social-links">
+                            <a href="https://www.instagram.com/deafriliart/?__pwa=1" target="_blank" rel="noopener noreferrer" class="social-btn social-ig" aria-label="Instagram TIKARA" title="Instagram">
+                                <i class="fa-brands fa-instagram"></i>
+                            </a>
+                            <a href="https://www.tiktok.com/@realityclubofficial" target="_blank" rel="noopener noreferrer" class="social-btn social-tiktok" aria-label="TikTok TIKARA" title="TikTok">
+                                <i class="fa-brands fa-tiktok"></i>
+                            </a>
+                            <a href="https://x.com/reality_club" target="_blank" rel="noopener noreferrer" class="social-btn social-x" aria-label="X (Twitter) TIKARA" title="X (Twitter)">
+                                <i class="fa-brands fa-x-twitter"></i>
+                            </a>
+                            <a href="https://www.facebook.com/officialrealityclub/?locale=id_ID" target="_blank" rel="noopener noreferrer" class="social-btn social-fb" aria-label="Facebook TIKARA" title="Facebook">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </a>
+                            <a href="https://youtu.be/SlwQyBkCtZE?si=WBPI1nh0A6A2e9Dv" target="_blank" rel="noopener noreferrer" class="social-btn social-yt" aria-label="YouTube TIKARA" title="YouTube">
+                                <i class="fa-brands fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Copyright -->
+            <div class="footer-bottom-bar">
+                <p>&copy; 2026 TIKARA (PT Tikara Nusantara Sejahtera). Seluruh hak cipta dilindungi undang-undang.</p>
+                <div style="display: flex; gap: 1.25rem; font-size: 0.8rem;">
+                    <a href="http://localhost:8082/terms.html#terms">Syarat Layanan</a>
+                    <a href="http://localhost:8082/terms.html#privacy">Privasi</a>
+                    <a href="http://localhost:8082/terms.html#security">Keamanan</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
+

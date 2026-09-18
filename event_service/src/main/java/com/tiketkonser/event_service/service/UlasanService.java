@@ -5,7 +5,11 @@ import com.tiketkonser.event_service.payload.res.PageResponse;
 import com.tiketkonser.event_service.payload.res.UlasanRes;
 import org.springframework.security.core.Authentication;
 
+import java.util.Map;
+
 public interface UlasanService {
     UlasanRes create(Long acaraId, UlasanReq request, Authentication authentication);
     PageResponse<UlasanRes> getByAcaraId(Long acaraId, int page, int size);
+    Map<String, Object> checkEligibility(Long acaraId, Authentication authentication);
+    void deleteUlasan(Long ulasanId, Authentication authentication);
 }

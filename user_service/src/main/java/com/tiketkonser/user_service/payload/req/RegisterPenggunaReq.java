@@ -10,7 +10,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RegisterPenggunaReq {
-    @NotBlank(message = "Nama tidak boleh kosong") private String nama;
+    @NotBlank(message = "Nama tidak boleh kosong")
+    @Size(min = 3, max = 60, message = "Nama harus antara 3 hingga 60 karakter")
+    private String nama;
     @NotBlank(message = "Email tidak boleh kosong") @Email(message = "Format email tidak valid") private String email;
     @NotBlank(message = "Kata sandi tidak boleh kosong") @Size(min = 8, message = "Kata sandi minimal 8 karakter") private String kataSandi;
     @NotBlank(message = "Role wajib dipilih") private String role;

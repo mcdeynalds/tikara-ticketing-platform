@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Moderation Hub - TIKARA Admin</title>
+    <meta name="description" content="Pusat verifikasi keabsahan event, persetujuan konser baru, dan kepatuhan penyelenggara platform TIKARA.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        (function() {
+            function getCookie(name) {
+                const ca = document.cookie.split(';');
+                for (let i = 0; i < ca.length; i++) {
+                    let c = ca[i].trim();
+                    if (c.indexOf(name + "=") === 0) {
+                        try { return decodeURIComponent(c.substring(name.length + 1)); } catch(e) { return c.substring(name.length + 1); }
+                    }
+                }
+                return null;
+            }
+            function parseJwt(token) {
+                if (!token || typeof token !== 'string') return null;
+                const parts = token.split('.');
+                if (parts.length !== 3) return null;
+                try {
+                    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+                    return JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+                } catch(e) { return null; }
+            }
+            const token = getCookie('tikara_token') || localStorage.getItem('jwt_token');
+            const payload = parseJwt(token);
+            const isExpired = payload && payload.exp && (payload.exp * 1000 < Date.now());
+            const role = payload ? (payload.role || payload.peran || '').toUpperCase() : '';
+
+            if (!token || !payload || isExpired || role !== 'ADMIN') {
+                window.location.replace('http://localhost:8081/login.html?redirect=' + encodeURIComponent(window.location.href));
+            }
+        })();
+    </script>
+    <style>
+        /* Base Viewport & Layout Constraints */
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .moderation-page {
+            width: 100%;
+            max-width: 1200px;
+            margin: 2.5rem auto;
+            padding: 0 1.5rem;
+            min-width: 0;
+            box-sizing: border-box;
+        }
+
+        /* Header Area */
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+            min-width: 0;
+        }
+        .admin-header-info {
+            flex: 1 1 480px;
+            min-width: 0;
+        }
+        .admin-header-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0;
+            line-height: 1.25;
+            word-break: break-word;
+        }
+        .admin-header-desc {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0.35rem 0 0;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+        .admin-header-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .admin-action-btn {
+            width: auto;
+            padding: 0.55rem 1.15rem;
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            white-space: nowrap;
+            border-radius: 8px;
+            font-weight: 700;
+        }
+        .btn-outline.admin-action-btn {
+            background: #FFFFFF !important;
+            border: 1.5px solid #93C5FD !important;
+            color: #2563EB !important;
+        }
+        .btn-outline.admin-action-btn:hover {
+            background: #EFF6FF !important;
+            border-color: #3B82F6 !important;
+            color: #1D4ED8 !important;
+        }
+
+        /* Metric Cards Grid — Desktop (> 1024px): 4 cols */
+        .metric-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+            min-width: 0;
+        }
+        .metric-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 1.35rem 1.25rem;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+            min-width: 0;
+            box-sizing: border-box;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .metric-card-val {
+            font-size: 1.85rem;
+            font-weight: 800;
+            margin: 0;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        /* Table & Responsive Container */
+        .table-responsive-wrapper {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: white;
+        }
+        .mod-table {
+            width: 100%;
+            min-width: 720px;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+        .mod-table th {
+            padding: 0.85rem 1rem;
+            border-bottom: 2px solid var(--border-color);
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            background: #F8FAFC;
+            white-space: nowrap;
+        }
+        .mod-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+            vertical-align: middle;
+        }
+        .mod-table tr:hover {
+            background: #F8FAFC;
+        }
+        .table-scroll-hint {
+            display: none;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.6rem;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .status-pill.pending { background: #FEF3C7; color: #B45309; }
+        .status-pill.published { background: #DCFCE7; color: #15803D; }
+        .status-pill.rejected { background: #FEE2E2; color: #B91C1C; }
+        .status-pill.suspended { background: #F1F5F9; color: #475569; }
+        .status-pill.draft { background: #E0E7FF; color: #4338CA; }
+
+        .filter-tab {
+            background: white;
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1.1rem;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .filter-tab:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        .filter-tab.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.25);
+        }
+
+        .custom-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal-body-box {
+            background: white;
+            border-radius: 20px;
+            max-width: 650px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Mobile Drawer & Overlay Styles */
+        .nav-overlay.open { display: block !important; }
+        .navbar-mobile-drawer.open { display: flex !important; }
+
+        /* ==========================================================================
+           BREAKPOINT 1: TABLET (769px – 1024px)
+           ========================================================================== */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .moderation-page {
+                margin: 1.75rem auto;
+                padding: 0 1.25rem;
+            }
+            .admin-header {
+                margin-bottom: 1.5rem;
+                gap: 1rem;
+            }
+            .admin-header-title {
+                font-size: 1.55rem;
+            }
+            .metric-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+                margin-bottom: 1.5rem;
+            }
+        }
+
+        /* ==========================================================================
+           BREAKPOINT 2: MOBILE (≤ 768px)
+           ========================================================================== */
+        @media (max-width: 768px) {
+            .moderation-page {
+                margin: 1rem auto;
+                padding: 0 0.875rem;
+            }
+            .navbar {
+                padding: 0.75rem 1rem !important;
+            }
+            .navbar-logo {
+                font-size: 1.15rem !important;
+                gap: 0.4rem !important;
+            }
+            .navbar-menu {
+                display: none !important;
+            }
+            .navbar-hamburger {
+                display: flex !important;
+            }
+
+            .admin-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+                margin-bottom: 1.25rem;
+            }
+            .admin-header-info {
+                flex: none;
+                width: 100%;
+            }
+            .admin-header-title {
+                font-size: 1.35rem;
+            }
+            .admin-header-desc {
+                font-size: 0.825rem;
+                line-height: 1.45;
+            }
+            .admin-header-actions {
+                width: 100%;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0.6rem;
+            }
+            .admin-action-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 0.65rem 0.75rem;
+                font-size: 0.825rem;
+            }
+
+            .metric-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+                margin-bottom: 1.25rem;
+            }
+            .metric-card {
+                padding: 1.1rem 0.9rem;
+                border-radius: 14px;
+            }
+            .metric-card-val {
+                font-size: 1.45rem;
+            }
+
+            .filter-bar-box {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 0.85rem !important;
+                padding: 1rem 0.85rem !important;
+            }
+            .filter-tabs-scroll {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 0.45rem !important;
+                width: 100% !important;
+                overflow: visible !important;
+            }
+            .filter-tab {
+                padding: 0.45rem 0.85rem !important;
+                font-size: 0.8rem !important;
+                white-space: nowrap !important;
+                box-sizing: border-box !important;
+            }
+            .search-input-wrap {
+                width: 100% !important;
+            }
+            .search-input-wrap div {
+                width: 100% !important;
+            }
+            .search-input-wrap input {
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            .table-scroll-hint {
+                display: flex;
+            }
+            .mod-table {
+                font-size: 0.8rem;
+            }
+            .mod-table th, .mod-table td {
+                padding: 0.65rem 0.75rem;
+            }
+            .modal-body-box {
+                padding: 1.25rem;
+                border-radius: 16px;
+            }
+            .modal-info-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        /* Extra compact mobile (≤ 480px) */
+        @media (max-width: 480px) {
+            .admin-header-actions {
+                grid-template-columns: 1fr;
+            }
+            .metric-cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body style="background-color: #F8FAFC; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden;">
+
+    <!-- Unified Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="/admin-dashboard.html" class="navbar-logo" id="navLogoLink">
+                <i class="fa-solid fa-gauge-high"></i> TIKARA ADMIN
+            </a>
+            <ul class="navbar-menu" id="mainNavbarMenu"></ul>
+            <div class="navbar-actions">
+                <div id="navUserBox"></div>
+                <button class="navbar-hamburger" id="navbarToggleBtn" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="navbarMobileDrawer">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <div class="nav-overlay" id="navOverlay"></div>
+        <nav class="navbar-mobile-drawer" id="navbarMobileDrawer"></nav>
+    </header>
+
+    <main class="moderation-page" style="flex: 1;">
+        <!-- Header -->
+        <div class="admin-header">
+            <div class="admin-header-info">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+                    <a href="/admin-dashboard.html" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none;">
+                        <i class="fa-solid fa-arrow-left"></i> Dashboard
+                    </a>
+                    <span style="color: var(--border-color);">/</span>
+                    <span class="role-badge" style="background: #DBEAFE; color: #1D4ED8; font-size: 0.75rem; padding: 0.2rem 0.6rem;">
+                        <i class="fa-solid fa-stamp"></i> EVENT MODERATION HUB
+                    </span>
+                </div>
+                <h1 class="admin-header-title">
+                    Pusat Moderasi & Verifikasi Event Konser
+                </h1>
+                <p class="admin-header-desc">
+                    Tinjau kelayakan konser baru dari penyelenggara, verifikasi venue & jadwal, setujui atau tolak sebelum tayang publik.
+                </p>
+            </div>
+            <div class="admin-header-actions">
+                <button type="button" class="btn btn-outline admin-action-btn" onclick="loadModerationData()">
+                    <i class="fa-solid fa-rotate"></i> Refresh
+                </button>
+                <a href="/admin-dashboard.html" class="btn btn-primary admin-action-btn" style="background: var(--primary-color);">
+                    <i class="fa-solid fa-gauge-high"></i> Ke Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Metric Cards Grid -->
+        <div class="metric-cards-grid">
+            <div class="metric-card" style="border-left: 4px solid #F59E0B;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Menunggu Review</span>
+                    <span style="width: 36px; height: 36px; border-radius: 10px; background: #FEF3C7; color: #B45309; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                        <i class="fa-solid fa-clock"></i>
+                    </span>
+                </div>
+                <h2 style="font-size: 1.85rem; color: #B45309; font-weight: 800; margin: 0;" id="statPending">0</h2>
+                <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-top: 0.35rem;">
+                    Perlu tindakan segera
+                </span>
+            </div>
+
+            <div class="metric-card" style="border-left: 4px solid #10B981;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Disetujui / Published</span>
+                    <span style="width: 36px; height: 36px; border-radius: 10px; background: #DCFCE7; color: #15803D; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </span>
+                </div>
+                <h2 style="font-size: 1.85rem; color: #15803D; font-weight: 800; margin: 0;" id="statApproved">0</h2>
+                <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-top: 0.35rem;">
+                    Tayang di katalog TIKARA
+                </span>
+            </div>
+
+            <div class="metric-card" style="border-left: 4px solid #EF4444;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Ditolak (Rejected)</span>
+                    <span style="width: 36px; height: 36px; border-radius: 10px; background: #FEE2E2; color: #B91C1C; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                        <i class="fa-solid fa-ban"></i>
+                    </span>
+                </div>
+                <h2 style="font-size: 1.85rem; color: #B91C1C; font-weight: 800; margin: 0;" id="statRejected">0</h2>
+                <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-top: 0.35rem;">
+                    Tidak lolos verifikasi
+                </span>
+            </div>
+
+            <div class="metric-card" style="border-left: 4px solid #64748B;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Ditangguhkan (Suspended)</span>
+                    <span style="width: 36px; height: 36px; border-radius: 10px; background: #F1F5F9; color: #475569; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                        <i class="fa-solid fa-pause"></i>
+                    </span>
+                </div>
+                <h2 style="font-size: 1.85rem; color: #475569; font-weight: 800; margin: 0;" id="statSuspended">0</h2>
+                <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-top: 0.35rem;">
+                    Penjualan dihentikan sementara
+                </span>
+            </div>
+        </div>
+
+        <!-- Filter and Search Bar -->
+        <div class="profile-card filter-bar-box" style="padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;" id="statusFilterContainer" class="filter-tabs-scroll">
+                <button type="button" class="filter-tab active" data-status="PENDING_REVIEW" onclick="changeTab('PENDING_REVIEW')">
+                    <i class="fa-solid fa-clock"></i> Menunggu Review (<span id="tabPendingBadge">0</span>)
+                </button>
+                <button type="button" class="filter-tab" data-status="PUBLISHED" onclick="changeTab('PUBLISHED')">
+                    <i class="fa-solid fa-circle-check"></i> Published
+                </button>
+                <button type="button" class="filter-tab" data-status="REJECTED" onclick="changeTab('REJECTED')">
+                    <i class="fa-solid fa-ban"></i> Ditolak
+                </button>
+                <button type="button" class="filter-tab" data-status="SUSPENDED" onclick="changeTab('SUSPENDED')">
+                    <i class="fa-solid fa-pause"></i> Ditangguhkan
+                </button>
+                <button type="button" class="filter-tab" data-status="ALL" onclick="changeTab('ALL')">
+                    Semua Event
+                </button>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; align-items: center;" class="search-input-wrap">
+                <div style="position: relative; width: 100%;">
+                    <input type="text" id="searchInput" placeholder="Cari nama event, venue..." onkeyup="handleSearch()"
+                        style="padding: 0.5rem 1rem 0.5rem 2.25rem; font-size: 0.85rem; border: 1px solid var(--border-color); border-radius: 999px; width: 220px; outline: none;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem;"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-scroll-hint">
+            <i class="fa-solid fa-arrows-left-right"></i> Geser tabel ke samping untuk melihat detail dan tindakan moderasi
+        </div>
+
+        <!-- Moderation Table Container -->
+        <div class="table-responsive-wrapper" style="margin-bottom: 2rem;">
+            <table class="mod-table">
+                    <thead>
+                        <tr>
+                            <th>Konser & Info Event</th>
+                            <th>Penyelenggara</th>
+                            <th>Jadwal & Lokasi</th>
+                            <th>Status Moderasi</th>
+                            <th>Catatan & Tanggal</th>
+                            <th style="text-align: right;">Aksi Tindakan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="moderationTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                                <i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color: var(--primary-color); margin-bottom: 0.75rem;"></i>
+                                <div>Memuat data event konser...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+    </main>
+
+    <!-- Modal Preview Detail Event -->
+    <div id="previewModal" class="custom-modal">
+        <div class="modal-body-box">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                <div>
+                    <span id="modalEventBadge" class="status-pill pending">PENDING REVIEW</span>
+                    <h2 id="modalEventTitle" style="font-size: 1.35rem; font-weight: 800; color: var(--text-main); margin: 0.5rem 0 0.2rem;">...</h2>
+                    <div id="modalOrganizerName" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">...</div>
+                </div>
+                <button type="button" onclick="closePreviewModal()" style="background: none; border: none; font-size: 1.25rem; color: var(--text-muted); cursor: pointer;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <img id="modalPoster" src="" alt="Poster Konser" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 12px; margin-bottom: 1.25rem; border: 1px solid var(--border-color);"
+                 onerror="this.src='https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1000&q=80'">
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; background: #F8FAFC; padding: 1rem; border-radius: 12px;">
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Jadwal Mulai</div>
+                    <div id="modalStartDate" style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">...</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Jadwal Selesai</div>
+                    <div id="modalEndDate" style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">...</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Kota & Lokasi</div>
+                    <div id="modalLocation" style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">...</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Rating & Ulasan</div>
+                    <div id="modalRating" style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">⭐ 0.0 (0 ulasan)</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem;">Deskripsi Acara</div>
+                <div id="modalDescription" style="font-size: 0.875rem; color: #334155; line-height: 1.6; white-space: pre-line;">...</div>
+            </div>
+
+            <div id="modalCatatanBox" style="display: none; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; padding: 0.85rem; margin-bottom: 1.5rem; font-size: 0.85rem; color: #991B1B;">
+                <strong><i class="fa-solid fa-triangle-exclamation"></i> Catatan Moderator:</strong>
+                <span id="modalCatatanText">...</span>
+            </div>
+
+            <!-- Modal Action Bar -->
+            <div id="modalActionArea" style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Form Tolak (Reject) -->
+    <div id="rejectModal" class="custom-modal">
+        <div class="modal-body-box" style="max-width: 480px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 1.2rem; font-weight: 800; color: #B91C1C; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-ban"></i> Tolak Publikasi Event
+                </h3>
+                <button type="button" onclick="closeRejectModal()" style="background: none; border: none; font-size: 1.25rem; color: var(--text-muted); cursor: pointer;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Berikan alasan penolakan yang jelas agar penyelenggara dapat memperbaiki rincian event dan mengajukannya kembali.
+            </p>
+            <div style="margin-bottom: 1.25rem;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.4rem;">
+                    Alasan Penolakan <span style="color: #EF4444;">* (Min. 5 karakter)</span>
+                </label>
+                <textarea id="rejectReasonInput" rows="4" class="form-input" placeholder="Contoh: Tanggal dan venue belum memiliki surat izin resmi, atau rincian harga tiket belum jelas."
+                    style="width: 100%; resize: vertical; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.875rem;"></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button type="button" class="btn btn-outline" onclick="closeRejectModal()" style="width: auto; padding: 0.55rem 1.1rem;">Batal</button>
+                <button type="button" class="btn" id="btnConfirmReject" onclick="confirmReject()"
+                    style="width: auto; padding: 0.55rem 1.35rem; background: #DC2626; color: white; border: none; font-weight: 700;">
+                    Tolak Event Ini
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    
+    
+    <script src="/js/script.js"></script>
+    <script>
+        let allEvents = [];
+        let currentFilterStatus = 'PENDING_REVIEW';
+        let activeRejectEventId = null;
+
+        const EVENT_SERVICE_URL = 'http://localhost:8082';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const auth = getAuthState();
+            const isAdmin = auth.isAuthenticated && (auth.role === 'ADMIN' || (auth.user && (auth.user.role === 'ADMIN' || auth.user.peran === 'ADMIN')));
+            if (!isAdmin) {
+                window.location.href = `http://localhost:8081/login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                return;
+            }
+
+            // Check URL query param for initial tab
+            const urlParams = new URLSearchParams(window.location.search);
+            const statusParam = urlParams.get('status');
+            if (statusParam) {
+                currentFilterStatus = statusParam.toUpperCase();
+            }
+
+            updateFilterTabUI();
+            await loadModerationData();
+        });
+
+        function changeTab(status) {
+            currentFilterStatus = status;
+            updateFilterTabUI();
+            renderTable();
+        }
+
+        function updateFilterTabUI() {
+            const tabs = document.querySelectorAll('#statusFilterContainer .filter-tab');
+            tabs.forEach(t => {
+                if (t.getAttribute('data-status') === currentFilterStatus) {
+                    t.classList.add('active');
+                } else {
+                    t.classList.remove('active');
+                }
+            });
+        }
+
+        async function loadModerationData() {
+            const token = getToken();
+            try {
+                // Fetch all events as ADMIN
+                const res = await fetch(`${EVENT_SERVICE_URL}/api/acara?size=100&status=ALL`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) {
+                    throw new Error('Gagal mengambil data event');
+                }
+
+                const data = await res.json();
+                allEvents = data.content || [];
+
+                calculateStats();
+                renderTable();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('moderationTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2.5rem; color: #EF4444;">
+                            <i class="fa-solid fa-triangle-exclamation fa-2x" style="margin-bottom: 0.5rem; display: block;"></i>
+                            Gagal memuat daftar event: ${err.message}. Pastikan event_service (port 8082) aktif.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function calculateStats() {
+            let pending = 0;
+            let approved = 0;
+            let rejected = 0;
+            let suspended = 0;
+
+            allEvents.forEach(e => {
+                const st = (e.status || '').toUpperCase();
+                if (st === 'PENDING_REVIEW') pending++;
+                else if (st === 'PUBLISHED') approved++;
+                else if (st === 'REJECTED') rejected++;
+                else if (st === 'SUSPENDED') suspended++;
+            });
+
+            document.getElementById('statPending').textContent = pending;
+            document.getElementById('statApproved').textContent = approved;
+            document.getElementById('statRejected').textContent = rejected;
+            document.getElementById('statSuspended').textContent = suspended;
+
+            const badge = document.getElementById('tabPendingBadge');
+            if (badge) badge.textContent = pending;
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('moderationTableBody');
+            const searchKeyword = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+
+            let filtered = allEvents.filter(e => {
+                const st = (e.status || '').toUpperCase();
+                if (currentFilterStatus !== 'ALL' && st !== currentFilterStatus) {
+                    return false;
+                }
+                if (searchKeyword) {
+                    const matchNama = (e.nama || '').toLowerCase().includes(searchKeyword);
+                    const matchVenue = (e.venue || '').toLowerCase().includes(searchKeyword);
+                    const matchKota = (e.kota || '').toLowerCase().includes(searchKeyword);
+                    const matchOrg = (e.organizerNama || '').toLowerCase().includes(searchKeyword);
+                    if (!matchNama && !matchVenue && !matchKota && !matchOrg) return false;
+                }
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                            <i class="fa-regular fa-folder-open fa-2x" style="color: #CBD5E1; margin-bottom: 0.5rem; display: block;"></i>
+                            Tidak ada event ditemukan untuk filter <strong>${currentFilterStatus}</strong>.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(ev => {
+                const st = (ev.status || 'DRAFT').toUpperCase();
+                let statusClass = 'pending';
+                let statusLabel = st;
+                if (st === 'PUBLISHED') { statusClass = 'published'; statusLabel = 'PUBLISHED'; }
+                else if (st === 'REJECTED') { statusClass = 'rejected'; statusLabel = 'REJECTED'; }
+                else if (st === 'SUSPENDED') { statusClass = 'suspended'; statusLabel = 'SUSPENDED'; }
+                else if (st === 'PENDING_REVIEW') { statusClass = 'pending'; statusLabel = 'PENDING REVIEW'; }
+
+                const tgl = ev.tanggalMulai ? new Date(ev.tanggalMulai).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+                const posterUrl = ev.gambarUrl || 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=400&q=80';
+
+                let actionButtons = '';
+                if (st === 'PENDING_REVIEW') {
+                    actionButtons = `
+                        <button type="button" class="btn" onclick="approveEvent(${ev.id})" title="Setujui dan Terbitkan"
+                            style="background: #10B981; color: white; border: none; padding: 0.4rem 0.8rem; font-size: 0.78rem; font-weight: 700; border-radius: 8px;">
+                            <i class="fa-solid fa-check"></i> Setujui
+                        </button>
+                        <button type="button" class="btn" onclick="openRejectModal(${ev.id})" title="Tolak dengan Alasan"
+                            style="background: #EF4444; color: white; border: none; padding: 0.4rem 0.8rem; font-size: 0.78rem; font-weight: 700; border-radius: 8px;">
+                            <i class="fa-solid fa-xmark"></i> Tolak
+                        </button>
+                    `;
+                } else if (st === 'PUBLISHED') {
+                    actionButtons = `
+                        <button type="button" class="btn" onclick="suspendEvent(${ev.id})" title="Tangguhkan Event"
+                            style="background: #64748B; color: white; border: none; padding: 0.4rem 0.8rem; font-size: 0.78rem; font-weight: 700; border-radius: 8px;">
+                            <i class="fa-solid fa-pause"></i> Suspend
+                        </button>
+                    `;
+                } else if (st === 'REJECTED' || st === 'SUSPENDED') {
+                    actionButtons = `
+                        <button type="button" class="btn" onclick="approveEvent(${ev.id})" title="Pulihkan dan Terbitkan"
+                            style="background: #10B981; color: white; border: none; padding: 0.4rem 0.8rem; font-size: 0.78rem; font-weight: 700; border-radius: 8px;">
+                            <i class="fa-solid fa-check"></i> Pulihkan
+                        </button>
+                    `;
+                }
+
+                const catat = ev.catatanModerator ? `<div style="font-size:0.75rem; color:#B91C1C; margin-top:0.25rem;"><i class="fa-solid fa-note-sticky"></i> ${ev.catatanModerator}</div>` : '';
+                const modDate = ev.moderatedAt ? new Date(ev.moderatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '-';
+
+                return `
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.85rem;">
+                                <img src="${posterUrl}" alt="Poster" style="width: 52px; height: 52px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);"
+                                     onerror="this.src='https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=150&q=80'">
+                                <div>
+                                    <div style="font-weight: 800; font-size: 0.95rem; color: var(--text-main); cursor: pointer;" onclick="openPreviewModal(${ev.id})">
+                                        ${ev.nama || 'Tanpa Judul'}
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                        ID #${ev.id} &bull; ⭐ ${ev.averageRating ? ev.averageRating.toFixed(1) : '0.0'} (${ev.totalUlasan || 0} ulasan)
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">${ev.organizerNama || 'Organizer #' + ev.organizerId}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">ID Penyelenggara: ${ev.organizerId}</div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">${ev.venue || '-'}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-solid fa-location-dot"></i> ${ev.kota || '-'} &bull; ${tgl}</div>
+                        </td>
+                        <td>
+                            <span class="status-pill ${statusClass}">${statusLabel}</span>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.78rem; color: var(--text-muted);">${modDate}</div>
+                            ${catat}
+                        </td>
+                        <td style="text-align: right;">
+                            <div style="display: inline-flex; gap: 0.4rem; align-items: center;">
+                                <button type="button" class="btn btn-outline" onclick="openPreviewModal(${ev.id})" title="Lihat Rincian"
+                                    style="padding: 0.4rem 0.65rem; font-size: 0.78rem; border-radius: 8px;">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                ${actionButtons}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function handleSearch() {
+            renderTable();
+        }
+
+        async function approveEvent(id) {
+            if (!confirm('Konfirmasi: Setujui dan terbitkan konser ini ke publik?')) return;
+
+            const token = getToken();
+            try {
+                const res = await fetch(`${EVENT_SERVICE_URL}/api/acara/${id}/moderate`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ action: 'APPROVE', catatan: 'Disetujui oleh Administrator' })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.message || 'Gagal menyetujui event');
+                }
+
+                alert('Sukses! Event berhasil disetujui dan status dialihkan ke PUBLISHED.');
+                closePreviewModal();
+                await loadModerationData();
+            } catch (err) {
+                alert('Gagal: ' + err.message);
+            }
+        }
+
+        function openRejectModal(id) {
+            activeRejectEventId = id;
+            document.getElementById('rejectReasonInput').value = '';
+            document.getElementById('rejectModal').style.display = 'flex';
+        }
+
+        function closeRejectModal() {
+            activeRejectEventId = null;
+            document.getElementById('rejectModal').style.display = 'none';
+        }
+
+        async function confirmReject() {
+            if (!activeRejectEventId) return;
+            const reason = (document.getElementById('rejectReasonInput').value || '').trim();
+            if (reason.length < 5) {
+                alert('Alasan penolakan wajib diisi minimal 5 karakter.');
+                return;
+            }
+
+            const btn = document.getElementById('btnConfirmReject');
+            btn.disabled = true;
+            btn.textContent = 'Memproses...';
+
+            const token = getToken();
+            try {
+                const res = await fetch(`${EVENT_SERVICE_URL}/api/acara/${activeRejectEventId}/moderate`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ action: 'REJECT', catatan: reason })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.message || 'Gagal menolak event');
+                }
+
+                alert('Event berhasil ditolak dengan catatan resmi.');
+                closeRejectModal();
+                closePreviewModal();
+                await loadModerationData();
+            } catch (err) {
+                alert('Gagal: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Tolak Event Ini';
+            }
+        }
+
+        async function suspendEvent(id) {
+            const reason = prompt('Masukkan alasan penangguhan event konser ini:');
+            if (reason === null) return;
+            if (reason.trim().length < 5) {
+                alert('Alasan penangguhan minimal 5 karakter.');
+                return;
+            }
+
+            const token = getToken();
+            try {
+                const res = await fetch(`${EVENT_SERVICE_URL}/api/acara/${id}/moderate`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ action: 'SUSPEND', catatan: reason.trim() })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.message || 'Gagal menangguhkan event');
+                }
+
+                alert('Event berhasil ditangguhkan (SUSPENDED). Penjualan dihentikan.');
+                await loadModerationData();
+            } catch (err) {
+                alert('Gagal: ' + err.message);
+            }
+        }
+
+        function openPreviewModal(id) {
+            const ev = allEvents.find(e => e.id === id);
+            if (!ev) return;
+
+            document.getElementById('modalEventTitle').textContent = ev.nama || 'Tanpa Judul';
+            document.getElementById('modalOrganizerName').textContent = `Diajukan oleh: ${ev.organizerNama || 'Organizer #' + ev.organizerId}`;
+            document.getElementById('modalPoster').src = ev.gambarUrl || 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=1000&q=80';
+            document.getElementById('modalStartDate').textContent = ev.tanggalMulai ? new Date(ev.tanggalMulai).toLocaleString('id-ID') : '-';
+            document.getElementById('modalEndDate').textContent = ev.tanggalSelesai ? new Date(ev.tanggalSelesai).toLocaleString('id-ID') : '-';
+            document.getElementById('modalLocation').textContent = `${ev.venue || '-'}, ${ev.kota || '-'}`;
+            document.getElementById('modalRating').textContent = `⭐ ${ev.averageRating ? ev.averageRating.toFixed(1) : '0.0'} (${ev.totalUlasan || 0} ulasan)`;
+            document.getElementById('modalDescription').textContent = ev.deskripsi || '-';
+
+            const st = (ev.status || '').toUpperCase();
+            const badge = document.getElementById('modalEventBadge');
+            badge.textContent = st;
+            badge.className = 'status-pill ' + (st === 'PUBLISHED' ? 'published' : st === 'REJECTED' ? 'rejected' : st === 'SUSPENDED' ? 'suspended' : 'pending');
+
+            const catatBox = document.getElementById('modalCatatanBox');
+            if (ev.catatanModerator) {
+                catatBox.style.display = 'block';
+                document.getElementById('modalCatatanText').textContent = ev.catatanModerator;
+            } else {
+                catatBox.style.display = 'none';
+            }
+
+            const actionArea = document.getElementById('modalActionArea');
+            if (st === 'PENDING_REVIEW') {
+                actionArea.innerHTML = `
+                    <button type="button" class="btn btn-outline" onclick="closePreviewModal()">Tutup</button>
+                    <button type="button" class="btn" onclick="openRejectModal(${ev.id})" style="background: #EF4444; color: white; border: none; font-weight: 700;">
+                        <i class="fa-solid fa-xmark"></i> Tolak
+                    </button>
+                    <button type="button" class="btn" onclick="approveEvent(${ev.id})" style="background: #10B981; color: white; border: none; font-weight: 700;">
+                        <i class="fa-solid fa-check"></i> Setujui & Terbitkan
+                    </button>
+                `;
+            } else if (st === 'PUBLISHED') {
+                actionArea.innerHTML = `
+                    <button type="button" class="btn btn-outline" onclick="closePreviewModal()">Tutup</button>
+                    <a href="http://localhost:8082/event-detail.html?id=${ev.id}" target="_blank" class="btn btn-outline">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Halaman Publik
+                    </a>
+                    <button type="button" class="btn" onclick="suspendEvent(${ev.id})" style="background: #64748B; color: white; border: none; font-weight: 700;">
+                        <i class="fa-solid fa-pause"></i> Suspend
+                    </button>
+                `;
+            } else {
+                actionArea.innerHTML = `
+                    <button type="button" class="btn btn-outline" onclick="closePreviewModal()">Tutup</button>
+                    <button type="button" class="btn" onclick="approveEvent(${ev.id})" style="background: #10B981; color: white; border: none; font-weight: 700;">
+                        <i class="fa-solid fa-check"></i> Pulihkan & Terbitkan
+                    </button>
+                `;
+            }
+
+            document.getElementById('previewModal').style.display = 'flex';
+        }
+
+        function closePreviewModal() {
+            document.getElementById('previewModal').style.display = 'none';
+        }
+    </script>
+
+    <!-- Footer -->
+            <!-- Unified TIKARA Footer (Light Theme) -->
+    <footer class="tikara-footer">
+        <div class="footer-container">
+            <div class="footer-main-grid">
+                <!-- Brand & Security Column -->
+                <div class="footer-col footer-brand-col">
+                    <a href="http://localhost:8082/index.html" class="footer-logo" aria-label="TIKARA Beranda">
+                        <i class="fa-solid fa-ticket"></i> <span>TIKARA</span>
+                    </a>
+                    <p class="footer-desc">
+                        Beli tiket konser, festival musik, dan event seru lainnya dengan mudah &amp; aman di TIKARA. 
+                        <strong>#PASTIBISA</strong> nonton konser &amp; festival idaman!
+                    </p>
+                    <div class="footer-security-section">
+                        <h4 class="footer-subheading"><i class="fa-solid fa-shield-halved"></i> Keamanan dan Privasi</h4>
+                        <div class="footer-badges-wrap">
+                            <a href="http://localhost:8082/terms.html#security" class="footer-iso-badge" title="Tersertifikasi ISO/IEC 27001 &amp; ISO/IEC 27701">
+                                <div class="iso-icon-box">
+                                    <i class="fa-solid fa-award"></i>
+                                </div>
+                                <div class="iso-info-box">
+                                    <span class="iso-title">ISO/IEC 27001 &bull; 27701</span>
+                                    <span class="iso-desc">Information Security &amp; Privacy Management</span>
+                                </div>
+                            </a>
+                            <div class="footer-ssl-badge">
+                                <i class="fa-solid fa-lock"></i> <span>256-Bit SSL Enkripsi Terverifikasi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Columns -->
+                <div class="footer-nav-columns">
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Tentang TIKARA</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/about.html">Tentang Kami</a></li>
+                            <li><a href="http://localhost:8082/blog.html">Blog &amp; Berita Musik</a></li>
+                        </ul>
+                        <h3 class="footer-heading" style="margin-top: 1.75rem;">Produk</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/index.html#catalog">Semua Konser &amp; Festival</a></li>
+                            <li><a href="http://localhost:8083/my-tickets.html">Tiket Saya</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Event Creator</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/creator-guide.html#biaya">Biaya &amp; Komisi</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#kerjasama">Kerjasama dengan Kami</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#panduan">Buku Panduan Creator</a></li>
+                            <li><a href="http://localhost:8082/create-event.html">Buat Event Konser</a></li>
+                            <li><a href="http://localhost:8082/organizer-dashboard.html">Dashboard Penyelenggara</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Dukungan</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/help.html">Pusat Bantuan (FAQ)</a></li>
+                            <li><a href="http://localhost:8082/terms.html#terms">Syarat dan Ketentuan</a></li>
+                            <li><a href="http://localhost:8082/terms.html#privacy">Kebijakan Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#security">Kepatuhan Keamanan &amp; Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#cookies">Kebijakan Cookies</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Action / Payment & Social Column -->
+                <div class="footer-col footer-action-col">
+                    <h3 class="footer-heading">Pilihan Pembayaran</h3>
+                    <div class="footer-payment-grid" title="Metode Pembayaran Resmi TIKARA">
+                        <span class="pay-chip"><i class="fa-solid fa-qrcode"></i> QRIS</span>
+                        <span class="pay-chip">BCA</span>
+                        <span class="pay-chip">Mandiri</span>
+                        <span class="pay-chip">BRI</span>
+                        <span class="pay-chip">BNI</span>
+                        <span class="pay-chip">BTN</span>
+                        <span class="pay-chip">BSI</span>
+                        <span class="pay-chip">Permata</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-visa"></i> VISA</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-mastercard"></i> Master</span>
+                        <span class="pay-chip">ShopeePay</span>
+                        <span class="pay-chip">GoPay</span>
+                        <span class="pay-chip">Alfamart</span>
+                        <span class="pay-chip">Indomaret</span>
+                    </div>
+                    <div>
+                        <a href="http://localhost:8082/help.html#pembayaran" class="footer-pay-guide-link">
+                            <i class="fa-solid fa-circle-question"></i> Panduan &amp; Cara Bayar
+                        </a>
+                    </div>
+
+                    <div class="footer-social-wrap" style="margin-top: 1.75rem;">
+                        <h3 class="footer-heading">Ikuti Kami untuk Update</h3>
+                        <div class="footer-social-links">
+                            <a href="https://www.instagram.com/deafriliart/?__pwa=1" target="_blank" rel="noopener noreferrer" class="social-btn social-ig" aria-label="Instagram TIKARA" title="Instagram">
+                                <i class="fa-brands fa-instagram"></i>
+                            </a>
+                            <a href="https://www.tiktok.com/@realityclubofficial" target="_blank" rel="noopener noreferrer" class="social-btn social-tiktok" aria-label="TikTok TIKARA" title="TikTok">
+                                <i class="fa-brands fa-tiktok"></i>
+                            </a>
+                            <a href="https://x.com/reality_club" target="_blank" rel="noopener noreferrer" class="social-btn social-x" aria-label="X (Twitter) TIKARA" title="X (Twitter)">
+                                <i class="fa-brands fa-x-twitter"></i>
+                            </a>
+                            <a href="https://www.facebook.com/officialrealityclub/?locale=id_ID" target="_blank" rel="noopener noreferrer" class="social-btn social-fb" aria-label="Facebook TIKARA" title="Facebook">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </a>
+                            <a href="https://youtu.be/SlwQyBkCtZE?si=WBPI1nh0A6A2e9Dv" target="_blank" rel="noopener noreferrer" class="social-btn social-yt" aria-label="YouTube TIKARA" title="YouTube">
+                                <i class="fa-brands fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Copyright -->
+            <div class="footer-bottom-bar">
+                <p>&copy; 2026 TIKARA (PT Tikara Nusantara Sejahtera). Seluruh hak cipta dilindungi undang-undang.</p>
+                <div style="display: flex; gap: 1.25rem; font-size: 0.8rem;">
+                    <a href="http://localhost:8082/terms.html#terms">Syarat Layanan</a>
+                    <a href="http://localhost:8082/terms.html#privacy">Privasi</a>
+                    <a href="http://localhost:8082/terms.html#security">Keamanan</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,23 +1,28 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Tiket & Boarding Pass Resmi - TIKARA</title>
-    <meta name="description" content="E-Tiket resmi ber-QR Code dinamis, pengunduhan PDF offline, dan transfer kepemilikan tiket resmi anti-calo di platform TIKARA.">
+    <meta name="description" content="E-Tiket resmi ber-QR Code dinamis dan pengunduhan PDF resmi di platform TIKARA.">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- html2pdf & JsBarcode for Official Offline E-Ticket Pass Generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
         .page-banner {
             background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #1B365D 100%);
             color: white;
             padding: 3rem 1.5rem 4rem;
             position: relative;
             overflow: hidden;
+            width: 100%;
+            box-sizing: border-box;
         }
+
         .page-banner::after {
             content: '';
             position: absolute;
@@ -28,12 +33,14 @@
             background: radial-gradient(circle, rgba(255, 90, 95, 0.15) 0%, transparent 70%);
             pointer-events: none;
         }
+
         .stats-strip {
             display: flex;
             gap: 1rem;
             margin-top: 1.5rem;
             flex-wrap: wrap;
         }
+
         .stat-pill {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(8px);
@@ -46,6 +53,7 @@
             align-items: center;
             gap: 0.5rem;
         }
+
         .filter-section {
             background: white;
             border-radius: 16px;
@@ -61,11 +69,15 @@
             flex-wrap: wrap;
             gap: 1rem;
         }
+
         .filter-tabs {
             display: flex;
             gap: 0.5rem;
-            overflow-x: auto;
+            flex-wrap: wrap;
+            width: 100%;
+            box-sizing: border-box;
         }
+
         .filter-tab {
             padding: 0.6rem 1.25rem;
             border-radius: 10px;
@@ -78,18 +90,23 @@
             transition: all 0.2s;
             white-space: nowrap;
         }
+
         .filter-tab:hover {
             background: #F1F5F9;
             color: var(--text-main);
         }
+
         .filter-tab.active {
             background: var(--primary-color);
             color: white;
         }
+
         .search-box {
             position: relative;
-            min-width: 260px;
+            min-width: 240px;
+            box-sizing: border-box;
         }
+
         .search-box input {
             width: 100%;
             padding: 0.6rem 1rem 0.6rem 2.4rem;
@@ -99,9 +116,11 @@
             outline: none;
             transition: border-color 0.2s;
         }
+
         .search-box input:focus {
             border-color: var(--primary-color);
         }
+
         .search-box i {
             position: absolute;
             left: 0.85rem;
@@ -118,6 +137,7 @@
             gap: 2rem;
             margin: 2.5rem 0 4rem;
         }
+
         .boarding-pass {
             background: white;
             border-radius: 20px;
@@ -128,10 +148,12 @@
             overflow: hidden;
             transition: transform 0.25s, box-shadow 0.25s;
         }
+
         .boarding-pass:hover {
             transform: translateY(-3px);
             box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
         }
+
         .pass-main {
             flex: 1;
             padding: 2rem;
@@ -140,6 +162,7 @@
             justify-content: space-between;
             position: relative;
         }
+
         .pass-main::before {
             content: '';
             position: absolute;
@@ -149,6 +172,7 @@
             height: 6px;
             background: linear-gradient(90deg, #1B365D 0%, #FF5A5F 100%);
         }
+
         .pass-header {
             display: flex;
             justify-content: space-between;
@@ -156,6 +180,7 @@
             gap: 1rem;
             margin-bottom: 1.25rem;
         }
+
         .event-badge {
             display: inline-flex;
             align-items: center;
@@ -169,6 +194,7 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+
         .event-title {
             font-size: 1.5rem;
             font-weight: 800;
@@ -176,6 +202,7 @@
             margin: 0.5rem 0 0.25rem;
             line-height: 1.3;
         }
+
         .event-venue {
             color: var(--text-muted);
             font-size: 0.925rem;
@@ -183,6 +210,7 @@
             align-items: center;
             gap: 0.4rem;
         }
+
         .countdown-badge {
             display: inline-flex;
             align-items: center;
@@ -195,6 +223,7 @@
             border-radius: 8px;
             border: 1px solid #FDE68A;
         }
+
         .pass-details-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -205,6 +234,7 @@
             border-radius: 12px;
             border: 1px solid #F1F5F9;
         }
+
         .detail-item span {
             display: block;
             font-size: 0.75rem;
@@ -214,11 +244,13 @@
             letter-spacing: 0.5px;
             margin-bottom: 0.25rem;
         }
+
         .detail-item strong {
             font-size: 1rem;
             color: var(--text-main);
             font-weight: 700;
         }
+
         .pass-footer-notes {
             display: flex;
             justify-content: space-between;
@@ -238,7 +270,9 @@
             flex-direction: column;
             justify-content: space-between;
         }
-        .notch-top, .notch-bottom {
+
+        .notch-top,
+        .notch-bottom {
             width: 24px;
             height: 24px;
             background: #F8FAFC;
@@ -246,10 +280,16 @@
             position: absolute;
             left: -12px;
             z-index: 5;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
         }
-        .notch-top { top: -12px; }
-        .notch-bottom { bottom: -12px; }
+
+        .notch-top {
+            top: -12px;
+        }
+
+        .notch-bottom {
+            bottom: -12px;
+        }
 
         /* Right Stub Section */
         .pass-stub {
@@ -263,6 +303,7 @@
             text-align: center;
             position: relative;
         }
+
         .qr-card {
             background: white;
             padding: 0.75rem;
@@ -270,13 +311,23 @@
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
             border: 1px solid #E2E8F0;
             margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
         }
+
+        .qr-card:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 22px rgba(27, 54, 93, 0.15);
+            border-color: #CBD5E1;
+        }
+
         .qr-card img {
             width: 160px;
             height: 160px;
             display: block;
             border-radius: 8px;
         }
+
         .gate-code {
             font-family: 'Courier New', Courier, monospace;
             font-size: 1.05rem;
@@ -286,6 +337,7 @@
             margin: 0.25rem 0;
             user-select: all;
         }
+
         .status-pill {
             display: inline-flex;
             align-items: center;
@@ -297,25 +349,30 @@
             text-transform: uppercase;
             margin-bottom: 1rem;
         }
+
         .status-pill.ready {
             background: #DCFCE7;
             color: #15803D;
         }
+
         .status-pill.used {
             background: #FEF3C7;
             color: #92400E;
         }
+
         .status-pill.transferred {
             background: #F1F5F9;
             color: #475569;
             border: 1px solid #CBD5E1;
         }
+
         .stub-actions {
             display: flex;
             flex-direction: column;
             gap: 0.45rem;
             width: 100%;
         }
+
         .btn-stub {
             padding: 0.55rem 0.9rem;
             border-radius: 10px;
@@ -330,43 +387,42 @@
             transition: all 0.2s;
             text-decoration: none;
         }
+
         .btn-stub-primary {
             background: var(--primary-color);
             color: white;
         }
+
         .btn-stub-primary:hover {
             background: var(--primary-hover);
         }
-        .btn-stub-transfer {
-            background: #EDE9FE;
-            color: #6D28D9;
-            border: 1px solid #DDD6FE;
-        }
-        .btn-stub-transfer:hover {
-            background: #DDD6FE;
-            color: #5B21B6;
-        }
+
         .btn-stub-pdf {
             background: #DCFCE7;
             color: #15803D;
             border: 1px solid #BBF7D0;
         }
+
         .btn-stub-pdf:hover {
             background: #BBF7D0;
         }
+
         .btn-stub-email {
             background: #EFF6FF;
             color: #1E40AF;
             border: 1px solid #BFDBFE;
         }
+
         .btn-stub-email:hover {
             background: #DBEAFE;
         }
+
         .btn-stub-outline {
             background: white;
             color: var(--text-main);
             border: 1px solid var(--border-color);
         }
+
         .btn-stub-outline:hover {
             background: #F8FAFC;
             border-color: #CBD5E1;
@@ -387,6 +443,7 @@
             backdrop-filter: blur(6px);
             padding: 1rem;
         }
+
         .modal-box {
             background: white;
             border-radius: 24px;
@@ -404,13 +461,15 @@
             position: absolute;
             left: -9999px;
             top: -9999px;
-            width: 794px; /* A4 width standard at 96 DPI */
+            width: 794px;
+            /* A4 width standard at 96 DPI */
             background: #FFFFFF;
             color: #0F172A;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             padding: 30px;
             box-sizing: border-box;
         }
+
         .pdf-pass-wrapper {
             border: 2px solid #0F172A;
             border-radius: 16px;
@@ -418,6 +477,7 @@
             position: relative;
             background: #FFFFFF;
         }
+
         .pdf-header {
             background: #0F172A;
             color: #FFFFFF;
@@ -426,6 +486,7 @@
             justify-content: space-between;
             align-items: center;
         }
+
         .pdf-watermark {
             position: absolute;
             top: 45%;
@@ -439,12 +500,14 @@
             text-transform: uppercase;
             letter-spacing: 4px;
         }
+
         .pdf-body {
             padding: 24px;
             display: grid;
             grid-template-columns: 2fr 1fr;
             gap: 20px;
         }
+
         .pdf-terms {
             background: #F8FAFC;
             border-top: 1px dashed #CBD5E1;
@@ -454,48 +517,186 @@
             line-height: 1.5;
         }
 
-        /* Responsive Layout */
-        @media (max-width: 900px) {
+        /* ==========================================================================
+           BREAKPOINT 1: TABLET (769px – 1024px)
+           ========================================================================== */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .page-banner {
+                padding: 2.25rem 1.25rem 3.5rem;
+            }
+            .page-banner h1 {
+                font-size: 1.85rem !important;
+            }
+            .filter-section {
+                margin-top: -1.75rem;
+                padding: 1rem 1.25rem;
+                gap: 0.85rem;
+            }
             .boarding-pass {
                 flex-direction: column;
+                border-radius: 18px;
             }
             .pass-divider {
                 width: 100%;
                 height: 0;
                 border-right: none;
                 border-bottom: 2px dashed #CBD5E1;
+                position: relative;
             }
             .notch-top {
                 left: -12px;
-                top: auto;
-                bottom: -12px;
+                top: -12px;
+                bottom: auto;
             }
             .notch-bottom {
                 left: auto;
                 right: -12px;
-                bottom: -12px;
+                top: -12px;
+                bottom: auto;
             }
             .pass-stub {
                 width: 100%;
+                padding: 1.75rem 1.5rem;
+                box-sizing: border-box;
+            }
+            .pass-details-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* ==========================================================================
+           BREAKPOINT 2: MOBILE (≤ 768px)
+           ========================================================================== */
+        @media (max-width: 768px) {
+            .page-banner {
+                padding: 1.75rem 0.875rem 2.75rem;
+            }
+            .page-banner h1 {
+                font-size: 1.45rem !important;
+                line-height: 1.3;
+            }
+            .page-banner p {
+                font-size: 0.85rem !important;
+            }
+            .stats-strip {
+                gap: 0.4rem;
+                margin-top: 1rem;
+            }
+            .stat-pill {
+                padding: 0.35rem 0.75rem;
+                font-size: 0.75rem;
+            }
+            .filter-section {
+                margin-top: -1.5rem;
+                padding: 1rem 0.875rem;
+                border-radius: 14px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+            .filter-tabs {
+                gap: 0.4rem;
+            }
+            .filter-tab {
+                padding: 0.45rem 0.8rem;
+                font-size: 0.78rem;
+                flex: 0 0 auto;
+            }
+            .search-box {
+                width: 100% !important;
+                min-width: 0 !important;
+            }
+            .search-box input {
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            .boarding-pass {
+                flex-direction: column;
+                border-radius: 16px;
+            }
+            .pass-main {
+                padding: 1.25rem 1rem;
+                box-sizing: border-box;
+            }
+            .pass-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.6rem;
+                margin-bottom: 1rem;
+            }
+            .event-title {
+                font-size: 1.25rem !important;
+            }
+            .event-venue {
+                font-size: 0.825rem !important;
+            }
+            .countdown-badge {
+                font-size: 0.75rem;
+                padding: 0.3rem 0.65rem;
             }
             .pass-details-grid {
                 grid-template-columns: 1fr 1fr;
+                gap: 0.75rem;
+                padding: 0.85rem;
+                margin: 1rem 0;
+            }
+            .detail-item span {
+                font-size: 0.7rem;
+            }
+            .detail-item strong {
+                font-size: 0.875rem;
+            }
+            .pass-divider {
+                width: 100%;
+                height: 0;
+                border-right: none;
+                border-bottom: 2px dashed #CBD5E1;
+                position: relative;
+            }
+            .notch-top {
+                left: -12px;
+                top: -12px;
+                bottom: auto;
+            }
+            .notch-bottom {
+                left: auto;
+                right: -12px;
+                top: -12px;
+                bottom: auto;
+            }
+            .pass-stub {
+                width: 100%;
+                padding: 1.25rem 1rem;
+                box-sizing: border-box;
+            }
+            .stub-actions {
+                width: 100%;
+            }
+            .btn-stub {
+                width: 100% !important;
+                box-sizing: border-box;
+                justify-content: center;
+            }
+            .pass-footer-notes {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.4rem;
+                font-size: 0.75rem;
             }
         }
-        @media (max-width: 600px) {
+
+        @media (max-width: 480px) {
             .pass-details-grid {
                 grid-template-columns: 1fr;
             }
-            .filter-section {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .search-box {
-                width: 100%;
+            .filter-tab {
+                font-size: 0.75rem;
+                padding: 0.38rem 0.65rem;
             }
         }
     </style>
 </head>
+
 <body style="background-color: #F8FAFC; min-height: 100vh; display: flex; flex-direction: column;">
 
     <!-- Unified Responsive Header Navbar -->
@@ -506,34 +707,42 @@
             </a>
             <ul class="navbar-menu" id="mainNavbarMenu"></ul>
             <div class="navbar-actions">
-                <a href="http://localhost:8086/notifications.html" class="nav-icon-btn" id="navNotifBtn" title="Notifikasi" style="display:none;">
+                <a href="http://localhost:8086/notifications.html" class="nav-icon-btn" id="navNotifBtn"
+                    title="Notifikasi" style="display:none;">
                     <i class="fa-solid fa-bell"></i>
                     <span class="badge-count" id="navUnreadBadge" style="display:none;">0</span>
                 </a>
                 <div id="navUserBox"></div>
-                <button class="navbar-hamburger" id="navbarToggleBtn" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="navbarMobileDrawer">
+                <button class="navbar-hamburger" id="navbarToggleBtn" aria-label="Buka menu navigasi"
+                    aria-expanded="false" aria-controls="navbarMobileDrawer">
                     <i class="fa-solid fa-bars"></i>
                 </button>
             </div>
         </div>
-        <nav class="navbar-mobile-drawer" id="navbarMobileDrawer" aria-label="Menu navigasi mobile"></nav>
+        <div class="nav-overlay" id="navOverlay"></div>
+    <nav class="navbar-mobile-drawer" id="navbarMobileDrawer" aria-label="Menu navigasi mobile"></nav>
     </header>
 
     <!-- Page Banner -->
     <section class="page-banner">
         <div class="container" style="max-width: 1140px; margin: 0 auto; padding: 0 1rem;">
-            <span style="display:inline-block; font-size:0.825rem; font-weight:700; color:var(--accent-color); letter-spacing:1px; text-transform:uppercase; margin-bottom:0.5rem;">
-                Official Digital Gate Pass & Anti-Calo Transfer
+            <span
+                style="display:inline-block; font-size:0.825rem; font-weight:700; color:var(--accent-color); letter-spacing:1px; text-transform:uppercase; margin-bottom:0.5rem;">
+                Official Digital Gate Pass
             </span>
-            <h1 style="font-size: 2.25rem; font-weight: 800; margin: 0; color: white;">E-Tiket & Boarding Pass Resmi</h1>
+            <h1 style="font-size: 2.25rem; font-weight: 800; margin: 0; color: white;">E-Tiket & Boarding Pass Resmi
+            </h1>
             <p style="color: #94A3B8; margin-top: 0.5rem; font-size: 1rem; max-width: 680px;">
-                Tiket resmi ber-QR Code dinamis, siap diunduh dalam format PDF offline beresolusi tinggi, dan dilengkapi fitur pindah kepemilikan resmi anti-calo.
+                Tiket resmi ber-QR Code dinamis yang siap diunduh dalam format PDF beresolusi tinggi.
             </p>
             <div class="stats-strip">
-                <div class="stat-pill"><i class="fa-solid fa-ticket" style="color:var(--accent-color);"></i> <span id="totalTicketsCount">0 Tiket</span></div>
-                <div class="stat-pill"><i class="fa-solid fa-circle-check" style="color:#10B981;"></i> <span id="activeTicketsCount">0 Siap Masuk</span></div>
-                <div class="stat-pill"><i class="fa-solid fa-arrow-right-arrow-left" style="color:#A78BFA;"></i> <span id="transferredTicketsCount">0 Ditransfer</span></div>
-                <div class="stat-pill"><i class="fa-solid fa-shield-halved" style="color:#38BDF8;"></i> <span>Terverifikasi Kemenparekraf</span></div>
+                <div class="stat-pill"><i class="fa-solid fa-ticket" style="color:var(--accent-color);"></i> <span
+                        id="totalTicketsCount">0 Tiket</span></div>
+                <div class="stat-pill"><i class="fa-solid fa-circle-check" style="color:#10B981;"></i> <span
+                        id="activeTicketsCount">0 Siap Masuk</span></div>
+                <div class="stat-pill"><i class="fa-solid fa-shield-halved" style="color:#38BDF8;"></i>
+                    <span>Terverifikasi Kemenparekraf</span>
+                </div>
             </div>
         </div>
     </section>
@@ -547,10 +756,8 @@
                     Semua E-Tiket (<span id="countAll">0</span>)
                 </button>
                 <button class="filter-tab" onclick="setFilter('READY', this)">
-                    <i class="fa-solid fa-circle-check" style="color:#10B981;"></i> Siap Masuk (<span id="countReady">0</span>)
-                </button>
-                <button class="filter-tab" onclick="setFilter('TRANSFERRED', this)">
-                    <i class="fa-solid fa-arrow-right-arrow-left" style="color:#8B5CF6;"></i> Telah Ditransfer (<span id="countTransferred">0</span>)
+                    <i class="fa-solid fa-circle-check" style="color:#10B981;"></i> Siap Masuk (<span
+                        id="countReady">0</span>)
                 </button>
                 <button class="filter-tab" onclick="setFilter('USED', this)">
                     <i class="fa-solid fa-clock-rotate-left"></i> Riwayat Check-In (<span id="countUsed">0</span>)
@@ -566,58 +773,206 @@
         <div id="ticketsGrid" class="tickets-container">
             <div style="text-align: center; padding: 5rem 1rem;">
                 <i class="fa-solid fa-circle-notch fa-spin fa-3x" style="color: var(--primary-color);"></i>
-                <p style="margin-top: 1rem; color: var(--text-muted); font-weight: 600;">Memuat E-Tiket Anda dari database server...</p>
+                <p style="margin-top: 1rem; color: var(--text-muted); font-weight: 600;">Memuat E-Tiket Anda dari
+                    database server...</p>
             </div>
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="footer" style="background: white; border-top: 1px solid var(--border-color); padding: 2.5rem 0; margin-top: auto;">
-        <div class="container" style="max-width: 1140px; margin: 0 auto; padding: 0 1rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">
-            <p>&copy; 2026 TIKARA (Tiket Konser Nusantara). Sistem Penjualan Tiket Resmi & Pindah Kepemilikan Sah.</p>
+        <!-- Unified TIKARA Footer (Light Theme) -->
+    <footer class="tikara-footer">
+        <div class="footer-container">
+            <div class="footer-main-grid">
+                <!-- Brand & Security Column -->
+                <div class="footer-col footer-brand-col">
+                    <a href="http://localhost:8082/index.html" class="footer-logo" aria-label="TIKARA Beranda">
+                        <i class="fa-solid fa-ticket"></i> <span>TIKARA</span>
+                    </a>
+                    <p class="footer-desc">
+                        Beli tiket konser, festival musik, dan event seru lainnya dengan mudah &amp; aman di TIKARA. 
+                        <strong>#PASTIBISA</strong> nonton konser &amp; festival idaman!
+                    </p>
+                    <div class="footer-security-section">
+                        <h4 class="footer-subheading"><i class="fa-solid fa-shield-halved"></i> Keamanan dan Privasi</h4>
+                        <div class="footer-badges-wrap">
+                            <a href="http://localhost:8082/terms.html#security" class="footer-iso-badge" title="Tersertifikasi ISO/IEC 27001 &amp; ISO/IEC 27701">
+                                <div class="iso-icon-box">
+                                    <i class="fa-solid fa-award"></i>
+                                </div>
+                                <div class="iso-info-box">
+                                    <span class="iso-title">ISO/IEC 27001 &bull; 27701</span>
+                                    <span class="iso-desc">Information Security &amp; Privacy Management</span>
+                                </div>
+                            </a>
+                            <div class="footer-ssl-badge">
+                                <i class="fa-solid fa-lock"></i> <span>256-Bit SSL Enkripsi Terverifikasi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Columns -->
+                <div class="footer-nav-columns">
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Tentang TIKARA</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/about.html">Tentang Kami</a></li>
+                            <li><a href="http://localhost:8082/blog.html">Blog &amp; Berita Musik</a></li>
+                        </ul>
+                        <h3 class="footer-heading" style="margin-top: 1.75rem;">Produk</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/index.html#catalog">Semua Konser &amp; Festival</a></li>
+                            <li><a href="http://localhost:8083/my-tickets.html">Tiket Saya</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Event Creator</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/creator-guide.html#biaya">Biaya &amp; Komisi</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#kerjasama">Kerjasama dengan Kami</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#panduan">Buku Panduan Creator</a></li>
+                            <li><a href="http://localhost:8082/create-event.html">Buat Event Konser</a></li>
+                            <li><a href="http://localhost:8082/organizer-dashboard.html">Dashboard Penyelenggara</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Dukungan</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/help.html">Pusat Bantuan (FAQ)</a></li>
+                            <li><a href="http://localhost:8082/terms.html#terms">Syarat dan Ketentuan</a></li>
+                            <li><a href="http://localhost:8082/terms.html#privacy">Kebijakan Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#security">Kepatuhan Keamanan &amp; Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#cookies">Kebijakan Cookies</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Action / Payment & Social Column -->
+                <div class="footer-col footer-action-col">
+                    <h3 class="footer-heading">Pilihan Pembayaran</h3>
+                    <div class="footer-payment-grid" title="Metode Pembayaran Resmi TIKARA">
+                        <span class="pay-chip"><i class="fa-solid fa-qrcode"></i> QRIS</span>
+                        <span class="pay-chip">BCA</span>
+                        <span class="pay-chip">Mandiri</span>
+                        <span class="pay-chip">BRI</span>
+                        <span class="pay-chip">BNI</span>
+                        <span class="pay-chip">BTN</span>
+                        <span class="pay-chip">BSI</span>
+                        <span class="pay-chip">Permata</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-visa"></i> VISA</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-mastercard"></i> Master</span>
+                        <span class="pay-chip">ShopeePay</span>
+                        <span class="pay-chip">GoPay</span>
+                        <span class="pay-chip">Alfamart</span>
+                        <span class="pay-chip">Indomaret</span>
+                    </div>
+                    <div>
+                        <a href="http://localhost:8082/help.html#pembayaran" class="footer-pay-guide-link">
+                            <i class="fa-solid fa-circle-question"></i> Panduan &amp; Cara Bayar
+                        </a>
+                    </div>
+
+                    <div class="footer-social-wrap" style="margin-top: 1.75rem;">
+                        <h3 class="footer-heading">Ikuti Kami untuk Update</h3>
+                        <div class="footer-social-links">
+                            <a href="https://www.instagram.com/deafriliart/?__pwa=1" target="_blank" rel="noopener noreferrer" class="social-btn social-ig" aria-label="Instagram TIKARA" title="Instagram">
+                                <i class="fa-brands fa-instagram"></i>
+                            </a>
+                            <a href="https://www.tiktok.com/@realityclubofficial" target="_blank" rel="noopener noreferrer" class="social-btn social-tiktok" aria-label="TikTok TIKARA" title="TikTok">
+                                <i class="fa-brands fa-tiktok"></i>
+                            </a>
+                            <a href="https://x.com/reality_club" target="_blank" rel="noopener noreferrer" class="social-btn social-x" aria-label="X (Twitter) TIKARA" title="X (Twitter)">
+                                <i class="fa-brands fa-x-twitter"></i>
+                            </a>
+                            <a href="https://www.facebook.com/officialrealityclub/?locale=id_ID" target="_blank" rel="noopener noreferrer" class="social-btn social-fb" aria-label="Facebook TIKARA" title="Facebook">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </a>
+                            <a href="https://youtu.be/SlwQyBkCtZE?si=WBPI1nh0A6A2e9Dv" target="_blank" rel="noopener noreferrer" class="social-btn social-yt" aria-label="YouTube TIKARA" title="YouTube">
+                                <i class="fa-brands fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Copyright -->
+            <div class="footer-bottom-bar">
+                <p>&copy; 2026 TIKARA (PT Tikara Nusantara Sejahtera). Seluruh hak cipta dilindungi undang-undang.</p>
+                <div style="display: flex; gap: 1.25rem; font-size: 0.8rem;">
+                    <a href="http://localhost:8082/terms.html#terms">Syarat Layanan</a>
+                    <a href="http://localhost:8082/terms.html#privacy">Privasi</a>
+                    <a href="http://localhost:8082/terms.html#security">Keamanan</a>
+                </div>
+            </div>
         </div>
     </footer>
 
-    <!-- QR Modal Fullscreen -->
+    <!-- Pop-up QR Scanner Modal (Mempermudah Scan di Gate) -->
     <div id="qrModal" class="modal-overlay" style="display:none;" onclick="closeQrModal()">
-        <div class="modal-box" style="text-align:center; max-width:400px;" onclick="event.stopPropagation()">
+        <div class="modal-box" style="text-align:center; max-width:440px; padding:2rem; border-radius:24px; box-shadow:0 25px 60px rgba(15,23,42,0.3); background:#FFFFFF;" onclick="event.stopPropagation()">
+            <!-- Modal Header -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-                <span style="font-size:0.8rem; font-weight:700; color:#10B981; background:#DCFCE7; padding:0.3rem 0.75rem; border-radius:9999px;">
+                <span style="font-size:0.8rem; font-weight:700; color:#10B981; background:#DCFCE7; padding:0.35rem 0.85rem; border-radius:9999px; display:inline-flex; align-items:center; gap:6px;">
                     <i class="fa-solid fa-qrcode"></i> GATE SCANNER PASS
                 </span>
-                <button onclick="closeQrModal()" style="background:none; border:none; color:#64748B; font-size:1.25rem; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" onclick="closeQrModal()" title="Tutup" style="background:#F1F5F9; border:none; color:#64748B; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.15rem; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#E2E8F0'; this.style.color='#0F172A'" onmouseout="this.style.background='#F1F5F9'; this.style.color='#64748B'">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
-            <h3 id="modalEventTitle" style="font-size:1.2rem; font-weight:800; color:var(--text-main); margin-bottom:0.25rem;">Konser Musik</h3>
-            <p id="modalCategory" style="font-size:0.875rem; color:var(--primary-color); font-weight:700; margin-bottom:1.5rem;">VIP</p>
-            <div style="background:#F8FAFC; padding:1.25rem; border-radius:16px; border:1px solid #E2E8F0; display:inline-block; margin-bottom:1rem;">
-                <img id="modalQrImg" src="" alt="QR Entry" style="width:240px; height:240px; display:block; border-radius:8px;">
+
+            <!-- Event & Category Details -->
+            <h3 id="modalEventTitle" style="font-size:1.25rem; font-weight:800; color:var(--text-main); margin-bottom:0.25rem; line-height:1.3;">Konser Musik</h3>
+            <p id="modalCategory" style="font-size:0.9rem; color:var(--primary-color); font-weight:700; margin-bottom:1.25rem; text-transform:uppercase; letter-spacing:0.5px;">VIP</p>
+            
+            <!-- Large QR Code Box -->
+            <div style="background:#FFFFFF; padding:1.25rem; border-radius:20px; border:2px solid #E2E8F0; box-shadow:0 8px 20px rgba(0,0,0,0.06); display:inline-block; margin-bottom:1rem;">
+                <img id="modalQrImg" src="" alt="Gate QR Scanner" style="width:280px; height:280px; max-width:100%; display:block; border-radius:8px; image-rendering:pixelated; margin:0 auto;">
             </div>
-            <div id="modalCode" class="gate-code" style="font-size:1.25rem; margin-bottom:0.5rem;">TK-XXXX-XXXX</div>
-            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.5rem;">Tingkatkan kecerahan layar ponsel Anda saat discan di pintu masuk venue.</p>
-            <button class="btn-stub btn-stub-primary" style="width:100%; padding:0.75rem;" onclick="closeQrModal()">Tutup</button>
+            
+            <div id="modalCode" class="gate-code" style="font-size:1.35rem; margin-bottom:0.75rem; letter-spacing:2px;">TK-XXXX-XXXX</div>
+            
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1.25rem; line-height:1.4;">
+                Tingkatkan kecerahan layar ponsel Anda saat discan di pintu masuk venue.
+            </p>
+            
+            <button type="button" class="btn-stub btn-stub-primary" style="width:100%; padding:0.85rem; font-size:0.95rem; font-weight:700; border-radius:12px; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="closeQrModal()">
+                <i class="fa-solid fa-xmark"></i> Tutup Pop-Up
+            </button>
         </div>
     </div>
 
-    <!-- Official Ticket Transfer Modal (Anti-Calo System) -->
-    <div id="transferModal" class="modal-overlay" style="display:none;" onclick="closeTransferModal()">
+    <!-- Legacy transfer modal is intentionally unavailable: tickets cannot be transferred. -->
+    <div id="transferModal" class="modal-overlay" style="display:none;" aria-hidden="true">
         <div class="modal-box" onclick="event.stopPropagation()">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.25rem;">
                 <div>
-                    <span style="font-size:0.75rem; font-weight:800; color:#6D28D9; background:#EDE9FE; padding:0.3rem 0.75rem; border-radius:9999px; text-transform:uppercase; letter-spacing:0.5px;">
+                    <span
+                        style="font-size:0.75rem; font-weight:800; color:#6D28D9; background:#EDE9FE; padding:0.3rem 0.75rem; border-radius:9999px; text-transform:uppercase; letter-spacing:0.5px;">
                         <i class="fa-solid fa-shield-check"></i> Transfer Kepemilikan Resmi
                     </span>
-                    <h3 style="font-size:1.3rem; font-weight:800; color:var(--text-main); margin:0.5rem 0 0.25rem;">Pindah Tangan Tiket Konser</h3>
-                    <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">Alihkan tiket ini secara sah ke akun TIKARA penerima yang telah terdaftar.</p>
+                    <h3 style="font-size:1.3rem; font-weight:800; color:var(--text-main); margin:0.5rem 0 0.25rem;">
+                        Pindah Tangan Tiket Konser</h3>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">Alihkan tiket ini secara sah ke
+                        akun TIKARA penerima yang telah terdaftar.</p>
                 </div>
-                <button onclick="closeTransferModal()" style="background:none; border:none; color:#64748B; font-size:1.25rem; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="closeTransferModal()"
+                    style="background:none; border:none; color:#64748B; font-size:1.25rem; cursor:pointer;"><i
+                        class="fa-solid fa-xmark"></i></button>
             </div>
 
             <!-- Target Ticket Info Banner -->
-            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
-                <div style="font-size:0.75rem; color:#64748B; font-weight:700; text-transform:uppercase;">Tiket yang Akan Dipindahkan:</div>
-                <div id="transferEventTitle" style="font-size:1.05rem; font-weight:800; color:var(--text-main); margin:0.25rem 0;">Nama Konser</div>
+            <div
+                style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+                <div style="font-size:0.75rem; color:#64748B; font-weight:700; text-transform:uppercase;">Tiket yang
+                    Akan Dipindahkan:</div>
+                <div id="transferEventTitle"
+                    style="font-size:1.05rem; font-weight:800; color:var(--text-main); margin:0.25rem 0;">Nama Konser
+                </div>
                 <div style="display:flex; gap:1rem; font-size:0.85rem;">
-                    <span>Kategori: <strong id="transferTicketCat" style="color:var(--primary-color);">VIP</strong></span>
+                    <span>Kategori: <strong id="transferTicketCat"
+                            style="color:var(--primary-color);">VIP</strong></span>
                     <span>ID: <strong id="transferTicketId" style="font-family:monospace;">#TKT-000</strong></span>
                 </div>
             </div>
@@ -628,38 +983,49 @@
 
                 <!-- Recipient Email -->
                 <div style="margin-bottom:1.25rem;">
-                    <label style="display:block; font-size:0.875rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">
+                    <label
+                        style="display:block; font-size:0.875rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">
                         Email Akun Penerima di TIKARA <span style="color:var(--danger-color);">*</span>
                     </label>
                     <div style="position:relative;">
-                        <input type="email" id="recipientEmailInput" class="form-input" placeholder="contoh: nama.teman@gmail.com" required onblur="checkRecipientLive()">
-                        <div id="recipientCheckSpinner" style="display:none; position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--primary-color);">
+                        <input type="email" id="recipientEmailInput" class="form-input"
+                            placeholder="contoh: nama.teman@gmail.com" required onblur="checkRecipientLive()">
+                        <div id="recipientCheckSpinner"
+                            style="display:none; position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--primary-color);">
                             <i class="fa-solid fa-circle-notch fa-spin"></i>
                         </div>
                     </div>
                     <!-- Validation Badges -->
-                    <div id="recipientFoundBadge" style="display:none; margin-top:0.5rem; background:#DCFCE7; color:#15803D; border:1px solid #BBF7D0; padding:0.6rem 0.85rem; border-radius:8px; font-size:0.825rem; font-weight:600;">
-                        <i class="fa-solid fa-circle-check"></i> Penerima Terverifikasi: <span id="recipientFoundName">Nama Penerima</span>
+                    <div id="recipientFoundBadge"
+                        style="display:none; margin-top:0.5rem; background:#DCFCE7; color:#15803D; border:1px solid #BBF7D0; padding:0.6rem 0.85rem; border-radius:8px; font-size:0.825rem; font-weight:600;">
+                        <i class="fa-solid fa-circle-check"></i> Penerima Terverifikasi: <span
+                            id="recipientFoundName">Nama Penerima</span>
                     </div>
-                    <div id="recipientNotFoundBadge" style="display:none; margin-top:0.5rem; background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; padding:0.6rem 0.85rem; border-radius:8px; font-size:0.825rem;">
-                        <i class="fa-solid fa-triangle-exclamation"></i> <span id="recipientNotFoundMsg">Email belum terdaftar.</span>
+                    <div id="recipientNotFoundBadge"
+                        style="display:none; margin-top:0.5rem; background:#FEE2E2; color:#B91C1C; border:1px solid #FECACA; padding:0.6rem 0.85rem; border-radius:8px; font-size:0.825rem;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> <span id="recipientNotFoundMsg">Email belum
+                            terdaftar.</span>
                     </div>
                 </div>
 
                 <!-- Recipient NIK -->
                 <div style="margin-bottom:1.25rem;">
-                    <label style="display:block; font-size:0.875rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">
+                    <label
+                        style="display:block; font-size:0.875rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">
                         Nomor Induk Kependudukan (NIK) Penerima <span style="color:var(--danger-color);">*</span>
                     </label>
-                    <input type="text" id="recipientNikInput" class="form-input" placeholder="16 digit angka e-KTP penerima" maxlength="16" inputmode="numeric" required>
+                    <input type="text" id="recipientNikInput" class="form-input"
+                        placeholder="16 digit angka e-KTP penerima" maxlength="16" inputmode="numeric" required>
                     <span style="font-size:0.75rem; color:#64748B; display:block; margin-top:0.25rem;">
-                        <i class="fa-solid fa-id-card"></i> Wajib sama persis dengan e-KTP penerima untuk penukaran gelang di venue.
+                        <i class="fa-solid fa-id-card"></i> Wajib sama persis dengan e-KTP penerima untuk penukaran
+                        gelang di venue.
                     </span>
                 </div>
 
                 <!-- Reason -->
                 <div style="margin-bottom:1.25rem;">
-                    <label style="display:block; font-size:0.875rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">
+                    <label
+                        style="display:block; font-size:0.875rem; font-weight:700; color:var(--text-main); margin-bottom:0.35rem;">
                         Alasan Pemindahan Tiket
                     </label>
                     <select id="transferReasonInput" class="form-input" style="background:white;">
@@ -671,21 +1037,29 @@
                 </div>
 
                 <!-- Strict Anti-Calo Agreement Checkbox -->
-                <div style="margin-bottom:1.5rem; background:#FFFBEB; border:1px solid #FDE68A; padding:0.85rem; border-radius:10px;">
-                    <label style="display:flex; align-items:flex-start; gap:0.6rem; cursor:pointer; font-size:0.8rem; color:#92400E; line-height:1.4;">
-                        <input type="checkbox" id="transferAgreementCheck" required style="margin-top:0.2rem; cursor:pointer;">
+                <div
+                    style="margin-bottom:1.5rem; background:#FFFBEB; border:1px solid #FDE68A; padding:0.85rem; border-radius:10px;">
+                    <label
+                        style="display:flex; align-items:flex-start; gap:0.6rem; cursor:pointer; font-size:0.8rem; color:#92400E; line-height:1.4;">
+                        <input type="checkbox" id="transferAgreementCheck" required
+                            style="margin-top:0.2rem; cursor:pointer;">
                         <span>
-                            <strong>Persetujuan Pembatalan Barcode:</strong> Saya mengerti bahwa setelah tiket ini berhasil ditransfer, <strong>QR Code lama saya akan dicabut seketika secara permanen</strong> dan hak akses masuk konser akan beralih seutuhnya ke akun penerima. Tindakan ini tidak dapat dibatalkan.
+                            <strong>Persetujuan Pembatalan Barcode:</strong> Saya mengerti bahwa setelah tiket ini
+                            berhasil ditransfer, <strong>QR Code lama saya akan dicabut seketika secara
+                                permanen</strong> dan hak akses masuk konser akan beralih seutuhnya ke akun penerima.
+                            Tindakan ini tidak dapat dibatalkan.
                         </span>
                     </label>
                 </div>
 
                 <!-- Modal Actions -->
                 <div style="display:flex; gap:0.75rem;">
-                    <button type="button" class="btn-stub btn-stub-outline" style="flex:1; padding:0.75rem;" onclick="closeTransferModal()">
+                    <button type="button" class="btn-stub btn-stub-outline" style="flex:1; padding:0.75rem;"
+                        onclick="closeTransferModal()">
                         Batal
                     </button>
-                    <button type="submit" id="btnSubmitTransfer" class="btn-stub btn-stub-primary" style="flex:2; padding:0.75rem; background:#6D28D9;">
+                    <button type="submit" id="btnSubmitTransfer" class="btn-stub btn-stub-primary"
+                        style="flex:2; padding:0.75rem; background:#6D28D9;">
                         <i class="fa-solid fa-paper-plane"></i> Proses Transfer Tiket
                     </button>
                 </div>
@@ -697,61 +1071,82 @@
     <div id="pdfTicketTemplate">
         <div class="pdf-pass-wrapper">
             <div class="pdf-watermark" id="pdfWatermarkText">OFFICIAL TIKARA PASS</div>
-            
+
             <div class="pdf-header">
                 <div>
                     <div style="font-size: 1.25rem; font-weight: 800; letter-spacing: 1px; color: #FFFFFF;">
                         <i class="fa-solid fa-ticket" style="color: #FF5A5F;"></i> TIKARA BOARDING PASS
                     </div>
                     <div style="font-size: 0.75rem; color: #94A3B8; margin-top: 2px;">
-                        TIKET KONSER RESMI INDONESIA • TERVERIFIKASI KEMENPAREKRAF
+                        TIKET KONSER RESMI INDONESIA � TERVERIFIKASI KEMENPAREKRAF
                     </div>
                 </div>
                 <div style="text-align: right;">
-                    <div style="font-size: 0.75rem; font-weight: 700; color: #10B981; background: rgba(16,185,129,0.15); padding: 4px 10px; border-radius: 9999px; display: inline-block;">
+                    <div
+                        style="font-size: 0.75rem; font-weight: 700; color: #10B981; background: rgba(16,185,129,0.15); padding: 4px 10px; border-radius: 9999px; display: inline-block;">
                         <i class="fa-solid fa-shield-check"></i> AUTHENTIC SECURED
                     </div>
-                    <div id="pdfIssuedDate" style="font-size: 0.7rem; color: #94A3B8; margin-top: 4px;">Diterbitkan: 2026-09-12</div>
+                    <div id="pdfIssuedDate" style="font-size: 0.7rem; color: #94A3B8; margin-top: 4px;">Diterbitkan:
+                        2026-09-12</div>
                 </div>
             </div>
 
             <div class="pdf-body">
                 <!-- Left Details -->
                 <div>
-                    <span style="font-size: 0.75rem; font-weight: 700; color: #6D28D9; background: #EDE9FE; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+                    <span
+                        style="font-size: 0.75rem; font-weight: 700; color: #6D28D9; background: #EDE9FE; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
                         Official Gate Pass
                     </span>
-                    <h1 id="pdfEventTitle" style="font-size: 1.6rem; font-weight: 900; margin: 8px 0 4px; color: #0F172A; line-height: 1.2;">
+                    <h1 id="pdfEventTitle"
+                        style="font-size: 1.6rem; font-weight: 900; margin: 8px 0 4px; color: #0F172A; line-height: 1.2;">
                         Konser Musik Indonesia
                     </h1>
                     <p id="pdfEventVenue" style="font-size: 0.95rem; color: #475569; margin: 0 0 16px;">
-                        <i class="fa-solid fa-location-dot" style="color: #FF5A5F;"></i> Stadion Utama Gelora Bung Karno, Jakarta
+                        <i class="fa-solid fa-location-dot" style="color: #FF5A5F;"></i> Stadion Utama Gelora Bung
+                        Karno, Jakarta
                     </p>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 14px; border-radius: 10px; margin-bottom: 16px;">
+                    <div
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #F8FAFC; border: 1px solid #E2E8F0; padding: 14px; border-radius: 10px; margin-bottom: 16px;">
                         <div>
-                            <span style="font-size: 0.7rem; color: #64748B; font-weight: 700; text-transform: uppercase; display: block;">Kategori / Tier</span>
+                            <span
+                                style="font-size: 0.7rem; color: #64748B; font-weight: 700; text-transform: uppercase; display: block;">Kategori
+                                / Tier</span>
                             <strong id="pdfCategory" style="font-size: 1.1rem; color: #1B365D;">VIP FESTIVAL</strong>
                         </div>
                         <div>
-                            <span style="font-size: 0.7rem; color: #64748B; font-weight: 700; text-transform: uppercase; display: block;">Jadwal Pelaksanaan</span>
-                            <strong id="pdfEventDate" style="font-size: 0.9rem; color: #0F172A;">Sabtu, 14 November 2026</strong>
+                            <span
+                                style="font-size: 0.7rem; color: #64748B; font-weight: 700; text-transform: uppercase; display: block;">Jadwal
+                                Pelaksanaan</span>
+                            <strong id="pdfEventDate" style="font-size: 0.9rem; color: #0F172A;">Sabtu, 14 November
+                                2026</strong>
                         </div>
                         <div>
-                            <span style="font-size: 0.7rem; color: #64748B; font-weight: 700; text-transform: uppercase; display: block;">Waktu Open Gate</span>
+                            <span
+                                style="font-size: 0.7rem; color: #64748B; font-weight: 700; text-transform: uppercase; display: block;">Waktu
+                                Open Gate</span>
                             <strong id="pdfOpenGate" style="font-size: 0.9rem; color: #0F172A;">16:00 WIB</strong>
                         </div>
                         <div>
-                            <span style="font-size: 0.7rem; color: #64748B; font-weight: 700; text-transform: uppercase; display: block;">Nama Pemegang</span>
+                            <span
+                                style="font-size: 0.7rem; color: #64748B; font-weight: 700; text-transform: uppercase; display: block;">Nama
+                                Pemegang</span>
                             <strong id="pdfHolderName" style="font-size: 0.9rem; color: #0F172A;">Nama Pembeli</strong>
                         </div>
                         <div>
-                            <span style="font-size: 0.7rem; color: #64748B; font-weight: 700; text-transform: uppercase; display: block;">ID Lembar Tiket</span>
-                            <strong id="pdfTicketId" style="font-family: monospace; font-size: 0.9rem; color: #6D28D9;">#TKT-101</strong>
+                            <span
+                                style="font-size: 0.7rem; color: #64748B; font-weight: 700; text-transform: uppercase; display: block;">ID
+                                Lembar Tiket</span>
+                            <strong id="pdfTicketId"
+                                style="font-family: monospace; font-size: 0.9rem; color: #6D28D9;">#TKT-101</strong>
                         </div>
                         <div>
-                            <span style="font-size: 0.7rem; color: #64748B; font-weight: 700; text-transform: uppercase; display: block;">NIK Terdaftar</span>
-                            <strong id="pdfHolderNik" style="font-family: monospace; font-size: 0.85rem; color: #475569;">3201************</strong>
+                            <span
+                                style="font-size: 0.7rem; color: #64748B; font-weight: 700; text-transform: uppercase; display: block;">NIK
+                                Terdaftar</span>
+                            <strong id="pdfHolderNik"
+                                style="font-family: monospace; font-size: 0.85rem; color: #475569;">3201************</strong>
                         </div>
                     </div>
 
@@ -762,14 +1157,18 @@
                 </div>
 
                 <!-- Right Gate Stub -->
-                <div style="background: #FAFCFE; border-left: 2px dashed #CBD5E1; padding-left: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-                    <span style="font-size: 0.75rem; font-weight: 700; color: #15803D; background: #DCFCE7; padding: 3px 8px; border-radius: 9999px; margin-bottom: 10px;">
+                <div
+                    style="background: #FAFCFE; border-left: 2px dashed #CBD5E1; padding-left: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+                    <span
+                        style="font-size: 0.75rem; font-weight: 700; color: #15803D; background: #DCFCE7; padding: 3px 8px; border-radius: 9999px; margin-bottom: 10px;">
                         READY TO SCAN
                     </span>
-                    <div style="background: white; padding: 10px; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 4px 10px rgba(0,0,0,0.04);">
+                    <div
+                        style="background: white; padding: 10px; border-radius: 12px; border: 1px solid #E2E8F0; box-shadow: 0 4px 10px rgba(0,0,0,0.04);">
                         <img id="pdfQrImage" src="" alt="Gate QR" style="width: 170px; height: 170px; display: block;">
                     </div>
-                    <div id="pdfGateCode" style="font-family: monospace; font-size: 1.1rem; font-weight: 800; color: #1B365D; margin-top: 10px; letter-spacing: 1.5px;">
+                    <div id="pdfGateCode"
+                        style="font-family: monospace; font-size: 1.1rem; font-weight: 800; color: #1B365D; margin-top: 10px; letter-spacing: 1.5px;">
                         TK-XXXXXXXX-XXXX
                     </div>
                     <span style="font-size: 0.7rem; color: #64748B; margin-top: 4px;">Pintu Masuk: MAIN GATE</span>
@@ -778,11 +1177,15 @@
 
             <!-- Terms & Conditions Footer -->
             <div class="pdf-terms">
-                <strong style="color: #0F172A; display: block; margin-bottom: 4px;">SYARAT & KETENTUAN MASUK VENUE:</strong>
-                1. Tiket ini merupakan bukti sah penukaran wristband / akses pintu masuk. Harap cetak atau simpan di memori ponsel Anda.<br>
-                2. Wajib membawa kartu identitas asli (e-KTP/SIM/Paspor) yang sesuai dengan nama dan NIK yang tercetak pada tiket.<br>
+                <strong style="color: #0F172A; display: block; margin-bottom: 4px;">SYARAT & KETENTUAN MASUK
+                    VENUE:</strong>
+                1. Tiket ini merupakan bukti sah penukaran wristband / akses pintu masuk. Harap cetak atau simpan di
+                memori ponsel Anda.<br>
+                2. Wajib membawa kartu identitas asli (e-KTP/SIM/Paspor) yang sesuai dengan nama dan NIK yang tercetak
+                pada tiket.<br>
                 3. Tiket yang sudah dipindai di barcode scanner gate tidak dapat digunakan kembali untuk masuk.<br>
-                4. Dilarang keras membawa senjata tajam, kamera profesional (DSLR/Mirrorless), tongsis, botol kaca, dan narkotika.
+                4. Dilarang keras membawa senjata tajam, kamera profesional (DSLR/Mirrorless), tongsis, botol kaca, dan
+                narkotika.
             </div>
         </div>
     </div>
@@ -859,16 +1262,12 @@
         function updateCounts() {
             const total = rawTickets.length;
             const ready = rawTickets.filter(t => t.status === 'ISSUED').length;
-            const transferred = rawTickets.filter(t => t.status === 'TRANSFERRED').length;
             const used = rawTickets.filter(t => t.status === 'USED' || t.status === 'CHECKED_IN').length;
 
             document.getElementById('totalTicketsCount').textContent = `${total} Tiket`;
             document.getElementById('activeTicketsCount').textContent = `${ready} Siap Masuk`;
-            document.getElementById('transferredTicketsCount').textContent = `${transferred} Ditransfer`;
-            
             document.getElementById('countAll').textContent = total;
             document.getElementById('countReady').textContent = ready;
-            document.getElementById('countTransferred').textContent = transferred;
             document.getElementById('countUsed').textContent = used;
         }
 
@@ -888,7 +1287,6 @@
 
             displayedTickets = rawTickets.filter(t => {
                 if (currentFilter === 'READY' && t.status !== 'ISSUED') return false;
-                if (currentFilter === 'TRANSFERRED' && t.status !== 'TRANSFERRED') return false;
                 if (currentFilter === 'USED' && (t.status !== 'USED' && t.status !== 'CHECKED_IN')) return false;
 
                 if (query) {
@@ -944,11 +1342,11 @@
                 const evt = eventCache[tiket.acaraId] || {};
                 const eventTitle = evt.nama || 'Konser Musik TIKARA';
                 const eventVenue = evt.venue ? `${evt.venue}, ${evt.kota || ''}` : 'Venue Konser Terdaftar';
-                
+
                 let dateDisplay = 'Waktu Acara Diumumkan Segera';
                 let timeDisplay = '19:00 WIB';
                 let countdownDisplay = '';
-                
+
                 if (evt.tanggalMulai) {
                     const dt = new Date(evt.tanggalMulai);
                     dateDisplay = dt.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -983,24 +1381,18 @@
 
                     stubContent = `
                         ${statusBadge}
-                        <div class="qr-card">
+                        <div class="qr-card" data-ticket-id="${tiket.id}" data-code="${tiket.kodeQr || ''}" onclick="openQrModal(this)" title="Klik untuk perbesar QR Code" style="cursor:pointer;">
                             <img src="${qrUrl}" alt="QR Gate Scanner Pass">
                         </div>
                         <span style="font-size:0.75rem; color:#64748B; text-transform:uppercase; letter-spacing:0.5px;">Kode Gerbang Masuk</span>
                         <div class="gate-code">${tiket.kodeQr || '-'}</div>
 
                         <div class="stub-actions" style="margin-top: 0.75rem;">
-                            <button class="btn-stub btn-stub-pdf" onclick="generatePdfTicket(${tiket.id})" title="Unduh file PDF resmi">
+                            <button type="button" class="btn-stub btn-stub-pdf" onclick="generatePdfTicket(${tiket.id}, this)" title="Unduh file PDF resmi">
                                 <i class="fa-solid fa-file-arrow-down"></i> Unduh PDF E-Tiket
                             </button>
-                            <button class="btn-stub btn-stub-transfer" onclick="openTransferModal(${tiket.id}, '${safeTitle}', '${safeCat}')" title="Pindah kepemilikan resmi">
-                                <i class="fa-solid fa-arrow-right-arrow-left"></i> Transfer Tiket
-                            </button>
-                            <button class="btn-stub btn-stub-email" onclick="sendTicketEmail(${tiket.id}, '${safeTitle}')" title="Kirim pass ke email">
+                            <button type="button" class="btn-stub btn-stub-email" onclick="sendTicketEmail(${tiket.id}, '${safeTitle}', this)" title="Kirim pass ke email">
                                 <i class="fa-solid fa-envelope"></i> Kirim ke Email
-                            </button>
-                            <button class="btn-stub btn-stub-outline" onclick="openQrModal('${tiket.kodeQr}', '${safeTitle}', '${safeCat}')">
-                                <i class="fa-solid fa-expand"></i> Layar Penuh QR
                             </button>
                         </div>
                     `;
@@ -1028,7 +1420,7 @@
                                 Tiket telah dipindai di pintu gate venue.
                             </p>
                         </div>
-                        <button class="btn-stub btn-stub-pdf" onclick="generatePdfTicket(${tiket.id})" style="width:100%;">
+                        <button class="btn-stub btn-stub-pdf" onclick="generatePdfTicket(${tiket.id}, this)" style="width:100%;">
                             <i class="fa-solid fa-file-arrow-down"></i> Unduh E-Tiket Arsip
                         </button>
                     `;
@@ -1103,37 +1495,149 @@
             container.innerHTML = html;
         }
 
-        function openQrModal(kode, title, cat) {
-            document.getElementById('modalEventTitle').textContent = title;
-            document.getElementById('modalCategory').textContent = cat;
-            document.getElementById('modalCode').textContent = kode;
-            document.getElementById('modalQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(kode)}`;
-            document.getElementById('qrModal').style.display = 'flex';
+        function openQrModal(param, title, cat) {
+            try {
+                let kode = 'TK-OFFICIAL-PASS';
+                let eventTitle = title || 'Konser Musik TIKARA';
+                let category = cat || 'TIKET RESMI';
+
+                // Case 1: param is a DOM element (from onclick="openQrModal(this)")
+                if (param instanceof HTMLElement || (param && param.getAttribute)) {
+                    const ticketId = param.getAttribute('data-ticket-id');
+                    const tId = Number(ticketId);
+                    const tiket = (rawTickets || []).find(t => t.id === tId || t.id == ticketId);
+                    if (tiket) {
+                        kode = tiket.kodeQr || kode;
+                        category = tiket.namaKategoriTiket || category;
+                        const evt = eventCache[tiket.acaraId] || {};
+                        eventTitle = evt.nama || eventTitle;
+                    } else {
+                        kode = param.getAttribute('data-code') || kode;
+                    }
+                } 
+                // Case 2: param is ticketId number
+                else if (typeof param === 'number' || (!isNaN(param) && (rawTickets || []).some(t => t.id == param))) {
+                    const tId = Number(param);
+                    const tiket = (rawTickets || []).find(t => t.id === tId || t.id == param);
+                    if (tiket) {
+                        kode = tiket.kodeQr || kode;
+                        category = tiket.namaKategoriTiket || category;
+                        const evt = eventCache[tiket.acaraId] || {};
+                        eventTitle = evt.nama || eventTitle;
+                    }
+                } 
+                // Case 3: param is string (traditional signature: openQrModal(kode, title, cat))
+                else if (typeof param === 'string' && param.trim() !== '') {
+                    kode = param;
+                    if (title) eventTitle = title;
+                    if (cat) category = cat;
+                }
+
+                console.log('openQrModal invoked:', { kode, eventTitle, category });
+
+                const titleEl = document.getElementById('modalEventTitle');
+                if (titleEl) titleEl.textContent = eventTitle;
+
+                const catEl = document.getElementById('modalCategory');
+                if (catEl) catEl.textContent = category;
+
+                const codeEl = document.getElementById('modalCode');
+                if (codeEl) codeEl.textContent = kode;
+
+                const qrImg = document.getElementById('modalQrImg');
+                if (qrImg) {
+                    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(kode)}`;
+                }
+
+                const modal = document.getElementById('qrModal');
+                if (modal) {
+                    modal.style.display = 'flex';
+                } else {
+                    console.error('Modal #qrModal not found');
+                }
+            } catch (err) {
+                console.error('Error in openQrModal:', err);
+                alert('Gagal membuka pop-up QR: ' + err.message);
+            }
         }
 
         function closeQrModal() {
-            document.getElementById('qrModal').style.display = 'none';
+            const modal = document.getElementById('qrModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
         }
 
-        // ==========================================
-        // OFFICIAL TICKET TRANSFER (ANTI-CALO) MODAL
-        // ==========================================
+        // Global delegated click listener ensures clicking QR card triggers enlargement modal
+        document.addEventListener('click', function(e) {
+            const trigger = e.target.closest('.qr-card');
+            if (trigger) {
+                e.preventDefault();
+                openQrModal(trigger);
+            }
+        });
+
+        // Close pop-up modal when pressing Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeQrModal();
+                if (typeof closeTransferModal === 'function') closeTransferModal();
+            }
+        });
+
+        // Transfer tiket modal
         function openTransferModal(ticketId, eventTitle, categoryName) {
-            document.getElementById('transferTargetTicketId').value = ticketId;
-            document.getElementById('transferEventTitle').textContent = eventTitle;
-            document.getElementById('transferTicketCat').textContent = categoryName;
-            document.getElementById('transferTicketId').textContent = `#TKT-${ticketId}`;
-            
+            const tId = Number(ticketId);
+            const tiket = (rawTickets || []).find(t => t.id === tId || t.id == ticketId);
+            const evt = tiket ? (eventCache[tiket.acaraId] || {}) : {};
+            const title = eventTitle || evt.nama || 'Konser Musik TIKARA';
+            const cat = categoryName || (tiket ? tiket.namaKategoriTiket : '') || 'Regular';
+
+            const modal = document.getElementById('transferModal');
+            if (!modal) {
+                console.error('Modal transferModal tidak ditemukan');
+                return;
+            }
+
+            const targetInput = document.getElementById('transferTargetTicketId');
+            if (targetInput) targetInput.value = tId;
+            const titleEl = document.getElementById('transferEventTitle');
+            if (titleEl) titleEl.textContent = title;
+            const catEl = document.getElementById('transferTicketCat');
+            if (catEl) catEl.textContent = cat;
+            const idEl = document.getElementById('transferTicketId');
+            if (idEl) idEl.textContent = `#TKT-${tId}`;
+
             // Reset fields
-            document.getElementById('recipientEmailInput').value = '';
-            document.getElementById('recipientNikInput').value = '';
-            document.getElementById('transferAgreementCheck').checked = false;
-            document.getElementById('recipientFoundBadge').style.display = 'none';
-            document.getElementById('recipientNotFoundBadge').style.display = 'none';
+            const emailInp = document.getElementById('recipientEmailInput');
+            if (emailInp) emailInp.value = '';
+            const nikInp = document.getElementById('recipientNikInput');
+            if (nikInp) nikInp.value = '';
+            const agreeChk = document.getElementById('transferAgreementCheck');
+            if (agreeChk) agreeChk.checked = false;
+            const badgeFound = document.getElementById('recipientFoundBadge');
+            if (badgeFound) badgeFound.style.display = 'none';
+            const badgeNotFound = document.getElementById('recipientNotFoundBadge');
+            if (badgeNotFound) badgeNotFound.style.display = 'none';
             verifiedRecipient = null;
 
-            document.getElementById('transferModal').style.display = 'flex';
+            modal.style.display = 'flex';
         }
+        window.openTransferModal = openTransferModal;
+        window.closeTransferModal = closeTransferModal;
+
+        // Delegated click listener for bulletproof dynamic button trigger
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.btn-stub-transfer');
+            if (btn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const tId = btn.getAttribute('data-ticket-id');
+                if (tId) {
+                    openTransferModal(tId);
+                }
+            }
+        });
 
         function closeTransferModal() {
             document.getElementById('transferModal').style.display = 'none';
@@ -1251,125 +1755,145 @@
             }
         }
 
-        // ==========================================
-        // OFFICIAL PDF E-TICKET & PASS GENERATOR
-        // ==========================================
-        async function generatePdfTicket(ticketId) {
+        // PDF E-Ticket generator
+        function setActionLoading(button, loading, loadingText) {
+            if (!button) return () => { };
+            const originalHtml = button.innerHTML;
+            button.disabled = loading;
+            button.setAttribute('aria-busy', loading ? 'true' : 'false');
+            if (loading) {
+                button.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> ${loadingText}`;
+            }
+            return () => {
+                button.disabled = false;
+                button.removeAttribute('aria-busy');
+                button.innerHTML = originalHtml;
+            };
+        }
+
+        function waitForImage(image, timeoutMs = 10000) {
+            if (image.complete && image.naturalWidth > 0) return Promise.resolve();
+            return new Promise(resolve => {
+                const done = () => { image.removeEventListener('load', done); image.removeEventListener('error', done); resolve(); };
+                image.addEventListener('load', done, { once: true });
+                image.addEventListener('error', done, { once: true });
+                setTimeout(done, timeoutMs);
+            });
+        }
+
+        async function generatePdfTicket(ticketId, button) {
             const ticket = rawTickets.find(t => t.id == ticketId);
             if (!ticket) {
                 alert('Data tiket tidak ditemukan.');
                 return;
             }
+            const restoreButton = setActionLoading(button, true, 'Mengunduh PDF Resmi...');
 
             const evt = eventCache[ticket.acaraId] || {};
+            const eventTitle = evt.nama || 'Konser_Musik_TIKARA';
+            const safeEventTitle = eventTitle.replace(/[^a-zA-Z0-9_-]/g, '_');
+            const filename = `TIKARA_ETicket_${safeEventTitle}_TKT${ticket.id}.pdf`;
+
             const auth = getAuthState();
-            const buyerName = auth.user ? auth.user.nama : 'Pemegang Tiket';
-            const eventTitle = evt.nama || 'Konser Musik TIKARA';
-            const eventVenue = evt.venue ? `${evt.venue}, ${evt.kota || ''}` : 'Stadion Utama Gelora Bung Karno, Jakarta';
+            const token = auth && auth.token ? auth.token : (localStorage.getItem('token') || '');
 
-            // Populate PDF Template Elements
-            document.getElementById('pdfEventTitle').textContent = eventTitle;
-            document.getElementById('pdfEventVenue').innerHTML = `<i class="fa-solid fa-location-dot" style="color:#FF5A5F;"></i> ${eventVenue}`;
-            document.getElementById('pdfCategory').textContent = ticket.namaKategoriTiket || 'REGULAR';
-            document.getElementById('pdfHolderName').textContent = buyerName;
-            document.getElementById('pdfTicketId').textContent = `#TKT-${ticket.id}`;
-            document.getElementById('pdfGateCode').textContent = ticket.kodeQr || 'TK-OFFICIAL-PASS';
-            document.getElementById('pdfIssuedDate').textContent = `Diterbitkan: ${new Date().toLocaleDateString('id-ID')}`;
-
-            if (evt.tanggalMulai) {
-                const dt = new Date(evt.tanggalMulai);
-                document.getElementById('pdfEventDate').textContent = dt.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-                document.getElementById('pdfOpenGate').textContent = dt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
-            }
-
-            // QR Image in PDF
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(ticket.kodeQr || 'TIKARA')}`;
-            document.getElementById('pdfQrImage').src = qrUrl;
-
-            // Generate Barcode Code128 using JsBarcode
-            try {
-                if (window.JsBarcode) {
-                    JsBarcode("#pdfBarcodeCanvas", ticket.kodeQr || "TIKARA-PASS", {
-                        format: "CODE128",
-                        lineColor: "#0F172A",
-                        width: 2,
-                        height: 45,
-                        displayValue: true,
-                        fontSize: 12
-                    });
-                }
-            } catch (barcodeErr) {
-                console.warn('Barcode render note:', barcodeErr);
-            }
-
-            // Show Toast / Indicator
             if (typeof showToast === 'function') {
-                showToast('Sedang menyiapkan dan mengunduh E-Tiket PDF resmi...', 'info');
+                showToast('Menghubungkan ke server Java untuk mengunduh PDF E-Tiket...', 'info');
             }
 
-            // Generate with html2pdf
-            const element = document.getElementById('pdfTicketTemplate');
-            const opt = {
-                margin: 8,
-                filename: `TIKARA_ETicket_${eventTitle.replace(/[^a-zA-Z0-9]/g, '_')}_TKT${ticket.id}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, logging: false },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
             try {
-                await html2pdf().set(opt).from(element).save();
+                const headers = {};
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                const url = `/api/tiket/${ticketId}/pdf` + (token ? `?token=${encodeURIComponent(token)}` : '');
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: headers
+                });
+
+                if (!response.ok) {
+                    let errMsg = 'Gagal mengunduh PDF dari server backend.';
+                    try {
+                        const errJson = await response.json();
+                        if (errJson && errJson.message) errMsg = errJson.message;
+                    } catch (e) {}
+                    throw new Error(errMsg);
+                }
+
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = downloadUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(downloadUrl);
+                }, 1000);
+
                 if (typeof showToast === 'function') {
                     showToast('E-Tiket PDF resmi berhasil diunduh ke perangkat Anda!', 'success');
                 }
             } catch (pdfErr) {
-                console.error(pdfErr);
-                alert('Gagal mengekspor PDF. Anda dapat menggunakan opsi cetak browser (Ctrl+P).');
+                console.error('PDF Download Error:', pdfErr);
+                alert('Gagal mengunduh PDF e-tiket: ' + pdfErr.message);
+            } finally {
+                restoreButton();
             }
         }
 
-        // ==========================================
-        // DISPATCH TICKET TO EMAIL
-        // ==========================================
-        async function sendTicketEmail(ticketId, eventTitle) {
+        // Kirim tiket ke email
+        async function sendTicketEmail(ticketId, eventTitle, button) {
             const auth = getAuthState();
-            const token = (typeof getToken === 'function' ? getToken() : null) || localStorage.getItem('jwt_token');
-            const userId = auth.user ? auth.user.id : 1;
+            const token = (typeof getToken === 'function' ? getToken() : null) || localStorage.getItem('token') || localStorage.getItem('jwt_token') || '';
+            const userEmail = auth.user && auth.user.email ? auth.user.email : '';
+            const restoreButton = setActionLoading(button, true, 'Mengirim PDF ke email...');
 
             if (typeof showToast === 'function') {
-                showToast('Mengirimkan tiket dan instruksi gate ke email Anda...', 'info');
+                showToast('Menyiapkan e-tiket PDF dan mengirimkan ke email akun Anda...', 'info');
             }
 
             try {
-                const notifReq = {
-                    penggunaId: userId,
-                    judul: `E-Tiket Resmi: ${eventTitle}`,
-                    pesan: `E-Tiket resmi Anda (#TKT-${ticketId}) untuk konser ${eventTitle} telah siap. Bawa identitas e-KTP Anda ke pintu gate venue konser.`,
-                    tipe: 'EMAIL'
+                const headers = {
+                    'Content-Type': 'application/json'
                 };
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
 
-                const res = await fetch('http://localhost:8086/api/notifications/send', {
+                const res = await fetch(`/api/tiket/${ticketId}/send-email`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(notifReq)
+                    headers: headers,
+                    body: JSON.stringify({ email: userEmail })
                 });
 
-                if (res.ok) {
-                    if (typeof showToast === 'function') {
-                        showToast('Konfirmasi dan tiket berhasil dikirimkan ke alamat email terdaftar Anda!', 'success');
-                    } else {
-                        alert('Konfirmasi dan tiket berhasil dikirimkan ke alamat email terdaftar Anda!');
-                    }
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    throw new Error(data.message || 'Gagal mengirimkan e-tiket ke email.');
+                }
+
+                const msg = data.message || `E-Tiket resmi dengan lampiran PDF berhasil dikirim ke ${userEmail || 'email Anda'}!`;
+                if (typeof showToast === 'function') {
+                    showToast(msg, 'success');
                 } else {
-                    throw new Error('Gagal menghubungi server pengiriman notifikasi');
+                    alert(msg);
                 }
             } catch (e) {
-                alert('Berhasil: E-Tiket telah dijadwalkan untuk dikirim ke kotak masuk email Anda.');
+                console.error('Send email error:', e);
+                if (typeof showToast === 'function') {
+                    showToast(e.message || 'Gagal mengirimkan email tiket.', 'error');
+                } else {
+                    alert(e.message || 'Gagal mengirimkan email tiket.');
+                }
+            } finally {
+                restoreButton();
             }
         }
     </script>
 </body>
+
 </html>

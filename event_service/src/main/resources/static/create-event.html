@@ -32,7 +32,8 @@
                 </button>
             </div>
         </div>
-        <nav class="navbar-mobile-drawer" id="navbarMobileDrawer" aria-label="Menu navigasi mobile"></nav>
+        <div class="nav-overlay" id="navOverlay"></div>
+    <nav class="navbar-mobile-drawer" id="navbarMobileDrawer" aria-label="Menu navigasi mobile"></nav>
     </header>
 
     <!-- Main Container -->
@@ -77,6 +78,14 @@
                         <label for="eventKategori">Kategori Musik / Genre <span class="required">*</span></label>
                         <select id="eventKategori" required>
                             <option value="">-- Pilih Genre --</option>
+                            <option value="1">Pop</option>
+                            <option value="2">Rock</option>
+                            <option value="3">Jazz</option>
+                            <option value="4">Indie</option>
+                            <option value="5">EDM</option>
+                            <option value="6">Dangdut</option>
+                            <option value="7">Klasik</option>
+                            <option value="8">Hip-Hop</option>
                         </select>
                     </div>
 
@@ -187,10 +196,7 @@
 
             <!-- SECTION 4: AKSI & STATUS PENYIMPANAN -->
             <div class="form-submit-bar">
-                <button type="button" class="btn btn-secondary" id="btnSaveDraft" onclick="submitFormWithStatus('DRAFT')">
-                    <i class="fa-regular fa-floppy-disk"></i> Simpan sebagai Draft
-                </button>
-                <button type="submit" class="btn btn-primary" id="btnPublish" onclick="submitFormWithStatus('PENDING_REVIEW')">
+                <button type="submit" class="btn btn-primary" id="btnPublish">
                     <i class="fa-solid fa-paper-plane"></i> Ajukan Publikasi Event
                 </button>
             </div>
@@ -230,29 +236,42 @@
         async function loadCategoriesDropdown() {
             const select = document.getElementById('eventKategori');
             try {
-                const res = await fetch('/api/categories');
+                const res = await fetch('/api/kategori');
                 if (res.ok) {
                     const data = await res.json();
-                    select.innerHTML = '<option value="">-- Pilih Genre Musik --</option>';
-                    data.forEach(cat => {
-                        const opt = document.createElement('option');
-                        opt.value = cat.id;
-                        opt.textContent = cat.nama || cat.namaKategori;
-                        select.appendChild(opt);
-                    });
+                    if (Array.isArray(data) && data.length > 0) {
+                        select.innerHTML = '<option value="">-- Pilih Genre --</option>';
+                        data.forEach(cat => {
+                            const opt = document.createElement('option');
+                            opt.value = cat.id;
+                            opt.textContent = cat.namaKategori || cat.nama;
+                            select.appendChild(opt);
+                        });
+                        return;
+                    }
                 }
             } catch (e) {
-                console.warn('Gagal memuat kategori dari API, gunakan fallback statis', e);
-                select.innerHTML = `
-                    <option value="">-- Pilih Genre --</option>
-                    <option value="1">Pop</option>
-                    <option value="2">Rock</option>
-                    <option value="3">Jazz</option>
-                    <option value="4">Indie</option>
-                    <option value="5">Electronic / EDM</option>
-                    <option value="6">Dangdut Modern</option>
-                `;
+                console.warn('Gagal memuat kategori dari API, gunakan fallback genre resmi:', e);
             }
+
+            // Fallback 8 genre resmi konser Indonesia
+            const defaultGenres = [
+                { id: '1', name: 'Pop' },
+                { id: '2', name: 'Rock' },
+                { id: '3', name: 'Jazz' },
+                { id: '4', name: 'Indie' },
+                { id: '5', name: 'EDM' },
+                { id: '6', name: 'Dangdut' },
+                { id: '7', name: 'Klasik' },
+                { id: '8', name: 'Hip-Hop' }
+            ];
+            select.innerHTML = '<option value="">-- Pilih Genre --</option>';
+            defaultGenres.forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g.id;
+                opt.textContent = g.name;
+                select.appendChild(opt);
+            });
         }
 
         function setupDateConstraints() {
@@ -312,17 +331,43 @@
                 showAlert('Format berkas tidak didukung. Harap pilih gambar JPG/PNG/WEBP.', 'danger');
                 return;
             }
-            if (file.size > 5 * 1024 * 1024) {
-                showAlert('Ukuran gambar terlalu besar. Maksimal 5MB.', 'danger');
+            if (file.size > 10 * 1024 * 1024) {
+                showAlert('Ukuran berkas melebihi 10MB.', 'danger');
                 return;
             }
 
             const reader = new FileReader();
             reader.onload = function(evt) {
-                const previewImg = document.getElementById('posterPreviewImg');
-                previewImg.src = evt.target.result;
-                document.getElementById('posterPreviewText').textContent = file.name;
-                document.getElementById('eventGambarUrl').value = evt.target.result; // Data URL for immediate use
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const maxDim = 1200;
+
+                    if (width > maxDim || height > maxDim) {
+                        if (width > height) {
+                            height = Math.round((height * maxDim) / width);
+                            width = maxDim;
+                        } else {
+                            width = Math.round((width * maxDim) / height);
+                            height = maxDim;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+                    const previewImg = document.getElementById('posterPreviewImg');
+                    previewImg.src = compressedDataUrl;
+                    document.getElementById('posterPreviewText').textContent = file.name;
+                    document.getElementById('eventGambarUrl').value = compressedDataUrl;
+                };
+                img.src = evt.target.result;
             };
             reader.readAsDataURL(file);
         }
@@ -427,7 +472,6 @@
 
         async function handleCreateEvent(e) {
             e.preventDefault();
-            const btnDraft = document.getElementById('btnSaveDraft');
             const btnPublish = document.getElementById('btnPublish');
 
             // 1. Client-Side Validations
@@ -486,9 +530,7 @@
             }
 
             // 2. Execution with Fail-Safe Cross-Service Orchestration & Rollback
-            btnDraft.disabled = true;
             btnPublish.disabled = true;
-            const originalDraftText = btnDraft.innerHTML;
             const originalPublishText = btnPublish.innerHTML;
             btnPublish.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
 
@@ -528,14 +570,20 @@
 
                 // STEP B: Create Tiers in ticket_service
                 // If any tier creation fails, trigger compensation rollback by deleting createdEventId
+                const pad = n => String(n).padStart(2, '0');
+                const now = new Date();
+                const localNowStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+                const formattedTanggalSelesai = tanggalSelesai.length === 16 ? `${tanggalSelesai}:00` : tanggalSelesai;
+
                 try {
                     for (let tier of tiers) {
                         const tierPayload = {
                             acaraId: createdEventId,
-                            nama: tier.nama,
+                            namaKategori: tier.nama,
                             harga: tier.harga,
                             kuota: tier.kuota,
-                            deskripsi: tier.deskripsi
+                            mulaiJual: localNowStr,
+                            selesaiJual: formattedTanggalSelesai
                         };
 
                         const resTier = await fetch(`${API_TICKET_SERVICE}/api/kategori-tiket`, {
@@ -549,7 +597,11 @@
 
                         if (!resTier.ok) {
                             const errTier = await resTier.json().catch(() => ({}));
-                            throw new Error(errTier.message || `Gagal membuat tier tiket "${tier.nama}".`);
+                            let errMsg = errTier.message || `Gagal membuat tier tiket "${tier.nama}".`;
+                            if (errTier.errors && typeof errTier.errors === 'object') {
+                                errMsg += ': ' + Object.entries(errTier.errors).map(([k, v]) => `${k} (${v})`).join(', ');
+                            }
+                            throw new Error(errMsg);
                         }
                     }
                 } catch (ticketError) {
@@ -572,12 +624,140 @@
             } catch (err) {
                 console.error(err);
                 showAlert(err.message || 'Terjadi kesalahan sistem saat menyimpan event.', 'danger');
-                btnDraft.disabled = false;
                 btnPublish.disabled = false;
-                btnDraft.innerHTML = originalDraftText;
                 btnPublish.innerHTML = originalPublishText;
             }
         }
     </script>
+
+        <!-- Unified TIKARA Footer (Light Theme) -->
+    <footer class="tikara-footer">
+        <div class="footer-container">
+            <div class="footer-main-grid">
+                <!-- Brand & Security Column -->
+                <div class="footer-col footer-brand-col">
+                    <a href="http://localhost:8082/index.html" class="footer-logo" aria-label="TIKARA Beranda">
+                        <i class="fa-solid fa-ticket"></i> <span>TIKARA</span>
+                    </a>
+                    <p class="footer-desc">
+                        Beli tiket konser, festival musik, dan event seru lainnya dengan mudah &amp; aman di TIKARA. 
+                        <strong>#PASTIBISA</strong> nonton konser &amp; festival idaman!
+                    </p>
+                    <div class="footer-security-section">
+                        <h4 class="footer-subheading"><i class="fa-solid fa-shield-halved"></i> Keamanan dan Privasi</h4>
+                        <div class="footer-badges-wrap">
+                            <a href="http://localhost:8082/terms.html#security" class="footer-iso-badge" title="Tersertifikasi ISO/IEC 27001 &amp; ISO/IEC 27701">
+                                <div class="iso-icon-box">
+                                    <i class="fa-solid fa-award"></i>
+                                </div>
+                                <div class="iso-info-box">
+                                    <span class="iso-title">ISO/IEC 27001 &bull; 27701</span>
+                                    <span class="iso-desc">Information Security &amp; Privacy Management</span>
+                                </div>
+                            </a>
+                            <div class="footer-ssl-badge">
+                                <i class="fa-solid fa-lock"></i> <span>256-Bit SSL Enkripsi Terverifikasi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Columns -->
+                <div class="footer-nav-columns">
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Tentang TIKARA</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/about.html">Tentang Kami</a></li>
+                            <li><a href="http://localhost:8082/blog.html">Blog &amp; Berita Musik</a></li>
+                        </ul>
+                        <h3 class="footer-heading" style="margin-top: 1.75rem;">Produk</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/index.html#catalog">Semua Konser &amp; Festival</a></li>
+                            <li><a href="http://localhost:8083/my-tickets.html">Tiket Saya</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Event Creator</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/creator-guide.html#biaya">Biaya &amp; Komisi</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#kerjasama">Kerjasama dengan Kami</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#panduan">Buku Panduan Creator</a></li>
+                            <li><a href="http://localhost:8082/create-event.html">Buat Event Konser</a></li>
+                            <li><a href="http://localhost:8082/organizer-dashboard.html">Dashboard Penyelenggara</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Dukungan</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/help.html">Pusat Bantuan (FAQ)</a></li>
+                            <li><a href="http://localhost:8082/terms.html#terms">Syarat dan Ketentuan</a></li>
+                            <li><a href="http://localhost:8082/terms.html#privacy">Kebijakan Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#security">Kepatuhan Keamanan &amp; Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#cookies">Kebijakan Cookies</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Action / Payment & Social Column -->
+                <div class="footer-col footer-action-col">
+                    <h3 class="footer-heading">Pilihan Pembayaran</h3>
+                    <div class="footer-payment-grid" title="Metode Pembayaran Resmi TIKARA">
+                        <span class="pay-chip"><i class="fa-solid fa-qrcode"></i> QRIS</span>
+                        <span class="pay-chip">BCA</span>
+                        <span class="pay-chip">Mandiri</span>
+                        <span class="pay-chip">BRI</span>
+                        <span class="pay-chip">BNI</span>
+                        <span class="pay-chip">BTN</span>
+                        <span class="pay-chip">BSI</span>
+                        <span class="pay-chip">Permata</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-visa"></i> VISA</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-mastercard"></i> Master</span>
+                        <span class="pay-chip">ShopeePay</span>
+                        <span class="pay-chip">GoPay</span>
+                        <span class="pay-chip">Alfamart</span>
+                        <span class="pay-chip">Indomaret</span>
+                    </div>
+                    <div>
+                        <a href="http://localhost:8082/help.html#pembayaran" class="footer-pay-guide-link">
+                            <i class="fa-solid fa-circle-question"></i> Panduan &amp; Cara Bayar
+                        </a>
+                    </div>
+
+                    <div class="footer-social-wrap" style="margin-top: 1.75rem;">
+                        <h3 class="footer-heading">Ikuti Kami untuk Update</h3>
+                        <div class="footer-social-links">
+                            <a href="https://www.instagram.com/deafriliart/?__pwa=1" target="_blank" rel="noopener noreferrer" class="social-btn social-ig" aria-label="Instagram TIKARA" title="Instagram">
+                                <i class="fa-brands fa-instagram"></i>
+                            </a>
+                            <a href="https://www.tiktok.com/@realityclubofficial" target="_blank" rel="noopener noreferrer" class="social-btn social-tiktok" aria-label="TikTok TIKARA" title="TikTok">
+                                <i class="fa-brands fa-tiktok"></i>
+                            </a>
+                            <a href="https://x.com/reality_club" target="_blank" rel="noopener noreferrer" class="social-btn social-x" aria-label="X (Twitter) TIKARA" title="X (Twitter)">
+                                <i class="fa-brands fa-x-twitter"></i>
+                            </a>
+                            <a href="https://www.facebook.com/officialrealityclub/?locale=id_ID" target="_blank" rel="noopener noreferrer" class="social-btn social-fb" aria-label="Facebook TIKARA" title="Facebook">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </a>
+                            <a href="https://youtu.be/SlwQyBkCtZE?si=WBPI1nh0A6A2e9Dv" target="_blank" rel="noopener noreferrer" class="social-btn social-yt" aria-label="YouTube TIKARA" title="YouTube">
+                                <i class="fa-brands fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Copyright -->
+            <div class="footer-bottom-bar">
+                <p>&copy; 2026 TIKARA (PT Tikara Nusantara Sejahtera). Seluruh hak cipta dilindungi undang-undang.</p>
+                <div style="display: flex; gap: 1.25rem; font-size: 0.8rem;">
+                    <a href="http://localhost:8082/terms.html#terms">Syarat Layanan</a>
+                    <a href="http://localhost:8082/terms.html#privacy">Privasi</a>
+                    <a href="http://localhost:8082/terms.html#security">Keamanan</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

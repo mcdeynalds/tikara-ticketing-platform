@@ -1,8 +1,13 @@
 HELP.md
 target/
+**/target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+
+### Eclipse / VS Code Java ###
+bin/
+**/bin/
 
 ### IDE ###
 .vscode/
@@ -11,8 +16,14 @@ target/
 *.iws
 *.ipr
 
-### Uploads / Temp ###
+### Logs & Temp ###
+*.log
+service_logs/
+logs/
 uploads/
+*.bkp
+.$*
+{*.png}
 
 ### OS ###
 Thumbs.db

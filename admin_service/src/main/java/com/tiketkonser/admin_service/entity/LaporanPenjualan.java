@@ -22,7 +22,7 @@ public class LaporanPenjualan {
     private Long id;
 
     @Column(name = "acara_id", nullable = false)
-    private Long acaraId; // Referensi ID ke event-service
+    private Long acaraId;
 
     @Column(name = "total_tiket_terjual", nullable = false)
     private Integer totalTiketTerjual;

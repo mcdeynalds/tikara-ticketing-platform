@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog & Berita Musik - TIKARA</title>
+    <meta name="description" content="Kabar terbaru seputar konser musik, jadwal festival 2026, tips menang war tiket, dan berita artis favorit di TIKARA Blog.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body style="background-color: #F8FAFC; color: #0F172A; min-height: 100vh; display: flex; flex-direction: column;">
+
+    <!-- Unified Responsive Header Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="http://localhost:8082/index.html" class="navbar-logo" id="navLogoLink" aria-label="TIKARA Beranda">
+                <i class="fa-solid fa-ticket" style="color: #FF5A5F;"></i> <span class="logo-text" style="color: #FFFFFF;">TIKARA</span>
+            </a>
+            <ul class="navbar-menu" id="mainNavbarMenu"></ul>
+            <div class="navbar-actions">
+                <a href="http://localhost:8086/notifications.html" class="nav-icon-btn" id="navNotifBtn" title="Notifikasi" style="display:none;">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="badge-count" id="navUnreadBadge" style="display:none;">0</span>
+                </a>
+                <div id="navUserBox"></div>
+                <button class="navbar-hamburger" id="navbarToggleBtn" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="navbarMobileDrawer">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <div class="nav-overlay" id="navOverlay"></div>
+    <nav class="navbar-mobile-drawer" id="navbarMobileDrawer" aria-label="Menu navigasi mobile"></nav>
+    </header>
+
+    <!-- Main Content -->
+    <main style="flex: 1; padding: 2rem 1.5rem 5rem;">
+        <div class="content-main-container">
+            <!-- Breadcrumbs -->
+            <div style="font-size: 0.85rem; color: #64748B; margin-bottom: 2rem;">
+                <a href="http://localhost:8082/index.html" style="color: #475569; text-decoration: none;">Beranda</a> &rsaquo; 
+                <span style="color: #1B365D; font-weight: 600;">Blog &amp; Berita Musik</span>
+            </div>
+
+            <!-- Hero Title -->
+            <div class="content-hero" style="background: transparent; border: none; box-shadow: none; padding: 2rem 1rem 2.5rem; margin-bottom: 2.5rem;">
+                <span class="content-hero-badge" style="background: #FFF1F2; border-color: #FFE4E6; color: #E11D48;">
+                    TIKARA Pulse &amp; Music News
+                </span>
+                <h1 class="content-hero-title">Berita, Tips &amp; Cerita Konser Terkini</h1>
+                <p class="content-hero-desc" style="max-width: 650px;">
+                    Dapatkan update terbaru seputar lineup festival, trik menembus war tiket konser, dan panduan seru menonton musisi favoritmu.
+                </p>
+            </div>
+
+            <!-- Featured Article -->
+            <div class="featured-article-grid">
+                <div style="background: linear-gradient(135deg, #1B365D, #2B548A); min-height: 280px; display: flex; align-items: center; justify-content: center; padding: 2rem; color: #FFFFFF; text-align: center;">
+                    <div>
+                        <i class="fa-solid fa-fire" style="font-size: 3.5rem; color: #FF5A5F; margin-bottom: 1rem;"></i>
+                        <h3 style="font-size: 1.4rem; font-weight: 800;">HEADLINE 2026</h3>
+                        <p style="color: #E2E8F0; font-size: 0.9rem;">Tips Eksklusif Penjualan Tiket</p>
+                    </div>
+                </div>
+                <div style="padding: 2.5rem; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem;">
+                        <span style="background: #EFF6FF; color: #1E40AF; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 4px; border: 1px solid #DBEAFE;">TIPS WAR TIKET</span>
+                        <span style="color: #94A3B8; font-size: 0.8rem;">15 Menit Baca</span>
+                    </div>
+                    <h2 style="font-size: 1.6rem; font-weight: 800; line-height: 1.35; margin-bottom: 1rem; color: #0F172A;">
+                        7 Rahasia Memenangkan War Tiket Konser 2026 Tanpa Panik dan Anti-Gagal
+                    </h2>
+                    <p style="color: #475569; font-size: 0.95rem; line-height: 1.65; margin-bottom: 1.75rem;">
+                        Persaingan mendapatkan tiket konser artis internasional semakin sengit. Pelajari persiapan koneksi, metode pembayaran QRIS tercepat, dan manajemen tab peramban untuk mengamankan tiket idamanmu.
+                    </p>
+                    <div>
+                        <a href="http://localhost:8082/index.html#catalog" style="color: #0284C7; text-decoration: none; font-weight: 700; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                            Baca Selengkapnya <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Articles Grid -->
+            <div class="blog-articles-grid">
+                <article style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);">
+                    <div style="height: 180px; background: #F1F5F9; display: flex; align-items: center; justify-content: center; color: #64748B; font-size: 2.5rem; border-bottom: 1px solid #E2E8F0;">
+                        <i class="fa-solid fa-guitar"></i>
+                    </div>
+                    <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
+                        <span style="color: #10B981; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem;">FESTIVAL MUSIK</span>
+                        <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.75rem; line-height: 1.4; color: #0F172A;">Daftar Festival Musik Paling Ditunggu di Indonesia Sepanjang 2026</h3>
+                        <p style="color: #475569; font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.5rem; flex: 1;">
+                            Mulai dari festival jazz tepi pantai hingga panggung rock megah di Jakarta, simak kalender festival musik terlengkap tahun ini.
+                        </p>
+                        <a href="http://localhost:8082/index.html#catalog" style="color: #0284C7; text-decoration: none; font-weight: 600; font-size: 0.85rem;">Baca Artikel &rarr;</a>
+                    </div>
+                </article>
+
+                <article style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);">
+                    <div style="height: 180px; background: #F1F5F9; display: flex; align-items: center; justify-content: center; color: #64748B; font-size: 2.5rem; border-bottom: 1px solid #E2E8F0;">
+                        <i class="fa-solid fa-shield-virus"></i>
+                    </div>
+                    <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
+                        <span style="color: #FF5A5F; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem;">EDUKASI &amp; KEAMANAN</span>
+                        <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.75rem; line-height: 1.4; color: #0F172A;">Waspada Penipuan Tiket Jastip: Kenapa Membeli di Platform Resmi Jauh Lebih Aman</h3>
+                        <p style="color: #475569; font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.5rem; flex: 1;">
+                            Modus barcode ganda dan akun jastip bodong marak terjadi. Kenali mekanisme perlindungan transaksi resmi TIKARA dengan teknologi QR dinamis.
+                        </p>
+                        <a href="http://localhost:8082/index.html#catalog" style="color: #0284C7; text-decoration: none; font-weight: 600; font-size: 0.85rem;">Baca Artikel &rarr;</a>
+                    </div>
+                </article>
+
+                <article style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);">
+                    <div style="height: 180px; background: #F1F5F9; display: flex; align-items: center; justify-content: center; color: #64748B; font-size: 2.5rem; border-bottom: 1px solid #E2E8F0;">
+                        <i class="fa-solid fa-headphones-simple"></i>
+                    </div>
+                    <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
+                        <span style="color: #F59E0B; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem;">PANDUAN PENONTON</span>
+                        <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.75rem; line-height: 1.4; color: #0F172A;">Checklist Perlengkapan Wajib Nonton Konser Outdoor &amp; Festival Musik</h3>
+                        <p style="color: #475569; font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.5rem; flex: 1;">
+                            Dari power bank, jas hujan portable, hingga e-tiket di aplikasi: pastikan konser impianmu nyaman tanpa ada yang ketinggalan.
+                        </p>
+                        <a href="http://localhost:8082/index.html#catalog" style="color: #0284C7; text-decoration: none; font-weight: 600; font-size: 0.85rem;">Baca Artikel &rarr;</a>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </main>
+
+    <!-- Unified TIKARA Footer (Light Theme) -->
+    <footer class="tikara-footer"></footer>
+
+    <!-- Scripts -->
+    <script src="/js/script.js"></script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * TIKARA - Centralized Input Validation Library
  * Provides real-world validators for NIK, phone, email, bank account, and more.
  * Usage: window.TikaraValidator.validateNik('3201...') => { valid: bool, message: string }
@@ -8,7 +8,7 @@
 
     const Validator = {};
 
-    // ─── NIK (Nomor Induk Kependudukan) ───────────────────────────────────────
+    // --- NIK (Nomor Induk Kependudukan) ---------------------------------------
     // 16 digits; first 2 = province (01-96), 3-4 = city, 5-6 = district
     // 7-12 = date (for female, day+40), 13-16 = sequence
     Validator.validateNik = function(nik) {
@@ -31,7 +31,7 @@
         return { valid: true, message: 'NIK valid' };
     };
 
-    // ─── Phone Number (Indonesian) ────────────────────────────────────────────
+    // --- Phone Number (Indonesian) --------------------------------------------
     // Format: 08xx, +628xx, 628xx; length 10-13 digits
     Validator.validatePhone = function(phone) {
         const clean = phone.replace(/[\s\-\.]/g, '');
@@ -50,7 +50,7 @@
         return { valid: true, message: 'Nomor telepon valid', normalized: normalized };
     };
 
-    // ─── Email ────────────────────────────────────────────────────────────────
+    // --- Email ----------------------------------------------------------------
     Validator.validateEmail = function(email) {
         if (!email || !email.trim()) return { valid: false, message: 'Email tidak boleh kosong' };
         const re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
@@ -61,7 +61,7 @@
         return { valid: true, message: 'Email valid' };
     };
 
-    // ─── Password ─────────────────────────────────────────────────────────────
+    // --- Password -------------------------------------------------------------
     Validator.validatePassword = function(pass) {
         if (!pass) return { valid: false, message: 'Kata sandi tidak boleh kosong', strength: 0 };
         const checks = {
@@ -79,7 +79,7 @@
         return { valid: true, checks, strength: score, message: 'Kata sandi kuat' };
     };
 
-    // ─── Bank Account Number ──────────────────────────────────────────────────
+    // --- Bank Account Number --------------------------------------------------
     // Indonesian bank accounts: 6-16 digits depending on bank
     Validator.validateBankAccount = function(accountNum, bankCode) {
         const clean = accountNum.replace(/\D/g, '');
@@ -111,12 +111,12 @@
         return { valid: true, message: 'Nomor rekening valid', normalized: clean };
     };
 
-    // ─── Full Name ────────────────────────────────────────────────────────────
+    // --- Full Name ------------------------------------------------------------
     Validator.validateFullName = function(name) {
         if (!name || !name.trim()) return { valid: false, message: 'Nama tidak boleh kosong' };
         const clean = name.trim();
         if (clean.length < 3)   return { valid: false, message: 'Nama minimal 3 karakter' };
-        if (clean.length > 100) return { valid: false, message: 'Nama maksimal 100 karakter' };
+        if (clean.length > 60) return { valid: false, message: 'Nama maksimal 60 karakter' };
         if (/\d/.test(clean))   return { valid: false, message: 'Nama tidak boleh mengandung angka' };
         if (/[!@#$%^&*()_+=\[\]{};:"\\|<>\/?]/.test(clean)) {
             return { valid: false, message: 'Nama tidak boleh mengandung simbol khusus' };
@@ -124,7 +124,7 @@
         return { valid: true, message: 'Nama valid' };
     };
 
-    // ─── Promo Code ───────────────────────────────────────────────────────────
+    // --- Promo Code -----------------------------------------------------------
     Validator.validatePromoCode = function(code) {
         if (!code || !code.trim()) return { valid: false, message: 'Kode promo tidak boleh kosong' };
         const clean = code.trim().toUpperCase();
@@ -134,7 +134,7 @@
         return { valid: true, message: 'Format kode promo valid', normalized: clean };
     };
 
-    // ─── UI Helpers ───────────────────────────────────────────────────────────
+    // --- UI Helpers -----------------------------------------------------------
     /**
      * Apply validation state to an input element.
      * @param {HTMLElement} input - The input element
@@ -178,3 +178,4 @@
     window.TikaraValidator = Validator;
 
 })(window);
+

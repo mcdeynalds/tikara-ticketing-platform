@@ -9,6 +9,7 @@ import com.tiketkonser.order_service.payload.req.PemesananReq;
 import com.tiketkonser.order_service.payload.res.KategoriTiketClientRes;
 import com.tiketkonser.order_service.payload.res.PageResponse;
 import com.tiketkonser.order_service.payload.res.PemesananRes;
+import com.tiketkonser.order_service.payload.res.RevenueRes;
 import com.tiketkonser.order_service.repository.PemesananRepository;
 import com.tiketkonser.order_service.service.PemesananService;
 import com.tiketkonser.order_service.utility.OrderMapper;
@@ -18,12 +19,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -46,10 +56,17 @@ public class PemesananServiceImpl implements PemesananService {
     private final PemesananRepository pemesananRepository;
     private final OrderMapper orderMapper;
     private final RestTemplate restTemplate;
+    private final PlatformTransactionManager transactionManager;
 
     @Override
     @Transactional
     public PemesananRes createOrder(PemesananReq request, Authentication authentication) {
+        return createOrder(request, authentication, null);
+    }
+
+    @Override
+    @Transactional
+    public PemesananRes createOrder(PemesananReq request, Authentication authentication, String authHeader) {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AccessDeniedException("Silakan login terlebih dahulu");
         }
@@ -57,9 +74,11 @@ public class PemesananServiceImpl implements PemesananService {
         Long userId = (Long) authentication.getCredentials();
         if (userId == null) userId = 1L;
 
+        String effectiveAuthHeader = resolveAuthHeader(authHeader);
+
         String nomorPesanan = "ORD-" + System.currentTimeMillis() / 1000 + "-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
 
-        BigDecimal totalHarga = BigDecimal.ZERO;
+        BigDecimal subtotalTiket = BigDecimal.ZERO;
         List<DetailPemesanan> items = new ArrayList<>();
 
         Pemesanan pemesanan = Pemesanan.builder()
@@ -72,8 +91,9 @@ public class PemesananServiceImpl implements PemesananService {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
+        // Validasi item kategori tiket
+        List<KategoriTiketClientRes> verifiedCategories = new ArrayList<>();
         for (DetailPemesananItemReq itemReq : request.getItems()) {
-            // 1. Ambil data kategori tiket dari ticket_service
             String catUrl = TICKET_SERVICE_URL + "/api/kategori-tiket/" + itemReq.getKategoriTiketId();
             KategoriTiketClientRes cat;
             try {
@@ -87,40 +107,18 @@ public class PemesananServiceImpl implements PemesananService {
                 throw new BadRequestException("Kategori tiket ID " + itemReq.getKategoriTiketId() + " tidak ditemukan");
             }
 
-            // 2. Validasi status ketersediaan tiket
             if (cat.getStatus() != null && !"AVAILABLE".equalsIgnoreCase(cat.getStatus())) {
                 throw new BadRequestException("Tiket kategori '" + cat.getNamaKategori() + "' sedang tidak tersedia (" + cat.getStatus() + ")");
             }
 
-            // 3. Validasi periode jadwal penjualan tiket (mulaiJual & selesaiJual)
             LocalDateTime now = LocalDateTime.now();
             if (cat.getMulaiJual() != null && now.isBefore(cat.getMulaiJual())) {
                 throw new BadRequestException("Penjualan tiket untuk kategori '" + cat.getNamaKategori() + "' belum dibuka");
             }
-            if (cat.getSelesaiJual() != null && now.isAfter(cat.getSelesaiJual())) {
-                throw new BadRequestException("Penjualan tiket untuk kategori '" + cat.getNamaKategori() + "' sudah ditutup");
-            }
 
-            // 4. Hitung harga dan subtotal sepenuhnya di server
             BigDecimal hargaResmi = cat.getHarga();
-            if (hargaResmi == null || hargaResmi.compareTo(BigDecimal.ZERO) < 0) {
-                throw new BadRequestException("Harga resmi tiket kategori '" + cat.getNamaKategori() + "' tidak valid");
-            }
-
             BigDecimal subtotal = hargaResmi.multiply(BigDecimal.valueOf(itemReq.getJumlah()));
-            totalHarga = totalHarga.add(subtotal);
-
-            // 5. Reservasi stok sementara (hold) di ticket_service
-            Map<String, Object> holdPayload = Map.of(
-                    "kategoriTiketId", itemReq.getKategoriTiketId(),
-                    "jumlah", itemReq.getJumlah()
-            );
-            try {
-                restTemplate.postForEntity(TICKET_SERVICE_URL + "/api/inventory/hold", holdPayload, Map.class);
-            } catch (Exception e) {
-                log.error("Gagal melakukan hold stok untuk kategori ID {}: {}", itemReq.getKategoriTiketId(), e.getMessage());
-                throw new BadRequestException("Stok tiket untuk kategori '" + cat.getNamaKategori() + "' tidak mencukupi untuk jumlah yang diminta");
-            }
+            subtotalTiket = subtotalTiket.add(subtotal);
 
             DetailPemesanan detail = DetailPemesanan.builder()
                     .pemesanan(pemesanan)
@@ -131,13 +129,10 @@ public class PemesananServiceImpl implements PemesananService {
                     .subtotal(subtotal)
                     .build();
             items.add(detail);
+            verifiedCategories.add(cat);
         }
 
-        // Biaya Platform Loket.com Standard:
-        // 1. Subtotal Tiket
-        BigDecimal subtotalTiket = totalHarga;
-
-        // 2. Validasi & Hitung Kode Promo (jika ada)
+        // Validasi dan hitung diskon promo
         BigDecimal diskon = BigDecimal.ZERO;
         String kodePromoDipakai = null;
         if (request.getKodePromo() != null && !request.getKodePromo().trim().isEmpty()) {
@@ -147,7 +142,19 @@ public class PemesananServiceImpl implements PemesananService {
                         "kode", kode,
                         "totalHarga", subtotalTiket
                 );
-                ResponseEntity<Map> promoRes = restTemplate.postForEntity(PROMO_SERVICE_URL + "/api/promo/validate", promoPayload, Map.class);
+                HttpHeaders headers = new HttpHeaders();
+                if (authHeader != null && !authHeader.isEmpty()) {
+                    headers.set(HttpHeaders.AUTHORIZATION, authHeader);
+                }
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(promoPayload, headers);
+
+                ResponseEntity<Map> promoRes = restTemplate.exchange(
+                        PROMO_SERVICE_URL + "/api/promo/validate",
+                        HttpMethod.POST,
+                        entity,
+                        Map.class
+                );
+
                 if (promoRes.getStatusCode().is2xxSuccessful() && promoRes.getBody() != null) {
                     Map body = promoRes.getBody();
                     Boolean isValid = (Boolean) body.get("valid");
@@ -159,15 +166,51 @@ public class PemesananServiceImpl implements PemesananService {
                             log.info("Kode promo {} valid dengan diskon Rp {}", kode, diskon);
                         }
                     } else {
-                        log.warn("Kode promo {} tidak valid: {}", kode, body.get("message"));
+                        String msg = (String) body.get("message");
+                        throw new BadRequestException("Kode promo '" + kode + "' tidak valid: " + (msg != null ? msg : "Syarat promo tidak terpenuhi"));
                     }
+                } else {
+                    throw new BadRequestException("Kode promo '" + kode + "' tidak valid");
                 }
+            } catch (HttpStatusCodeException ex) {
+                String errMsg = extractErrorMessage(ex);
+                log.warn("Validasi promo {} gagal: {}", kode, errMsg);
+                throw new BadRequestException("Kode promo '" + kode + "' tidak valid: " + errMsg);
+            } catch (BadRequestException bre) {
+                throw bre;
             } catch (Exception e) {
-                log.warn("Gagal menghubungi promo_service untuk kode {}: {}", kode, e.getMessage());
+                log.error("Gagal menghubungi promo_service untuk kode {}: {}", kode, e.getMessage());
+                throw new BadRequestException("Gagal memvalidasi kode promo: " + e.getMessage());
             }
         }
 
-        // 3. Biaya Layanan Sistem (Platform Fee 2%, minimal Rp 2.500)
+        // Hold stok tiket
+        List<DetailPemesananItemReq> heldItems = new ArrayList<>();
+        for (DetailPemesananItemReq itemReq : request.getItems()) {
+            Map<String, Object> holdPayload = Map.of(
+                    "kategoriTiketId", itemReq.getKategoriTiketId(),
+                    "jumlah", itemReq.getJumlah()
+            );
+            try {
+                restTemplate.postForEntity(TICKET_SERVICE_URL + "/api/inventory/hold", holdPayload, Map.class);
+                heldItems.add(itemReq);
+            } catch (Exception e) {
+                log.error("Gagal melakukan hold stok untuk kategori ID {}: {}", itemReq.getKategoriTiketId(), e.getMessage());
+                // Kompensasi rilis item-item yang sudah sempat di-hold di loop ini
+                for (DetailPemesananItemReq prevHeld : heldItems) {
+                    try {
+                        Map<String, Object> relPayload = Map.of(
+                                "kategoriTiketId", prevHeld.getKategoriTiketId(),
+                                "jumlah", prevHeld.getJumlah()
+                        );
+                        restTemplate.postForEntity(TICKET_SERVICE_URL + "/api/inventory/release", relPayload, Map.class);
+                    } catch (Exception ignore) {}
+                }
+                throw new BadRequestException("Stok tiket untuk kategori ID " + itemReq.getKategoriTiketId() + " tidak mencukupi untuk jumlah yang diminta");
+            }
+        }
+
+        // Biaya platform dan administrasi
         BigDecimal biayaLayanan = BigDecimal.ZERO;
         if (subtotalTiket.compareTo(BigDecimal.ZERO) > 0) {
             biayaLayanan = subtotalTiket.multiply(new BigDecimal("0.02")).setScale(0, RoundingMode.HALF_UP);
@@ -176,10 +219,8 @@ public class PemesananServiceImpl implements PemesananService {
             }
         }
 
-        // 4. Biaya Jasa Penanganan / Administrasi Transaksi Flat Rp 5.000
         BigDecimal biayaAdmin = subtotalTiket.compareTo(BigDecimal.ZERO) > 0 ? new BigDecimal("5000") : BigDecimal.ZERO;
 
-        // 5. Total Bayar Akhir (Subtotal - Diskon + Biaya Layanan + Biaya Admin)
         BigDecimal subtotalSetelahDiskon = subtotalTiket.subtract(diskon).max(BigDecimal.ZERO);
         BigDecimal totalBayarAkhir = subtotalSetelahDiskon.add(biayaLayanan).add(biayaAdmin);
 
@@ -193,7 +234,7 @@ public class PemesananServiceImpl implements PemesananService {
 
         Pemesanan savedOrder = pemesananRepository.save(pemesanan);
 
-        // 6. Notifikasi Otomatis: Pesanan Dibuat
+        // Notifikasi pembuatan pesanan
         try {
             Map<String, Object> notifReq = Map.of(
                     "penggunaId", savedOrder.getPenggunaId(),
@@ -295,6 +336,12 @@ public class PemesananServiceImpl implements PemesananService {
     @Override
     @Transactional
     public PemesananRes paySimulation(Long id, Authentication authentication) {
+        return paySimulation(id, authentication, null);
+    }
+
+    @Override
+    @Transactional
+    public PemesananRes paySimulation(Long id, Authentication authentication, String authHeader) {
         Pemesanan order = pemesananRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new NotFoundException("Pesanan tidak ditemukan"));
 
@@ -304,60 +351,177 @@ public class PemesananServiceImpl implements PemesananService {
             throw new BadRequestException("Pesanan tidak berstatus PENDING untuk dibayar");
         }
 
+        // Validasi tenggat waktu pembayaran
         if (order.getTenggatPembayaran() != null && LocalDateTime.now().isAfter(order.getTenggatPembayaran())) {
-            throw new BadRequestException("Tenggat waktu pembayaran untuk pesanan ini telah habis");
-        }
-
-        // 1. Konfirmasi kuota terjual dan terbitkan tiket fisik/digital di ticket_service
-        if (order.getDetailPemesananList() != null) {
-            for (DetailPemesanan item : order.getDetailPemesananList()) {
-                // A. Confirm stok
-                Map<String, Object> confirmPayload = Map.of(
-                        "kategoriTiketId", item.getKategoriTiketId(),
-                        "jumlah", item.getJumlah()
-                );
-                try {
-                    restTemplate.postForEntity(TICKET_SERVICE_URL + "/api/inventory/confirm", confirmPayload, Map.class);
-                } catch (Exception e) {
-                    log.error("Gagal mengonfirmasi stok terjual untuk kategori ID {}: {}", item.getKategoriTiketId(), e.getMessage());
-                }
-
-                // B. Issue lembaran tiket fisik sebanyak 'jumlah'
-                for (int i = 0; i < item.getJumlah(); i++) {
-                    Map<String, Object> issuePayload = Map.of(
-                            "kategoriTiketId", item.getKategoriTiketId(),
-                            "detailPemesananId", item.getId(),
-                            "penggunaId", order.getPenggunaId()
-                    );
+            if (order.getDetailPemesananList() != null) {
+                for (DetailPemesanan item : order.getDetailPemesananList()) {
                     try {
-                        restTemplate.postForEntity(TICKET_SERVICE_URL + "/api/tiket/issue", issuePayload, Map.class);
+                        Map<String, Object> releasePayload = Map.of(
+                                "kategoriTiketId", item.getKategoriTiketId(),
+                                "jumlah", item.getJumlah()
+                        );
+                        restTemplate.postForEntity(TICKET_SERVICE_URL + "/api/inventory/release", releasePayload, Map.class);
                     } catch (Exception e) {
-                        log.error("Gagal menerbitkan e-tiket lembar ke-{} untuk detail ID {}: {}", (i + 1), item.getId(), e.getMessage());
+                        log.warn("Gagal melepaskan reservasi stok kategori ID {} saat pembayaran expired: {}",
+                                item.getKategoriTiketId(), e.getMessage());
                     }
                 }
             }
+
+            // Commit status CANCELLED dalam transaksi terpisah (REQUIRES_NEW) agar tidak ter-rollback saat throw exception
+            TransactionTemplate txTemplate = new TransactionTemplate(transactionManager);
+            txTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+            txTemplate.execute(status -> {
+                Pemesanan o = pemesananRepository.findById(order.getId()).orElse(order);
+                o.setStatus("CANCELLED");
+                o.setUpdatedAt(LocalDateTime.now());
+                return pemesananRepository.save(o);
+            });
+
+            throw new BadRequestException("Tenggat waktu pembayaran untuk pesanan ini telah habis. Reservasi tiket telah dibatalkan.");
         }
 
-        // Mark Promo as used in promo_service if applicable
+        String effectiveAuthHeader = resolveAuthHeader(authHeader);
+
+        // Catat penggunaan promo
+        boolean promoUsed = false;
         if (order.getKodePromo() != null && !order.getKodePromo().trim().isEmpty()) {
+            String kode = order.getKodePromo().trim();
+            Map<String, Object> usePayload = Map.of(
+                    "kode", kode,
+                    "pemesananId", order.getId(),
+                    "totalHarga", order.getSubtotalTiket() != null ? order.getSubtotalTiket() : order.getTotalHarga()
+            );
+
+            HttpHeaders headers = new HttpHeaders();
+            if (effectiveAuthHeader != null) {
+                headers.set(HttpHeaders.AUTHORIZATION, effectiveAuthHeader);
+            }
+            HttpEntity<Map<String, Object>> useEntity = new HttpEntity<>(usePayload, headers);
+
             try {
-                Map<String, Object> usePayload = Map.of(
-                        "kode", order.getKodePromo().trim(),
-                        "pemesananId", order.getId(),
-                        "totalHarga", order.getSubtotalTiket() != null ? order.getSubtotalTiket() : order.getTotalHarga()
+                ResponseEntity<Map> useRes = restTemplate.exchange(
+                        PROMO_SERVICE_URL + "/api/promo/use",
+                        HttpMethod.POST,
+                        useEntity,
+                        Map.class
                 );
-                restTemplate.postForEntity(PROMO_SERVICE_URL + "/api/promo/use", usePayload, Map.class);
-                log.info("Kode promo {} berhasil dicatat terpakai untuk order #{}", order.getKodePromo(), order.getNomorPesanan());
+
+                if (!useRes.getStatusCode().is2xxSuccessful()) {
+                    throw new BadRequestException("Gagal menggunakan promo: Response status " + useRes.getStatusCode());
+                }
+                promoUsed = true;
+                log.info("Kode promo {} berhasil dicatat terpakai untuk order #{}", kode, order.getNomorPesanan());
+            } catch (HttpStatusCodeException ex) {
+                String errMsg = extractErrorMessage(ex);
+                log.warn("Gagal menggunakan promo {} untuk order #{}: {}", kode, order.getNomorPesanan(), errMsg);
+                // Batalkan proses jika promo gagal dicatat
+                throw new BadRequestException("Gagal menerapkan kode promo: " + errMsg);
+            } catch (BadRequestException bre) {
+                throw bre;
             } catch (Exception e) {
-                log.warn("Gagal menggunakan promo di promo_service: {}", e.getMessage());
+                log.error("Koneksi ke promo_service gagal saat order #{}: {}", order.getNomorPesanan(), e.getMessage());
+                throw new BadRequestException("Gagal menghubungi layanan promo: " + e.getMessage());
             }
         }
 
+        // Konfirmasi kuota dan terbitkan tiket
+        List<DetailPemesanan> confirmedItems = new ArrayList<>();
+        List<Long> issuedDetailIds = new ArrayList<>();
+
+        try {
+            if (order.getDetailPemesananList() != null) {
+                for (DetailPemesanan item : order.getDetailPemesananList()) {
+                    // Confirm stok
+                    Map<String, Object> confirmPayload = Map.of(
+                            "kategoriTiketId", item.getKategoriTiketId(),
+                            "jumlah", item.getJumlah()
+                    );
+                    ResponseEntity<Map> confirmRes = restTemplate.postForEntity(
+                            TICKET_SERVICE_URL + "/api/inventory/confirm",
+                            confirmPayload,
+                            Map.class
+                    );
+                    if (!confirmRes.getStatusCode().is2xxSuccessful()) {
+                        throw new RuntimeException("Gagal mengonfirmasi stok terjual untuk kategori ID " + item.getKategoriTiketId());
+                    }
+                    confirmedItems.add(item);
+
+                    // B. Issue lembaran tiket fisik sebanyak 'jumlah'
+                    for (int i = 0; i < item.getJumlah(); i++) {
+                        Map<String, Object> issuePayload = Map.of(
+                                "kategoriTiketId", item.getKategoriTiketId(),
+                                "detailPemesananId", item.getId(),
+                                "penggunaId", order.getPenggunaId()
+                        );
+                        ResponseEntity<Map> issueRes = restTemplate.postForEntity(
+                                TICKET_SERVICE_URL + "/api/tiket/issue",
+                                issuePayload,
+                                Map.class
+                        );
+                        if (!issueRes.getStatusCode().is2xxSuccessful()) {
+                            throw new RuntimeException("Gagal menerbitkan e-tiket lembar ke-" + (i + 1) + " untuk detail ID " + item.getId());
+                        }
+                    }
+                    issuedDetailIds.add(item.getId());
+                }
+            }
+        } catch (Exception ticketErr) {
+            log.error("Kendala pada ticket_service saat pembayaran order #{}: {}", order.getNomorPesanan(), ticketErr.getMessage());
+
+            // KOMPENSASI 1: Jika promo sudah sempat tercatat USED, batalkan penggunaan promo!
+            if (promoUsed) {
+                try {
+                    HttpHeaders headers = new HttpHeaders();
+                    if (effectiveAuthHeader != null) {
+                        headers.set(HttpHeaders.AUTHORIZATION, effectiveAuthHeader);
+                    }
+                    HttpEntity<Void> cancelEntity = new HttpEntity<>(headers);
+                    restTemplate.exchange(
+                            PROMO_SERVICE_URL + "/api/promo/cancel-usage/" + order.getId(),
+                            HttpMethod.POST,
+                            cancelEntity,
+                            Map.class
+                    );
+                    log.info("Kompensasi: Penggunaan promo untuk order #{} berhasil dibatalkan.", order.getNomorPesanan());
+                } catch (Exception compErr) {
+                    log.error("Gagal melakukan kompensasi promo untuk order #{}: {}", order.getNomorPesanan(), compErr.getMessage());
+                }
+            }
+
+            // KOMPENSASI 2: Jika stok sudah sempat dikonfirmasi terjual, kembalikan kuota stok terjual (return)
+            for (DetailPemesanan cItem : confirmedItems) {
+                try {
+                    Map<String, Object> returnPayload = Map.of(
+                            "kategoriTiketId", cItem.getKategoriTiketId(),
+                            "jumlah", cItem.getJumlah()
+                    );
+                    restTemplate.postForEntity(TICKET_SERVICE_URL + "/api/inventory/return", returnPayload, Map.class);
+                    log.info("Kompensasi: Stok kategori ID {} berhasil dikembalikan sebanyak {}", cItem.getKategoriTiketId(), cItem.getJumlah());
+                } catch (Exception retErr) {
+                    log.error("Gagal kompensasi return stok kategori ID {}: {}", cItem.getKategoriTiketId(), retErr.getMessage());
+                }
+            }
+
+            // KOMPENSASI 3: Jika ada lembar tiket yang sudah sempat terbit sebagian, tandai REFUNDED
+            for (Long dId : issuedDetailIds) {
+                try {
+                    restTemplate.postForEntity(TICKET_SERVICE_URL + "/api/tiket/refund-by-detail/" + dId, null, Map.class);
+                    log.info("Kompensasi: Tiket terbit untuk detail ID {} berhasil ditandai REFUNDED", dId);
+                } catch (Exception refErr) {
+                    log.error("Gagal kompensasi refund tiket detail ID {}: {}", dId, refErr.getMessage());
+                }
+            }
+
+            throw new BadRequestException("Pembayaran gagal karena kesalahan pada sistem tiket: " + ticketErr.getMessage() + ". Penggunaan promo telah dikembalikan.");
+        }
+
+        // Update status pesanan
         order.setStatus("PAID");
         order.setUpdatedAt(LocalDateTime.now());
         Pemesanan paidOrder = pemesananRepository.save(order);
 
-        // Notifikasi Otomatis: Pembayaran Berhasil & Tiket Terbit
+        // Kirim notifikasi pembayaran berhasil
         try {
             Map<String, Object> notifReq = Map.of(
                     "penggunaId", paidOrder.getPenggunaId(),
@@ -374,6 +538,40 @@ public class PemesananServiceImpl implements PemesananService {
         return orderMapper.toPemesananRes(paidOrder);
     }
 
+    private String resolveAuthHeader(String authHeader) {
+        if (authHeader != null && !authHeader.trim().isEmpty()) {
+            return authHeader.trim();
+        }
+        try {
+            ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attrs != null && attrs.getRequest() != null) {
+                String h = attrs.getRequest().getHeader(HttpHeaders.AUTHORIZATION);
+                if (h != null && !h.trim().isEmpty()) {
+                    return h.trim();
+                }
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+
+    private String extractErrorMessage(HttpStatusCodeException ex) {
+        try {
+            String body = ex.getResponseBodyAsString();
+            if (body != null && body.contains("\"message\"")) {
+                int idx = body.indexOf("\"message\"");
+                int startQuote = body.indexOf("\"", idx + 9);
+                int endQuote = body.indexOf("\"", startQuote + 1);
+                if (startQuote != -1 && endQuote != -1) {
+                    return body.substring(startQuote + 1, endQuote);
+                }
+            }
+            if (body != null && !body.trim().isEmpty()) {
+                return body;
+            }
+        } catch (Exception ignored) {}
+        return ex.getStatusText() != null ? ex.getStatusText() : ex.getMessage();
+    }
+
     private void validateOwnershipOrAdmin(Long targetUserId, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AccessDeniedException("Silakan login terlebih dahulu");
@@ -388,5 +586,57 @@ public class PemesananServiceImpl implements PemesananService {
         if (currentUserId != null && !currentUserId.equals(targetUserId)) {
             throw new AccessDeniedException("Anda tidak memiliki hak akses untuk pesanan ini");
         }
+    }
+
+    @Override
+    public RevenueRes getRevenueByAcara(Long acaraId, List<Long> kategoriTiketIds) {
+        if (kategoriTiketIds == null || kategoriTiketIds.isEmpty()) {
+            return RevenueRes.builder()
+                    .acaraId(acaraId)
+                    .totalRevenue(BigDecimal.ZERO)
+                    .totalOrder(0L)
+                    .totalTiket(0L)
+                    .perKategori(new java.util.ArrayList<>())
+                    .build();
+        }
+
+        List<Pemesanan> paidOrders = pemesananRepository.findPaidOrdersByKategoriIds(kategoriTiketIds);
+
+        BigDecimal totalRevenue = BigDecimal.ZERO;
+        long totalTiket = 0;
+
+        Map<Long, RevenueRes.KategoriRevenueItem> kategoriMap = new java.util.LinkedHashMap<>();
+
+        for (Pemesanan p : paidOrders) {
+            totalRevenue = totalRevenue.add(p.getTotalHarga() != null ? p.getTotalHarga() : BigDecimal.ZERO);
+            for (DetailPemesanan d : p.getDetailPemesananList()) {
+                if (kategoriTiketIds.contains(d.getKategoriTiketId())) {
+                    totalTiket += d.getJumlah();
+                    kategoriMap.merge(
+                        d.getKategoriTiketId(),
+                        RevenueRes.KategoriRevenueItem.builder()
+                                .kategoriTiketId(d.getKategoriTiketId())
+                                .namaKategori(d.getNamaKategoriTiket())
+                                .jumlahTerjual(d.getJumlah())
+                                .hargaSatuan(d.getHargaSatuan())
+                                .subtotal(d.getSubtotal())
+                                .build(),
+                        (existing, newer) -> {
+                            existing.setJumlahTerjual(existing.getJumlahTerjual() + newer.getJumlahTerjual());
+                            existing.setSubtotal(existing.getSubtotal().add(newer.getSubtotal()));
+                            return existing;
+                        }
+                    );
+                }
+            }
+        }
+
+        return RevenueRes.builder()
+                .acaraId(acaraId)
+                .totalRevenue(totalRevenue)
+                .totalOrder((long) paidOrders.size())
+                .totalTiket(totalTiket)
+                .perKategori(new java.util.ArrayList<>(kategoriMap.values()))
+                .build();
     }
 }

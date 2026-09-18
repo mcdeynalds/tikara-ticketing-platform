@@ -37,6 +37,8 @@ public class EventMapper {
                 .tanggalSelesai(acara.getTanggalSelesai())
                 .status(acara.getStatus())
                 .gambarUrl(acara.getGambarUrl())
+                .catatanModerator(acara.getCatatanModerator())
+                .moderatedAt(acara.getModeratedAt())
                 .meKategori(acara.getMeKategori() != null ?
                         acara.getMeKategori().stream().map(this::toKategoriRes).collect(Collectors.toSet()) : null)
                 .createdAt(acara.getCreatedAt())

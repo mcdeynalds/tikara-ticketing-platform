@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -8,7 +8,12 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
         .checkout-container {
+            width: 100%;
             max-width: 1100px;
             margin: 2.5rem auto;
             padding: 0 1.5rem;
@@ -16,10 +21,86 @@
             grid-template-columns: 1.6fr 1fr;
             gap: 2rem;
             align-items: start;
+            min-width: 0;
+            box-sizing: border-box;
         }
-        @media (max-width: 860px) {
+
+        /* ==========================================================================
+           BREAKPOINT 1: TABLET (769px – 1024px)
+           ========================================================================== */
+        @media (min-width: 769px) and (max-width: 1024px) {
             .checkout-container {
                 grid-template-columns: 1fr;
+                gap: 1.5rem;
+                margin: 1.75rem auto;
+                padding: 0 1.25rem;
+            }
+            .summary-card {
+                position: static !important;
+            }
+        }
+
+        /* ==========================================================================
+           BREAKPOINT 2: MOBILE (≤ 768px)
+           ========================================================================== */
+        @media (max-width: 768px) {
+            .checkout-container {
+                grid-template-columns: 1fr;
+                gap: 1.25rem;
+                margin: 1rem auto;
+                padding: 0 0.875rem;
+            }
+            .event-banner-card {
+                margin-bottom: 1rem;
+                border-radius: 14px;
+            }
+            .event-banner-flex {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            .event-thumb {
+                width: 100% !important;
+                height: 180px !important;
+                border-radius: 10px;
+            }
+            .profile-card {
+                padding: 1.25rem 1rem !important;
+                border-radius: 14px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr !important;
+                gap: 0.75rem !important;
+            }
+            .form-input {
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            .category-card {
+                padding: 1rem !important;
+            }
+            .category-card-inner {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 0.75rem;
+            }
+            .category-qty-wrap {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .summary-card {
+                position: static !important;
+                padding: 1.25rem 1rem !important;
+                border-radius: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .event-thumb {
+                height: 150px !important;
             }
         }
         .event-banner-card {
@@ -39,10 +120,13 @@
         .event-thumb {
             width: 110px;
             height: 110px;
+            min-width: 80px;
+            min-height: 80px;
             border-radius: 12px;
             object-fit: cover;
             background: #e2e8f0;
             flex-shrink: 0;
+            display: block;
         }
         .category-card {
             border: 2px solid var(--border-color);
@@ -121,7 +205,8 @@
                 </button>
             </div>
         </div>
-        <nav class="navbar-mobile-drawer" id="navbarMobileDrawer"></nav>
+        <div class="nav-overlay" id="navOverlay"></div>
+    <nav class="navbar-mobile-drawer" id="navbarMobileDrawer"></nav>
     </header>
 
     <main class="checkout-container">
@@ -130,7 +215,7 @@
             <!-- Event Overview Header -->
             <div class="event-banner-card" id="eventCardBox">
                 <div class="event-banner-flex">
-                    <img id="eventPoster" src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=300" alt="Poster Konser" class="event-thumb">
+                    <img id="eventPoster" src="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=400&q=80" alt="Poster Konser" class="event-thumb" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=400&q=80';">
                     <div style="flex:1;">
                         <span class="role-badge pembeli" style="font-size:0.75rem; padding:0.2rem 0.6rem; margin-bottom:0.4rem; display:inline-block;" id="eventStatusBadge">RESMI TERVERIFIKASI</span>
                         <h2 style="font-size:1.35rem; font-weight:800; color:var(--text-main); margin-bottom:0.3rem;" id="eventTitle">Memuat Konser...</h2>
@@ -243,7 +328,7 @@
                     </div>
                     <div id="rowDiskon" style="display:none; justify-content:space-between; margin-bottom:0.5rem; font-size:0.9rem; color:#10B981;">
                         <span><i class="fa-solid fa-tag"></i> Diskon Promo (<span id="promoCodeLabel">-</span>)</span>
-                        <span id="summaryDiskon" style="font-weight:700;">- Rp 0</span>
+                        <span id="summaryDiskon" style="font-weight:700;">- 0</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.9rem; color:var(--text-muted);">
                         <span>Biaya Layanan Sistem (2%)</span>
@@ -491,8 +576,14 @@
                     document.getElementById('eventDate').innerHTML = `<i class="fa-regular fa-calendar" style="color:var(--primary-color);"></i> ${dt.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour:'2-digit', minute:'2-digit' })}`;
                 }
                 if (currentEvent.gambarUrl) {
-                    const posterUrl = currentEvent.gambarUrl.startsWith('http') ? currentEvent.gambarUrl : `http://localhost:8082${currentEvent.gambarUrl}`;
-                    document.getElementById('eventPoster').src = posterUrl;
+                    let posterUrl = currentEvent.gambarUrl.trim();
+                    if (!posterUrl.startsWith('http://') && !posterUrl.startsWith('https://') && !posterUrl.startsWith('data:image/')) {
+                        posterUrl = `http://localhost:8082${posterUrl.startsWith('/') ? '' : '/'}${posterUrl}`;
+                    }
+                    const posterEl = document.getElementById('eventPoster');
+                    if (posterEl) {
+                        posterEl.src = posterUrl;
+                    }
                 }
 
                 // 2. Fetch Ticket Categories from ticket_service (Port 8083)
@@ -576,9 +667,9 @@
 
                 html += `
                     <div class="category-card ${qty > 0 ? 'selected' : ''} ${isUnavailable ? 'disabled' : ''}" id="catCard_${cat.id}">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div class="category-card-inner" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.75rem;">
                             <div>
-                                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem; flex-wrap:wrap;">
                                     <h4 style="font-size:1.15rem; font-weight:800; color:var(--text-main); margin:0;">${cat.namaKategori}</h4>
                                     ${statusBadge}
                                 </div>
@@ -588,7 +679,7 @@
                             </div>
 
                             <!-- Qty Stepper -->
-                            <div>
+                            <div class="category-qty-wrap">
                                 ${isUnavailable ? `
                                     <button class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 0.8rem;" disabled>Tidak Tersedia</button>
                                 ` : `
@@ -682,7 +773,7 @@
                 if (appliedPromo && diskon > 0) {
                     rowDiskon.style.display = 'flex';
                     document.getElementById('promoCodeLabel').textContent = appliedPromo.kode;
-                    document.getElementById('summaryDiskon').textContent = `- Rp ${formatRupiah(diskon)}`;
+                    document.getElementById('summaryDiskon').textContent = `- ${formatRupiah(diskon)}`;
                 } else {
                     rowDiskon.style.display = 'none';
                 }
@@ -983,6 +1074,137 @@
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+            <!-- Unified TIKARA Footer (Light Theme) -->
+    <footer class="tikara-footer">
+        <div class="footer-container">
+            <div class="footer-main-grid">
+                <!-- Brand & Security Column -->
+                <div class="footer-col footer-brand-col">
+                    <a href="http://localhost:8082/index.html" class="footer-logo" aria-label="TIKARA Beranda">
+                        <i class="fa-solid fa-ticket"></i> <span>TIKARA</span>
+                    </a>
+                    <p class="footer-desc">
+                        Beli tiket konser, festival musik, dan event seru lainnya dengan mudah &amp; aman di TIKARA. 
+                        <strong>#PASTIBISA</strong> nonton konser &amp; festival idaman!
+                    </p>
+                    <div class="footer-security-section">
+                        <h4 class="footer-subheading"><i class="fa-solid fa-shield-halved"></i> Keamanan dan Privasi</h4>
+                        <div class="footer-badges-wrap">
+                            <a href="http://localhost:8082/terms.html#security" class="footer-iso-badge" title="Tersertifikasi ISO/IEC 27001 &amp; ISO/IEC 27701">
+                                <div class="iso-icon-box">
+                                    <i class="fa-solid fa-award"></i>
+                                </div>
+                                <div class="iso-info-box">
+                                    <span class="iso-title">ISO/IEC 27001 &bull; 27701</span>
+                                    <span class="iso-desc">Information Security &amp; Privacy Management</span>
+                                </div>
+                            </a>
+                            <div class="footer-ssl-badge">
+                                <i class="fa-solid fa-lock"></i> <span>256-Bit SSL Enkripsi Terverifikasi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Columns -->
+                <div class="footer-nav-columns">
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Tentang TIKARA</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/about.html">Tentang Kami</a></li>
+                            <li><a href="http://localhost:8082/blog.html">Blog &amp; Berita Musik</a></li>
+                        </ul>
+                        <h3 class="footer-heading" style="margin-top: 1.75rem;">Produk</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/index.html#catalog">Semua Konser &amp; Festival</a></li>
+                            <li><a href="http://localhost:8083/my-tickets.html">Tiket Saya</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Event Creator</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/creator-guide.html#biaya">Biaya &amp; Komisi</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#kerjasama">Kerjasama dengan Kami</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#panduan">Buku Panduan Creator</a></li>
+                            <li><a href="http://localhost:8082/create-event.html">Buat Event Konser</a></li>
+                            <li><a href="http://localhost:8082/organizer-dashboard.html">Dashboard Penyelenggara</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Dukungan</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/help.html">Pusat Bantuan (FAQ)</a></li>
+                            <li><a href="http://localhost:8082/terms.html#terms">Syarat dan Ketentuan</a></li>
+                            <li><a href="http://localhost:8082/terms.html#privacy">Kebijakan Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#security">Kepatuhan Keamanan &amp; Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#cookies">Kebijakan Cookies</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Action / Payment & Social Column -->
+                <div class="footer-col footer-action-col">
+                    <h3 class="footer-heading">Pilihan Pembayaran</h3>
+                    <div class="footer-payment-grid" title="Metode Pembayaran Resmi TIKARA">
+                        <span class="pay-chip"><i class="fa-solid fa-qrcode"></i> QRIS</span>
+                        <span class="pay-chip">BCA</span>
+                        <span class="pay-chip">Mandiri</span>
+                        <span class="pay-chip">BRI</span>
+                        <span class="pay-chip">BNI</span>
+                        <span class="pay-chip">BTN</span>
+                        <span class="pay-chip">BSI</span>
+                        <span class="pay-chip">Permata</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-visa"></i> VISA</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-mastercard"></i> Master</span>
+                        <span class="pay-chip">ShopeePay</span>
+                        <span class="pay-chip">GoPay</span>
+                        <span class="pay-chip">Alfamart</span>
+                        <span class="pay-chip">Indomaret</span>
+                    </div>
+                    <div>
+                        <a href="http://localhost:8082/help.html#pembayaran" class="footer-pay-guide-link">
+                            <i class="fa-solid fa-circle-question"></i> Panduan &amp; Cara Bayar
+                        </a>
+                    </div>
+
+                    <div class="footer-social-wrap" style="margin-top: 1.75rem;">
+                        <h3 class="footer-heading">Ikuti Kami untuk Update</h3>
+                        <div class="footer-social-links">
+                            <a href="https://www.instagram.com/deafriliart/?__pwa=1" target="_blank" rel="noopener noreferrer" class="social-btn social-ig" aria-label="Instagram TIKARA" title="Instagram">
+                                <i class="fa-brands fa-instagram"></i>
+                            </a>
+                            <a href="https://www.tiktok.com/@realityclubofficial" target="_blank" rel="noopener noreferrer" class="social-btn social-tiktok" aria-label="TikTok TIKARA" title="TikTok">
+                                <i class="fa-brands fa-tiktok"></i>
+                            </a>
+                            <a href="https://x.com/reality_club" target="_blank" rel="noopener noreferrer" class="social-btn social-x" aria-label="X (Twitter) TIKARA" title="X (Twitter)">
+                                <i class="fa-brands fa-x-twitter"></i>
+                            </a>
+                            <a href="https://www.facebook.com/officialrealityclub/?locale=id_ID" target="_blank" rel="noopener noreferrer" class="social-btn social-fb" aria-label="Facebook TIKARA" title="Facebook">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </a>
+                            <a href="https://youtu.be/SlwQyBkCtZE?si=WBPI1nh0A6A2e9Dv" target="_blank" rel="noopener noreferrer" class="social-btn social-yt" aria-label="YouTube TIKARA" title="YouTube">
+                                <i class="fa-brands fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Copyright -->
+            <div class="footer-bottom-bar">
+                <p>&copy; 2026 TIKARA (PT Tikara Nusantara Sejahtera). Seluruh hak cipta dilindungi undang-undang.</p>
+                <div style="display: flex; gap: 1.25rem; font-size: 0.8rem;">
+                    <a href="http://localhost:8082/terms.html#terms">Syarat Layanan</a>
+                    <a href="http://localhost:8082/terms.html#privacy">Privasi</a>
+                    <a href="http://localhost:8082/terms.html#security">Keamanan</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
 

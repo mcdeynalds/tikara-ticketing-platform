@@ -15,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/promo")
@@ -48,4 +49,33 @@ public class PromoController {
     public ResponseEntity<ValidatePromoRes> usePromo(@Valid @RequestBody UsePromoReq request, Authentication authentication) {
         return ResponseEntity.ok(promoService.usePromo(request, authentication));
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<KodePromoRes>> getAllPromos() {
+        return ResponseEntity.ok(promoService.getAllPromos());
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Object>> getPromoStats() {
+        return ResponseEntity.ok(promoService.getPromoStats());
+    }
+
+    @PatchMapping("/{id}/toggle-status")
+    public ResponseEntity<KodePromoRes> togglePromoStatus(@PathVariable Long id) {
+        return ResponseEntity.ok(promoService.togglePromoStatus(id));
+    }
+
+    @PatchMapping("/{id}/deactivate")
+    public ResponseEntity<KodePromoRes> deactivatePromo(@PathVariable Long id) {
+        return ResponseEntity.ok(promoService.deactivatePromo(id));
+    }
+
+
+    @PostMapping("/cancel-usage/{pemesananId}")
+    public ResponseEntity<Map<String, Object>> cancelPromoUsage(
+            @PathVariable Long pemesananId,
+            Authentication authentication) {
+        return ResponseEntity.ok(promoService.cancelPromoUsage(pemesananId, authentication));
+    }
+
 }

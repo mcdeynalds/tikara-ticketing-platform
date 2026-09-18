@@ -21,36 +21,24 @@ public class AuthController {
 
     private final PenggunaService penggunaService;
 
-    // =========================
-    // REGISTER
-    // =========================
     @PostMapping("/register")
     public ResponseEntity<PenggunaRes> register(@Valid @RequestBody RegisterPenggunaReq request) {
         PenggunaRes response = penggunaService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // =========================
-    // LOGIN
-    // =========================
     @PostMapping("/login")
     public ResponseEntity<LoginRes> login(@Valid @RequestBody LoginReq request) {
         LoginRes response = penggunaService.login(request);
         return ResponseEntity.ok(response);
     }
 
-    // =========================
-    // REFRESH TOKEN
-    // =========================
     @PostMapping("/refresh-token")
     public ResponseEntity<LoginRes> refreshToken(@Valid @RequestBody RefreshTokenReq request) {
         LoginRes response = penggunaService.refreshToken(request);
         return ResponseEntity.ok(response);
     }
 
-    // =========================
-    // LOGOUT
-    // =========================
     @PostMapping("/logout")
     public ResponseEntity<Map<String, String>> logout() {
         return ResponseEntity.ok(Map.of(
@@ -59,9 +47,6 @@ public class AuthController {
         ));
     }
 
-    // =========================
-    // FORGOT PASSWORD (REQUEST OTP)
-    // =========================
     @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordReq request) {
         String message = penggunaService.forgotPassword(request);
@@ -71,9 +56,6 @@ public class AuthController {
         ));
     }
 
-    // =========================
-    // VERIFY OTP
-    // =========================
     @PostMapping("/verify-otp")
     public ResponseEntity<Map<String, String>> verifyOtp(@Valid @RequestBody VerifyOtpReq request) {
         String resetToken = penggunaService.verifyOtp(request);
@@ -84,9 +66,6 @@ public class AuthController {
         ));
     }
 
-    // =========================
-    // RESET PASSWORD
-    // =========================
     @PostMapping("/reset-password")
     public ResponseEntity<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordReq request) {
         penggunaService.resetPassword(request);

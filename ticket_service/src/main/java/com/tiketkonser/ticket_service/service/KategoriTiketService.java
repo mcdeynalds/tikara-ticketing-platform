@@ -14,4 +14,5 @@ public interface KategoriTiketService {
     void holdStok(HoldTiketReq request);
     void releaseStok(HoldTiketReq request);
     void confirmStok(HoldTiketReq request);
+    void refundStok(Long kategoriTiketId, int qty);
 }

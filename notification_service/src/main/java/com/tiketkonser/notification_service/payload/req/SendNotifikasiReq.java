@@ -22,5 +22,5 @@ public class SendNotifikasiReq {
     @NotBlank(message = "Pesan notifikasi wajib diisi")
     private String pesan;
 
-    private String tipe; // EMAIL, IN_APP, SMS
+    private String tipe;
 }

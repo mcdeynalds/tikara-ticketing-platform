@@ -16,4 +16,5 @@ public class DashboardSummaryRes {
     private Long totalAcara;
     private Long totalTiketTerjual;
     private BigDecimal totalOmzetPendapatan;
+    private Long totalAcaraPending;
 }

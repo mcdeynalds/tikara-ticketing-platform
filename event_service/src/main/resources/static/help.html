@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pusat Bantuan & FAQ - TIKARA</title>
+    <meta name="description" content="Pusat bantuan TIKARA, panduan cara beli tiket konser, cara bayar QRIS & Virtual Account, refund tiket, dan solusi kendala teknis penonton.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body style="background-color: #F8FAFC; color: #0F172A; min-height: 100vh; display: flex; flex-direction: column;">
+
+    <!-- Unified Responsive Header Navbar -->
+    <header class="navbar">
+        <div class="navbar-container">
+            <a href="http://localhost:8082/index.html" class="navbar-logo" id="navLogoLink" aria-label="TIKARA Beranda">
+                <i class="fa-solid fa-ticket" style="color: #FF5A5F;"></i> <span class="logo-text" style="color: #FFFFFF;">TIKARA</span>
+            </a>
+            <ul class="navbar-menu" id="mainNavbarMenu"></ul>
+            <div class="navbar-actions">
+                <a href="http://localhost:8086/notifications.html" class="nav-icon-btn" id="navNotifBtn" title="Notifikasi" style="display:none;">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="badge-count" id="navUnreadBadge" style="display:none;">0</span>
+                </a>
+                <div id="navUserBox"></div>
+                <button class="navbar-hamburger" id="navbarToggleBtn" aria-label="Buka menu navigasi" aria-expanded="false" aria-controls="navbarMobileDrawer">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <div class="nav-overlay" id="navOverlay"></div>
+    <nav class="navbar-mobile-drawer" id="navbarMobileDrawer" aria-label="Menu navigasi mobile"></nav>
+    </header>
+
+    <!-- Main Content -->
+    <main style="flex: 1; padding: 2rem 1.5rem 5rem;">
+        <div class="content-main-container">
+            <!-- Breadcrumbs -->
+            <div style="font-size: 0.85rem; color: #64748B; margin-bottom: 2rem;">
+                <a href="http://localhost:8082/index.html" style="color: #475569; text-decoration: none;">Beranda</a> &rsaquo; 
+                <span style="color: #1B365D; font-weight: 600;">Pusat Bantuan</span>
+            </div>
+
+            <!-- Hero Section -->
+            <section class="content-hero">
+                <span class="content-hero-badge">
+                    Bantuan 24/7 Penonton TIKARA
+                </span>
+                <h1 class="content-hero-title">Ada yang Bisa Kami Bantu?</h1>
+                <p class="content-hero-desc">
+                    Temukan jawaban cepat mengenai pembelian tiket, status pembayaran, e-tiket, hingga penukaran wristband konser.
+                </p>
+                <div style="max-width: 550px; margin: 0 auto; position: relative;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); color: #94A3B8;"></i>
+                    <input type="text" id="faqSearchInput" placeholder="Ketik pertanyaan atau kata kunci bantuan..." style="width: 100%; padding: 0.95rem 1.25rem 0.95rem 3rem; background: #FFFFFF; border: 1.5px solid #CBD5E1; border-radius: 999px; color: #0F172A; font-size: 0.95rem; outline: none; box-sizing: border-box; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);" oninput="filterFaq(this.value)">
+                </div>
+            </section>
+
+            <!-- Kategori Bantuan Cepat -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 3.5rem;">
+                <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);" onclick="scrollToSec('faq-beli')">
+                    <div style="color: #0284C7; font-size: 1.75rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-cart-shopping"></i></div>
+                    <h3 style="font-size: 1rem; font-weight: 700; color: #0F172A; margin-bottom: 0.25rem;">Pembelian Tiket</h3>
+                    <p style="color: #64748B; font-size: 0.8rem;">Cara war, batas kuota NIK</p>
+                </div>
+
+                <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);" onclick="scrollToSec('pembayaran')">
+                    <div style="color: #10B981; font-size: 1.75rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-credit-card"></i></div>
+                    <h3 style="font-size: 1rem; font-weight: 700; color: #0F172A; margin-bottom: 0.25rem;">Cara Pembayaran</h3>
+                    <p style="color: #64748B; font-size: 0.8rem;">QRIS, VA Bank, Retail</p>
+                </div>
+
+                <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);" onclick="scrollToSec('faq-tiket')">
+                    <div style="color: #FF5A5F; font-size: 1.75rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-ticket"></i></div>
+                    <h3 style="font-size: 1rem; font-weight: 700; color: #0F172A; margin-bottom: 0.25rem;">E-Tiket &amp; Gate</h3>
+                    <p style="color: #64748B; font-size: 0.8rem;">QR Code, scan pintu masuk</p>
+                </div>
+
+                <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 14px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);" onclick="scrollToSec('faq-cs')">
+                    <div style="color: #F59E0B; font-size: 1.75rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-headset"></i></div>
+                    <h3 style="font-size: 1rem; font-weight: 700; color: #0F172A; margin-bottom: 0.25rem;">Kontak Bantuan</h3>
+                    <p style="color: #64748B; font-size: 0.8rem;">WhatsApp &amp; Email CS</p>
+                </div>
+            </div>
+
+            <!-- Panduan Cara Bayar Section -->
+            <section id="pembayaran" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 18px; padding: 2.5rem; margin-bottom: 3.5rem; scroll-margin-top: 100px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);">
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <div style="width: 36px; height: 36px; border-radius: 8px; background: #EFF6FF; color: #1B365D; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; border: 1px solid #DBEAFE;">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                    <h2 style="font-size: 1.6rem; font-weight: 800; color: #0F172A;">Panduan Cara Pembayaran Resmi</h2>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 1.5rem;">
+                        <h4 style="font-size: 1.05rem; font-weight: 700; color: #0F172A; margin-bottom: 0.5rem;"><i class="fa-solid fa-qrcode" style="color: #0284C7;"></i> Pembayaran QRIS (BCA, GoPay, ShopeePay, Dana, OVO, LinkAja)</h4>
+                        <ol style="color: #475569; font-size: 0.9rem; line-height: 1.7; padding-left: 1.25rem; margin: 0;">
+                            <li>Pilih metode QRIS pada halaman checkout pesanan tiket.</li>
+                            <li>Buka aplikasi m-Banking atau e-wallet pilihan Anda di ponsel.</li>
+                            <li>Scan kode QR yang tampil di layar dan periksa kesesuaian nominal tagihan tiket.</li>
+                            <li>Masukkan PIN transaksi Anda. Pembayaran akan terverifikasi otomatis dalam hitungan detik.</li>
+                        </ol>
+                    </div>
+
+                    <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 1.5rem;">
+                        <h4 style="font-size: 1.05rem; font-weight: 700; color: #0F172A; margin-bottom: 0.5rem;"><i class="fa-solid fa-building-columns" style="color: #10B981;"></i> Virtual Account Bank (BCA, Mandiri, BRI, BNI, Permata, BSI)</h4>
+                        <ol style="color: #475569; font-size: 0.9rem; line-height: 1.7; padding-left: 1.25rem; margin: 0;">
+                            <li>Salin Nomor Virtual Account 16 digit yang tertera di halaman instruksi pembayaran.</li>
+                            <li>Buka menu Transfer &gt; Virtual Account pada Mobile Banking / ATM Anda.</li>
+                            <li>Masukkan nomor VA tersebut dan pastikan nama penerima tertulis <strong>TIKARA - [Nama Event]</strong>.</li>
+                            <li>Selesaikan transfer sebelum batas waktu 15 menit berakhir agar pesanan tidak kedaluwarsa.</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FAQ Accordion -->
+            <section id="faq-list" style="margin-bottom: 4rem;">
+                <h2 style="font-size: 1.75rem; font-weight: 800; margin-bottom: 2rem; color: #0F172A; text-align: center;">Pertanyaan yang Sering Diajukan (FAQ)</h2>
+                
+                <div class="faq-group" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <!-- FAQ 1 -->
+                    <div class="faq-item" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);">
+                        <button onclick="toggleFaq(this)" style="width: 100%; padding: 1.25rem 1.5rem; background: none; border: none; text-align: left; font-size: 1rem; font-weight: 700; color: #0F172A; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                            <span>Bagaimana cara membeli tiket konser di TIKARA?</span>
+                            <i class="fa-solid fa-chevron-down" style="color: #64748B; transition: transform 0.2s;"></i>
+                        </button>
+                        <div class="faq-ans" style="display: none; padding: 0 1.5rem 1.25rem; color: #475569; font-size: 0.92rem; line-height: 1.65; border-top: 1px solid #F1F5F9;">
+                            Pilih konser impianmu di katalog konser TIKARA, klik "Pilih Tiket", tentukan kategori dan jumlah tiket yang diinginkan, isi data identitas pemegang tiket (NIK &amp; Nama Lengkap sesuai KTP), lalu selesaikan pembayaran sebelum batas waktu berakhir.
+                        </div>
+                    </div>
+
+                    <!-- FAQ 2 -->
+                    <div class="faq-item" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);">
+                        <button onclick="toggleFaq(this)" style="width: 100%; padding: 1.25rem 1.5rem; background: none; border: none; text-align: left; font-size: 1rem; font-weight: 700; color: #0F172A; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                            <span>Berapa batas maksimal tiket yang bisa dibeli per akun/NIK?</span>
+                            <i class="fa-solid fa-chevron-down" style="color: #64748B; transition: transform 0.2s;"></i>
+                        </button>
+                        <div class="faq-ans" style="display: none; padding: 0 1.5rem 1.25rem; color: #475569; font-size: 0.92rem; line-height: 1.65; border-top: 1px solid #F1F5F9;">
+                            Demi menjamin keadilan dan memberantas calo bot, TIKARA membatasi maksimal 2 tiket per 1 NIK / Akun terdaftar untuk konser bertaraf internasional dan festival besar.
+                        </div>
+                    </div>
+
+                    <!-- FAQ 3 -->
+                    <div class="faq-item" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);">
+                        <button onclick="toggleFaq(this)" style="width: 100%; padding: 1.25rem 1.5rem; background: none; border: none; text-align: left; font-size: 1rem; font-weight: 700; color: #0F172A; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                            <span>Di mana saya bisa melihat tiket yang sudah berhasil dibeli?</span>
+                            <i class="fa-solid fa-chevron-down" style="color: #64748B; transition: transform 0.2s;"></i>
+                        </button>
+                        <div class="faq-ans" style="display: none; padding: 0 1.5rem 1.25rem; color: #475569; font-size: 0.92rem; line-height: 1.65; border-top: 1px solid #F1F5F9;">
+                            Tiket Anda dapat langsung dilihat pada menu <a href="http://localhost:8083/my-tickets.html" style="color: #0284C7; text-decoration: underline;">Tiket Saya</a> setelah pembayaran dinyatakan lunas. E-tiket resmi juga dikirimkan otomatis ke alamat email terdaftar Anda.
+                        </div>
+                    </div>
+
+                    <!-- FAQ 4 -->
+                    <div class="faq-item" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);">
+                        <button onclick="toggleFaq(this)" style="width: 100%; padding: 1.25rem 1.5rem; background: none; border: none; text-align: left; font-size: 1rem; font-weight: 700; color: #0F172A; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                            <span>Bagaimana cara masuk gate venue konser hari-H?</span>
+                            <i class="fa-solid fa-chevron-down" style="color: #64748B; transition: transform 0.2s;"></i>
+                        </button>
+                        <div class="faq-ans" style="display: none; padding: 0 1.5rem 1.25rem; color: #475569; font-size: 0.92rem; line-height: 1.65; border-top: 1px solid #F1F5F9;">
+                            Tunjukkan QR Code e-tiket pada halaman "Tiket Saya" melalui smartphone Anda kepada petugas gate scan. Pastikan tingkat kecerahan layar ponsel cukup tinggi dan siapkan kartu identitas fisik (KTP/SIM/Paspor) jika diminta verifikasi.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Customer Service Kontak -->
+            <section id="faq-cs" style="background: linear-gradient(135deg, #1B365D, #0F172A); border-radius: 18px; padding: 3rem 2rem; text-align: center; color: #FFFFFF; box-shadow: 0 8px 24px rgba(27, 54, 93, 0.25);">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(255, 90, 95, 0.2); color: #FF5A5F; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 1.25rem;">
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+                <h2 style="font-size: 1.85rem; font-weight: 800; margin-bottom: 0.75rem; color: #FFFFFF;">Butuh Bantuan Lebih Lanjut?</h2>
+                <p style="color: #CBD5E1; max-width: 580px; margin: 0 auto 2rem; font-size: 0.95rem;">
+                    Tim Customer Support TIKARA siap membantu Anda 24 jam sehari, 7 hari seminggu.
+                </p>
+                <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                    <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" style="background: #25D366; color: #FFFFFF; padding: 0.85rem 1.75rem; border-radius: 999px; text-decoration: none; font-weight: 700; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);">
+                        <i class="fa-brands fa-whatsapp"></i> Chat WhatsApp 24/7
+                    </a>
+                    <a href="mailto:support@tikara.id" style="background: rgba(255, 255, 255, 0.15); color: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.3); padding: 0.85rem 1.75rem; border-radius: 999px; text-decoration: none; font-weight: 700; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-envelope"></i> Email Support
+                    </a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Unified TIKARA Footer (Light Theme) -->
+    <footer class="tikara-footer"></footer>
+
+    <!-- Interactive FAQ Script -->
+    <script>
+        function toggleFaq(btn) {
+            const ans = btn.nextElementSibling;
+            const icon = btn.querySelector('i');
+            if (ans.style.display === 'block') {
+                ans.style.display = 'none';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                ans.style.display = 'block';
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        function scrollToSec(id) {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function filterFaq(query) {
+            const q = query.toLowerCase();
+            document.querySelectorAll('.faq-item').forEach(item => {
+                const text = item.innerText.toLowerCase();
+                item.style.display = text.includes(q) ? 'block' : 'none';
+            });
+        }
+    </script>
+    <script src="/js/script.js"></script>
+</body>
+</html>

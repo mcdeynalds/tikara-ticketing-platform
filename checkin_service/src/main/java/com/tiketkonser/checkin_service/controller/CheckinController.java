@@ -2,6 +2,7 @@ package com.tiketkonser.checkin_service.controller;
 
 import com.tiketkonser.checkin_service.payload.req.ScanTicketReq;
 import com.tiketkonser.checkin_service.payload.res.CheckinStatsRes;
+import com.tiketkonser.checkin_service.payload.res.CheckinTimelineRes;
 import com.tiketkonser.checkin_service.payload.res.PageResponse;
 import com.tiketkonser.checkin_service.payload.res.ScanTicketRes;
 import com.tiketkonser.checkin_service.service.CheckinService;
@@ -21,8 +22,11 @@ public class CheckinController {
 
     @PostMapping("/scan")
     @PreAuthorize("hasAnyRole('PENYELENGGARA', 'ADMIN')")
-    public ResponseEntity<ScanTicketRes> scanTicket(@Valid @RequestBody ScanTicketReq request, Authentication authentication) {
-        return ResponseEntity.ok(checkinService.scanTicket(request, authentication));
+    public ResponseEntity<ScanTicketRes> scanTicket(
+            @Valid @RequestBody ScanTicketReq request,
+            Authentication authentication,
+            @RequestHeader(value = org.springframework.http.HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+        return ResponseEntity.ok(checkinService.scanTicket(request, authentication, authHeader));
     }
 
     @GetMapping("/history/{acaraId}")
@@ -39,5 +43,11 @@ public class CheckinController {
     @PreAuthorize("hasAnyRole('PENYELENGGARA', 'ADMIN')")
     public ResponseEntity<CheckinStatsRes> getStatsByAcaraId(@PathVariable Long acaraId) {
         return ResponseEntity.ok(checkinService.getStatsByAcaraId(acaraId));
+    }
+
+    @GetMapping("/acara/{acaraId}/timeline")
+    @PreAuthorize("hasAnyRole('PENYELENGGARA', 'ADMIN')")
+    public ResponseEntity<CheckinTimelineRes> getTimelineByAcaraId(@PathVariable Long acaraId) {
+        return ResponseEntity.ok(checkinService.getTimelineByAcaraId(acaraId));
     }
 }

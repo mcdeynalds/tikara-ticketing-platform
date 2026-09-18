@@ -46,7 +46,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/kategori-tiket/**").permitAll()
                         .requestMatchers("/api/inventory/**").permitAll()
                         .requestMatchers("/api/tiket/issue").permitAll()
+                        .requestMatchers("/api/tiket/refund-by-detail/**").permitAll()
+                        .requestMatchers("/api/tiket/has-ticket").permitAll()
+                        .requestMatchers("/api/tiket/acara/**").permitAll()
                         .requestMatchers("/api/tiket/qr/**").permitAll()
+                        .requestMatchers("/api/tiket/*/pdf", "/api/tiket/*/download-pdf").permitAll()
+                        .requestMatchers("/api/tiket/*/send-email").permitAll()
                         .anyRequest().authenticated()
                 )
 
@@ -71,3 +76,4 @@ public class SecurityConfig {
     }
 
 }
+

@@ -3,13 +3,16 @@ package com.tiketkonser.order_service.controller;
 import com.tiketkonser.order_service.payload.req.PemesananReq;
 import com.tiketkonser.order_service.payload.res.PageResponse;
 import com.tiketkonser.order_service.payload.res.PemesananRes;
+import com.tiketkonser.order_service.payload.res.RevenueRes;
 import com.tiketkonser.order_service.service.PemesananService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -19,8 +22,11 @@ public class PemesananController {
     private final PemesananService pemesananService;
 
     @PostMapping
-    public ResponseEntity<PemesananRes> createOrder(@Valid @RequestBody PemesananReq request, Authentication authentication) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(pemesananService.createOrder(request, authentication));
+    public ResponseEntity<PemesananRes> createOrder(
+            @Valid @RequestBody PemesananReq request,
+            Authentication authentication,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(pemesananService.createOrder(request, authentication, authHeader));
     }
 
     @GetMapping("/saya")
@@ -42,7 +48,17 @@ public class PemesananController {
     }
 
     @PostMapping("/{id}/pay-simulation")
-    public ResponseEntity<PemesananRes> paySimulation(@PathVariable Long id, Authentication authentication) {
-        return ResponseEntity.ok(pemesananService.paySimulation(id, authentication));
+    public ResponseEntity<PemesananRes> paySimulation(
+            @PathVariable Long id,
+            Authentication authentication,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+        return ResponseEntity.ok(pemesananService.paySimulation(id, authentication, authHeader));
+    }
+
+    @GetMapping("/acara/{acaraId}/revenue")
+    public ResponseEntity<RevenueRes> getRevenueByAcara(
+            @PathVariable Long acaraId,
+            @RequestParam(required = false) List<Long> kategoriIds) {
+        return ResponseEntity.ok(pemesananService.getRevenueByAcara(acaraId, kategoriIds != null ? kategoriIds : List.of()));
     }
 }

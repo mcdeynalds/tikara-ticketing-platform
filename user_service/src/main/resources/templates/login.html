@@ -12,7 +12,7 @@
     <!-- Guest Navbar -->
     <header class="navbar">
         <div class="navbar-container">
-            <a href="http://localhost:8082/index.html" class="navbar-logo">
+            <a href="http://localhost:8082/index.html" class="navbar-logo" aria-label="Beranda TIKARA">
                 <i class="fa-solid fa-ticket"></i> TIKARA
             </a>
             <ul class="navbar-menu">
@@ -37,19 +37,21 @@
                     <label class="form-label" for="email">Alamat Email</label>
                     <div class="input-wrapper">
                         <i class="fa-solid fa-envelope input-icon"></i>
-                        <input type="email" id="email" class="form-input" placeholder="Masukkan alamat email" autocomplete="email">
+                        <input type="email" id="email" class="form-input" placeholder="Masukkan alamat email" autocomplete="email" required>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
                         <label class="form-label" for="password" style="margin-bottom:0;">Kata Sandi</label>
-                        <a href="/forgot-password.html" style="font-size:0.825rem; font-weight:600;">Lupa Sandi?</a>
+                        <a href="/forgot-password.html" id="linkForgotPassword" style="font-size:0.825rem; font-weight:600;">Lupa Sandi?</a>
                     </div>
                     <div class="input-wrapper">
                         <i class="fa-solid fa-lock input-icon"></i>
-                        <input type="password" id="password" class="form-input" placeholder="Masukkan kata sandi" autocomplete="current-password">
-                        <i class="fa-solid fa-eye toggle-password" id="togglePassword" onclick="togglePasswordVisibility('password', 'togglePassword')"></i>
+                        <input type="password" id="password" class="form-input" placeholder="Masukkan kata sandi" autocomplete="current-password" required>
+                        <span class="toggle-password" id="togglePassword" role="button" tabindex="0" aria-label="Tampilkan atau sembunyikan kata sandi" title="Tampilkan/Sembunyikan Kata Sandi">
+                            <i class="fa-solid fa-eye" id="togglePasswordIcon"></i>
+                        </span>
                     </div>
                 </div>
 
@@ -59,47 +61,109 @@
             </form>
 
             <div class="auth-footer">
-                Belum punya akun? <a href="/register.html">Daftar Sekarang</a>
+                Belum punya akun? <a href="/register.html" id="linkRegister">Daftar Sekarang</a>
             </div>
         </div>
     </main>
 
     <script src="/js/script.js"></script>
     <script>
-        function togglePasswordVisibility(inputId, iconId) {
+        // 1. Password Eye Toggle Implementation
+        function togglePasswordVisibility(inputId = 'password', iconId = 'togglePasswordIcon') {
             const input = document.getElementById(inputId);
             const icon = document.getElementById(iconId);
             if (!input) return;
+
             if (input.type === 'password') {
                 input.type = 'text';
-                if (icon) icon.classList.replace('fa-eye', 'fa-eye-slash');
+                if (icon) {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                }
             } else {
                 input.type = 'password';
-                if (icon) icon.classList.replace('fa-eye-slash', 'fa-eye');
+                if (icon) {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
             }
+            input.focus();
+        }
+        window.togglePasswordVisibility = togglePasswordVisibility;
+
+        const togglePassBtn = document.getElementById('togglePassword');
+        if (togglePassBtn) {
+            togglePassBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                togglePasswordVisibility('password', 'togglePasswordIcon');
+            });
+            togglePassBtn.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    togglePasswordVisibility('password', 'togglePasswordIcon');
+                }
+            });
         }
 
+        // 2. Input Real-time Error Cleanup
+        const emailInput = document.getElementById('email');
+        const passInput = document.getElementById('password');
+
+        if (emailInput) {
+            emailInput.addEventListener('input', () => {
+                emailInput.classList.remove('input-error');
+            });
+        }
+        if (passInput) {
+            passInput.addEventListener('input', () => {
+                passInput.classList.remove('input-error');
+            });
+        }
+
+        // 3. Login Process Implementation
+        let isSubmitting = false;
+
         async function processLogin() {
-            const emailInput = document.getElementById('email');
-            const passInput = document.getElementById('password');
+            if (isSubmitting) return;
+
             const btnSubmit = document.getElementById('btnSubmit');
+            const email = emailInput ? emailInput.value.trim() : '';
+            const password = passInput ? passInput.value : '';
 
-            const email = emailInput.value ? emailInput.value.trim() : '';
-            const password = passInput.value ? passInput.value : '';
+            // Reset error states before processing
+            if (emailInput) emailInput.classList.remove('input-error');
+            if (passInput) passInput.classList.remove('input-error');
 
-            // Validasi Input Kosong di Frontend
+            // Form Validations
+            if (!email && !password) {
+                showToast('Email dan kata sandi wajib diisi.', 'error');
+                if (emailInput) emailInput.classList.add('input-error');
+                if (passInput) passInput.classList.add('input-error');
+                if (emailInput) emailInput.focus();
+                return;
+            }
+
             if (!email) {
                 showToast('Email wajib diisi.', 'error');
-                emailInput.focus();
+                if (emailInput) {
+                    emailInput.classList.add('input-error');
+                    emailInput.focus();
+                }
                 return;
             }
 
             if (!password) {
                 showToast('Password wajib diisi.', 'error');
-                passInput.focus();
+                if (passInput) {
+                    passInput.classList.add('input-error');
+                    passInput.focus();
+                }
                 return;
             }
 
+            isSubmitting = true;
             btnSubmit.disabled = true;
             btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
 
@@ -123,35 +187,235 @@
                 if (res.ok) {
                     const token = data.accessToken || data.token;
                     const namaUser = data.nama || data.namaLengkap || 'Pengguna';
-                    const userRole = data.peran || data.role || 'PEMBELI';
+                    const userRole = (data.peran || data.role || 'PEMBELI').toUpperCase();
 
                     setToken(token);
                     setUserData({
                         id: data.id,
+                        nama: namaUser,
                         namaLengkap: namaUser,
                         email: data.email,
-                        role: userRole
+                        role: userRole,
+                        peran: userRole
                     });
 
-                    showToast('Login berhasil', 'success');
-                    setTimeout(() => window.location.href = '/profile.html', 1000);
+                    // Proactively fetch full profile so avatar is immediately available
+                    try {
+                        const profRes = await fetch(`${API_USER_SERVICE}/api/users/profile`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (profRes.ok) {
+                            const profData = await profRes.json();
+                            setUserData(profData);
+                        }
+                    } catch (e) {}
+
+                    showToast('Login berhasil! Mengalihkan...', 'success');
+
+                    // Determine Target Redirect URL based on authoritative Role and optional query parameter
+                    const params = new URLSearchParams(window.location.search);
+                    const redirectParam = params.get('redirect');
+                    let targetUrl = `${API_EVENT_SERVICE}/index.html`;
+
+                    if (redirectParam) {
+                        const sanitized = decodeURIComponent(redirectParam);
+                        if (sanitized.startsWith('/') || sanitized.includes('localhost:') || sanitized.includes('tikara.com')) {
+                            targetUrl = sanitized;
+                        }
+                    } else if (userRole === 'ADMIN') {
+                        targetUrl = `${API_ADMIN_SERVICE}/admin-dashboard.html`;
+                    } else if (userRole === 'PENYELENGGARA') {
+                        targetUrl = `${API_EVENT_SERVICE}/organizer-dashboard.html`;
+                    } else {
+                        targetUrl = `${API_EVENT_SERVICE}/index.html`;
+                    }
+
+                    setTimeout(() => {
+                        window.location.href = targetUrl;
+                    }, 600);
                 } else {
-                    const errorMsg = data.message || (data.errors ? Object.values(data.errors).join(', ') : 'Login gagal');
+                    let errorMsg = 'Email atau kata sandi salah';
+                    if (data.message) {
+                        errorMsg = data.message;
+                    } else if (data.error) {
+                        errorMsg = data.error;
+                    } else if (data.errors) {
+                        errorMsg = Object.values(data.errors).join(', ');
+                    }
+
                     showToast(errorMsg, 'error');
+
+                    // Kotak warna merah ketika password salah atau email salah
+                    if (emailInput) emailInput.classList.add('input-error');
+                    if (passInput) {
+                        passInput.classList.add('input-error');
+                        passInput.focus();
+                        passInput.select();
+                    }
                 }
             } catch (err) {
                 console.error('Login error:', err);
                 showToast('Gagal terhubung ke server backend user-service', 'error');
+                if (emailInput) emailInput.classList.add('input-error');
+                if (passInput) passInput.classList.add('input-error');
             } finally {
+                isSubmitting = false;
                 btnSubmit.disabled = false;
                 btnSubmit.innerHTML = '<span>MASUK SEKARANG</span> <i class="fa-solid fa-arrow-right"></i>';
             }
         }
 
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            processLogin();
+        // Form Submit Listener (Handles button click and Enter key on inputs)
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                processLogin();
+            });
+        }
+
+        // Explicit Enter Key Binding for Inputs
+        [emailInput, passInput].forEach(el => {
+            if (el) {
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        processLogin();
+                    }
+                });
+            }
         });
     </script>
+
+    <!-- Footer -->
+            <!-- Unified TIKARA Footer (Light Theme) -->
+    <footer class="tikara-footer">
+        <div class="footer-container">
+            <div class="footer-main-grid">
+                <!-- Brand & Security Column -->
+                <div class="footer-col footer-brand-col">
+                    <a href="http://localhost:8082/index.html" class="footer-logo" aria-label="TIKARA Beranda">
+                        <i class="fa-solid fa-ticket"></i> <span>TIKARA</span>
+                    </a>
+                    <p class="footer-desc">
+                        Beli tiket konser, festival musik, dan event seru lainnya dengan mudah &amp; aman di TIKARA. 
+                        <strong>#PASTIBISA</strong> nonton konser &amp; festival idaman!
+                    </p>
+                    <div class="footer-security-section">
+                        <h4 class="footer-subheading"><i class="fa-solid fa-shield-halved"></i> Keamanan dan Privasi</h4>
+                        <div class="footer-badges-wrap">
+                            <a href="http://localhost:8082/terms.html#security" class="footer-iso-badge" title="Tersertifikasi ISO/IEC 27001 &amp; ISO/IEC 27701">
+                                <div class="iso-icon-box">
+                                    <i class="fa-solid fa-award"></i>
+                                </div>
+                                <div class="iso-info-box">
+                                    <span class="iso-title">ISO/IEC 27001 &bull; 27701</span>
+                                    <span class="iso-desc">Information Security &amp; Privacy Management</span>
+                                </div>
+                            </a>
+                            <div class="footer-ssl-badge">
+                                <i class="fa-solid fa-lock"></i> <span>256-Bit SSL Enkripsi Terverifikasi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Columns -->
+                <div class="footer-nav-columns">
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Tentang TIKARA</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/about.html">Tentang Kami</a></li>
+                            <li><a href="http://localhost:8082/blog.html">Blog &amp; Berita Musik</a></li>
+                        </ul>
+                        <h3 class="footer-heading" style="margin-top: 1.75rem;">Produk</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/index.html#catalog">Semua Konser &amp; Festival</a></li>
+                            <li><a href="http://localhost:8083/my-tickets.html">Tiket Saya</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Event Creator</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/creator-guide.html#biaya">Biaya &amp; Komisi</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#kerjasama">Kerjasama dengan Kami</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#panduan">Buku Panduan Creator</a></li>
+                            <li><a href="http://localhost:8082/create-event.html">Buat Event Konser</a></li>
+                            <li><a href="http://localhost:8082/organizer-dashboard.html">Dashboard Penyelenggara</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Dukungan</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/help.html">Pusat Bantuan (FAQ)</a></li>
+                            <li><a href="http://localhost:8082/terms.html#terms">Syarat dan Ketentuan</a></li>
+                            <li><a href="http://localhost:8082/terms.html#privacy">Kebijakan Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#security">Kepatuhan Keamanan &amp; Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#cookies">Kebijakan Cookies</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Action / Payment & Social Column -->
+                <div class="footer-col footer-action-col">
+                    <h3 class="footer-heading">Pilihan Pembayaran</h3>
+                    <div class="footer-payment-grid" title="Metode Pembayaran Resmi TIKARA">
+                        <span class="pay-chip"><i class="fa-solid fa-qrcode"></i> QRIS</span>
+                        <span class="pay-chip">BCA</span>
+                        <span class="pay-chip">Mandiri</span>
+                        <span class="pay-chip">BRI</span>
+                        <span class="pay-chip">BNI</span>
+                        <span class="pay-chip">BTN</span>
+                        <span class="pay-chip">BSI</span>
+                        <span class="pay-chip">Permata</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-visa"></i> VISA</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-mastercard"></i> Master</span>
+                        <span class="pay-chip">ShopeePay</span>
+                        <span class="pay-chip">GoPay</span>
+                        <span class="pay-chip">Alfamart</span>
+                        <span class="pay-chip">Indomaret</span>
+                    </div>
+                    <div>
+                        <a href="http://localhost:8082/help.html#pembayaran" class="footer-pay-guide-link">
+                            <i class="fa-solid fa-circle-question"></i> Panduan &amp; Cara Bayar
+                        </a>
+                    </div>
+
+                    <div class="footer-social-wrap" style="margin-top: 1.75rem;">
+                        <h3 class="footer-heading">Ikuti Kami untuk Update</h3>
+                        <div class="footer-social-links">
+                            <a href="https://www.instagram.com/deafriliart/?__pwa=1" target="_blank" rel="noopener noreferrer" class="social-btn social-ig" aria-label="Instagram TIKARA" title="Instagram">
+                                <i class="fa-brands fa-instagram"></i>
+                            </a>
+                            <a href="https://www.tiktok.com/@realityclubofficial" target="_blank" rel="noopener noreferrer" class="social-btn social-tiktok" aria-label="TikTok TIKARA" title="TikTok">
+                                <i class="fa-brands fa-tiktok"></i>
+                            </a>
+                            <a href="https://x.com/reality_club" target="_blank" rel="noopener noreferrer" class="social-btn social-x" aria-label="X (Twitter) TIKARA" title="X (Twitter)">
+                                <i class="fa-brands fa-x-twitter"></i>
+                            </a>
+                            <a href="https://www.facebook.com/officialrealityclub/?locale=id_ID" target="_blank" rel="noopener noreferrer" class="social-btn social-fb" aria-label="Facebook TIKARA" title="Facebook">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </a>
+                            <a href="https://youtu.be/SlwQyBkCtZE?si=WBPI1nh0A6A2e9Dv" target="_blank" rel="noopener noreferrer" class="social-btn social-yt" aria-label="YouTube TIKARA" title="YouTube">
+                                <i class="fa-brands fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Copyright -->
+            <div class="footer-bottom-bar">
+                <p>&copy; 2026 TIKARA (PT Tikara Nusantara Sejahtera). Seluruh hak cipta dilindungi undang-undang.</p>
+                <div style="display: flex; gap: 1.25rem; font-size: 0.8rem;">
+                    <a href="http://localhost:8082/terms.html#terms">Syarat Layanan</a>
+                    <a href="http://localhost:8082/terms.html#privacy">Privasi</a>
+                    <a href="http://localhost:8082/terms.html#security">Keamanan</a>
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

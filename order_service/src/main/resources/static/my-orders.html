@@ -8,29 +8,77 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
         .orders-page {
+            width: 100%;
             max-width: 960px;
             margin: 2.5rem auto;
             padding: 0 1.5rem;
+            min-width: 0;
+            box-sizing: border-box;
+        }
+        .orders-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+            min-width: 0;
+        }
+        .orders-header-info {
+            flex: 1;
+            min-width: 240px;
+        }
+        .orders-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0 0 0.25rem;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+        .orders-subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 0;
+            line-height: 1.5;
+        }
+        .orders-btn-tickets {
+            width: auto;
+            padding: 0.55rem 1.25rem;
+            font-size: 0.875rem;
+            border-radius: 10px;
+            color: var(--text-main);
+            border-color: var(--border-color);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
         }
         .filter-tabs {
             display: flex;
             gap: 0.5rem;
             margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            overflow-x: auto;
+            flex-wrap: wrap;
+            width: 100%;
+            box-sizing: border-box;
         }
         .filter-tab-btn {
             background: white;
             border: 1px solid var(--border-color);
-            padding: 0.55rem 1.25rem;
+            padding: 0.55rem 1.15rem;
             font-weight: 700;
-            font-size: 0.875rem;
+            font-size: 0.85rem;
             color: var(--text-muted);
             border-radius: 999px;
             cursor: pointer;
             transition: all 0.2s ease;
             white-space: nowrap;
+            box-sizing: border-box;
         }
         .filter-tab-btn:hover {
             border-color: var(--primary-color);
@@ -50,9 +98,126 @@
             margin-bottom: 1.25rem;
             box-shadow: var(--shadow-sm);
             transition: transform 0.2s, box-shadow 0.2s;
+            min-width: 0;
+            box-sizing: border-box;
         }
         .order-card:hover {
             box-shadow: var(--shadow-md);
+        }
+        .order-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.85rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            min-width: 0;
+        }
+        .order-card-header-left {
+            flex: 1;
+            min-width: 200px;
+        }
+        .order-card-header-right {
+            text-align: right;
+        }
+        .order-card-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* ==========================================================================
+           BREAKPOINT 1: TABLET (769px – 1024px)
+           ========================================================================== */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .orders-page {
+                margin: 1.75rem auto;
+                padding: 0 1.25rem;
+            }
+        }
+
+        /* ==========================================================================
+           BREAKPOINT 2: MOBILE (≤ 768px)
+           ========================================================================== */
+        @media (max-width: 768px) {
+            .orders-page {
+                margin: 1rem auto;
+                padding: 0 0.875rem;
+            }
+            .orders-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.85rem;
+            }
+            .orders-title {
+                font-size: 1.35rem !important;
+                line-height: 1.3;
+            }
+            .orders-subtitle {
+                font-size: 0.825rem !important;
+                line-height: 1.45;
+            }
+            .orders-btn-tickets {
+                width: 100% !important;
+                justify-content: center;
+                box-sizing: border-box;
+            }
+            .filter-tabs {
+                gap: 0.4rem;
+                margin-bottom: 1rem;
+            }
+            .filter-tab-btn {
+                padding: 0.45rem 0.8rem;
+                font-size: 0.78rem;
+                flex: 0 0 auto;
+            }
+            .order-card {
+                padding: 1.15rem 1rem;
+                border-radius: 14px;
+            }
+            .order-card-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.65rem;
+            }
+            .order-card-header-left {
+                width: 100%;
+                min-width: 0;
+            }
+            .order-card-header-right {
+                text-align: left !important;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: #F8FAFC;
+                padding: 0.5rem 0.75rem;
+                border-radius: 8px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .order-card-actions {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+            .order-card-actions .btn {
+                width: 100% !important;
+                justify-content: center;
+                box-sizing: border-box;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .filter-tab-btn {
+                font-size: 0.75rem;
+                padding: 0.4rem 0.65rem;
+            }
         }
         .countdown-pill {
             display: inline-flex;
@@ -103,6 +268,30 @@
             text-align: center;
             animation: fadeIn 0.2s ease-out;
         }
+    
+        .btn-order-detail {
+            color: #334155 !important;
+            border: 1.5px solid #CBD5E1 !important;
+            background: #FFFFFF !important;
+            font-weight: 600 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.4rem !important;
+            text-decoration: none !important;
+            transition: all 0.2s ease !important;
+        }
+        .btn-order-detail:hover {
+            color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            background: #F1F5F9 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 2px 8px rgba(27, 54, 93, 0.12) !important;
+        }
+        .btn-action-cancel:hover {
+            background: #FEF2F2 !important;
+            border-color: #EF4444 !important;
+            color: #B91C1C !important;
+        }
     </style>
 </head>
 <body>
@@ -121,21 +310,22 @@
                 </button>
             </div>
         </div>
-        <nav class="navbar-mobile-drawer" id="navbarMobileDrawer"></nav>
+        <div class="nav-overlay" id="navOverlay"></div>
+    <nav class="navbar-mobile-drawer" id="navbarMobileDrawer"></nav>
     </header>
 
     <main class="orders-page">
         <!-- Header -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-            <div>
-                <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--text-main); margin: 0 0 0.25rem;">
+        <div class="orders-header">
+            <div class="orders-header-info">
+                <h1 class="orders-title">
                     Riwayat Transaksi Pesanan
                 </h1>
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">
+                <p class="orders-subtitle">
                     Pantau status reservasi tiket, batas waktu bayar, dan rincian e-tiket Anda.
                 </p>
             </div>
-            <a href="http://localhost:8083/my-tickets.html" class="btn btn-outline" style="width: auto; padding: 0.55rem 1.25rem; font-size: 0.875rem; border-radius: 10px;">
+            <a href="http://localhost:8083/my-tickets.html" class="btn btn-outline orders-btn-tickets">
                 <i class="fa-solid fa-qrcode" style="color: var(--primary-color);"></i> Buka E-Tiket Saya
             </a>
         </div>
@@ -180,6 +370,7 @@
             </div>
         </div>
     </div>
+
 
     <script src="/js/script.js"></script>
     <script>
@@ -283,10 +474,13 @@
                 if (order.status === 'PAID') {
                     badgeStyle = 'background:#DCFCE7; color:#15803D;';
                     statusLabel = 'SELESAI (LUNAS)';
+
                 } else if (order.status === 'CANCELLED') {
                     badgeStyle = 'background:#FEE2E2; color:#B91C1C;';
                     statusLabel = 'DIBATALKAN';
                 }
+
+
 
                 const createdDate = order.createdAt ? new Date(order.createdAt).toLocaleDateString('id-ID', {
                     day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -307,8 +501,8 @@
 
                 html += `
                     <div class="order-card" id="orderCard_${order.id}">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.85rem; flex-wrap: wrap; gap: 0.75rem;">
-                            <div>
+                        <div class="order-card-header">
+                            <div class="order-card-header-left">
                                 <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem; flex-wrap: wrap;">
                                     <span class="role-badge" style="${badgeStyle} font-size: 0.75rem; padding: 0.2rem 0.6rem;">
                                         ${statusLabel}
@@ -319,41 +513,41 @@
                                         </span>
                                     ` : ''}
                                 </div>
-                                <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin: 0 0 0.2rem;">
+                                <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin: 0 0 0.2rem; word-break: break-all;">
                                     ${order.nomorPesanan || 'ORD-#' + order.id}
                                 </h3>
                                 <span style="font-size: 0.8rem; color: var(--text-muted);">
                                     <i class="fa-regular fa-calendar"></i> Dibuat: ${createdDate}
                                 </span>
                             </div>
-                            <div style="text-align: right;">
+                            <div class="order-card-header-right">
                                 <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Total Tagihan</span>
                                 <strong style="font-size: 1.3rem; color: var(--primary-color);">${formatRupiah(order.totalHarga)}</strong>
                             </div>
                         </div>
 
                         <!-- Items Summary -->
-                        <div style="background: #F8FAFC; border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;">
+                        <div style="background: #F8FAFC; border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem; min-width: 0; overflow: hidden;">
                             ${itemsHtml}
                         </div>
 
                         <!-- Card Actions -->
-                        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                        <div class="order-card-actions">
                             ${isPending ? `
-                                <button type="button" class="btn btn-outline" onclick="openCancelModal(${order.id}, '${order.nomorPesanan || 'ORD-#' + order.id}')" style="width: auto; padding: 0.55rem 1.1rem; font-size: 0.85rem; color: #DC2626; border-color: #FCA5A5;">
+                                <button type="button" class="btn btn-outline btn-action-cancel" onclick="openCancelModal(${order.id}, '${order.nomorPesanan || 'ORD-#' + order.id}')" style="padding: 0.55rem 1.1rem; font-size: 0.85rem; color: #DC2626; border-color: #FCA5A5;">
                                     <i class="fa-solid fa-ban"></i> Batalkan
                                 </button>
-                                <a href="/pembayaran.html?orderId=${order.id}" class="btn btn-primary" id="btnPay_${order.id}" style="width: auto; padding: 0.55rem 1.35rem; font-size: 0.85rem; font-weight: 700;">
+                                <a href="/pembayaran.html?orderId=${order.id}" class="btn btn-primary" id="btnPay_${order.id}" style="padding: 0.55rem 1.35rem; font-size: 0.85rem; font-weight: 700;">
                                     <i class="fa-solid fa-credit-card"></i> Bayar Sekarang
                                 </a>
                             ` : ''}
                             ${order.status === 'PAID' ? `
-                                <a href="http://localhost:8083/my-tickets.html" class="btn btn-primary" style="width: auto; padding: 0.55rem 1.35rem; font-size: 0.85rem; font-weight: 700;">
+                                <a href="http://localhost:8083/my-tickets.html" class="btn btn-primary" style="padding: 0.55rem 1.35rem; font-size: 0.85rem; font-weight: 700;">
                                     <i class="fa-solid fa-qrcode"></i> Lihat E-Tiket
                                 </a>
                             ` : ''}
-                            <a href="/pembayaran.html?orderId=${order.id}" class="btn btn-outline" style="width: auto; padding: 0.55rem 1.1rem; font-size: 0.85rem;">
-                                Detail Rincian
+                            <a href="/pembayaran.html?orderId=${order.id}" class="btn btn-outline btn-order-detail" style="padding: 0.55rem 1.1rem; font-size: 0.85rem; color: #334155; border-color: #CBD5E1; background: #FFFFFF;">
+                                <i class="fa-solid fa-receipt"></i> Detail Rincian
                             </a>
                         </div>
                     </div>
@@ -449,6 +643,137 @@
                 btnConfirm.innerHTML = 'Ya, Batalkan';
             }
         }
+
     </script>
+        <!-- Unified TIKARA Footer (Light Theme) -->
+    <footer class="tikara-footer">
+        <div class="footer-container">
+            <div class="footer-main-grid">
+                <!-- Brand & Security Column -->
+                <div class="footer-col footer-brand-col">
+                    <a href="http://localhost:8082/index.html" class="footer-logo" aria-label="TIKARA Beranda">
+                        <i class="fa-solid fa-ticket"></i> <span>TIKARA</span>
+                    </a>
+                    <p class="footer-desc">
+                        Beli tiket konser, festival musik, dan event seru lainnya dengan mudah &amp; aman di TIKARA. 
+                        <strong>#PASTIBISA</strong> nonton konser &amp; festival idaman!
+                    </p>
+                    <div class="footer-security-section">
+                        <h4 class="footer-subheading"><i class="fa-solid fa-shield-halved"></i> Keamanan dan Privasi</h4>
+                        <div class="footer-badges-wrap">
+                            <a href="http://localhost:8082/terms.html#security" class="footer-iso-badge" title="Tersertifikasi ISO/IEC 27001 &amp; ISO/IEC 27701">
+                                <div class="iso-icon-box">
+                                    <i class="fa-solid fa-award"></i>
+                                </div>
+                                <div class="iso-info-box">
+                                    <span class="iso-title">ISO/IEC 27001 &bull; 27701</span>
+                                    <span class="iso-desc">Information Security &amp; Privacy Management</span>
+                                </div>
+                            </a>
+                            <div class="footer-ssl-badge">
+                                <i class="fa-solid fa-lock"></i> <span>256-Bit SSL Enkripsi Terverifikasi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Columns -->
+                <div class="footer-nav-columns">
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Tentang TIKARA</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/about.html">Tentang Kami</a></li>
+                            <li><a href="http://localhost:8082/blog.html">Blog &amp; Berita Musik</a></li>
+                        </ul>
+                        <h3 class="footer-heading" style="margin-top: 1.75rem;">Produk</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/index.html#catalog">Semua Konser &amp; Festival</a></li>
+                            <li><a href="http://localhost:8083/my-tickets.html">Tiket Saya</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Event Creator</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/creator-guide.html#biaya">Biaya &amp; Komisi</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#kerjasama">Kerjasama dengan Kami</a></li>
+                            <li><a href="http://localhost:8082/creator-guide.html#panduan">Buku Panduan Creator</a></li>
+                            <li><a href="http://localhost:8082/create-event.html">Buat Event Konser</a></li>
+                            <li><a href="http://localhost:8082/organizer-dashboard.html">Dashboard Penyelenggara</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-col">
+                        <h3 class="footer-heading">Dukungan</h3>
+                        <ul class="footer-links">
+                            <li><a href="http://localhost:8082/help.html">Pusat Bantuan (FAQ)</a></li>
+                            <li><a href="http://localhost:8082/terms.html#terms">Syarat dan Ketentuan</a></li>
+                            <li><a href="http://localhost:8082/terms.html#privacy">Kebijakan Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#security">Kepatuhan Keamanan &amp; Privasi</a></li>
+                            <li><a href="http://localhost:8082/terms.html#cookies">Kebijakan Cookies</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Action / Payment & Social Column -->
+                <div class="footer-col footer-action-col">
+                    <h3 class="footer-heading">Pilihan Pembayaran</h3>
+                    <div class="footer-payment-grid" title="Metode Pembayaran Resmi TIKARA">
+                        <span class="pay-chip"><i class="fa-solid fa-qrcode"></i> QRIS</span>
+                        <span class="pay-chip">BCA</span>
+                        <span class="pay-chip">Mandiri</span>
+                        <span class="pay-chip">BRI</span>
+                        <span class="pay-chip">BNI</span>
+                        <span class="pay-chip">BTN</span>
+                        <span class="pay-chip">BSI</span>
+                        <span class="pay-chip">Permata</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-visa"></i> VISA</span>
+                        <span class="pay-chip"><i class="fa-brands fa-cc-mastercard"></i> Master</span>
+                        <span class="pay-chip">ShopeePay</span>
+                        <span class="pay-chip">GoPay</span>
+                        <span class="pay-chip">Alfamart</span>
+                        <span class="pay-chip">Indomaret</span>
+                    </div>
+                    <div>
+                        <a href="http://localhost:8082/help.html#pembayaran" class="footer-pay-guide-link">
+                            <i class="fa-solid fa-circle-question"></i> Panduan &amp; Cara Bayar
+                        </a>
+                    </div>
+
+                    <div class="footer-social-wrap" style="margin-top: 1.75rem;">
+                        <h3 class="footer-heading">Ikuti Kami untuk Update</h3>
+                        <div class="footer-social-links">
+                            <a href="https://www.instagram.com/deafriliart/?__pwa=1" target="_blank" rel="noopener noreferrer" class="social-btn social-ig" aria-label="Instagram TIKARA" title="Instagram">
+                                <i class="fa-brands fa-instagram"></i>
+                            </a>
+                            <a href="https://www.tiktok.com/@realityclubofficial" target="_blank" rel="noopener noreferrer" class="social-btn social-tiktok" aria-label="TikTok TIKARA" title="TikTok">
+                                <i class="fa-brands fa-tiktok"></i>
+                            </a>
+                            <a href="https://x.com/reality_club" target="_blank" rel="noopener noreferrer" class="social-btn social-x" aria-label="X (Twitter) TIKARA" title="X (Twitter)">
+                                <i class="fa-brands fa-x-twitter"></i>
+                            </a>
+                            <a href="https://www.facebook.com/officialrealityclub/?locale=id_ID" target="_blank" rel="noopener noreferrer" class="social-btn social-fb" aria-label="Facebook TIKARA" title="Facebook">
+                                <i class="fa-brands fa-facebook-f"></i>
+                            </a>
+                            <a href="https://youtu.be/SlwQyBkCtZE?si=WBPI1nh0A6A2e9Dv" target="_blank" rel="noopener noreferrer" class="social-btn social-yt" aria-label="YouTube TIKARA" title="YouTube">
+                                <i class="fa-brands fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Copyright -->
+            <div class="footer-bottom-bar">
+                <p>&copy; 2026 TIKARA (PT Tikara Nusantara Sejahtera). Seluruh hak cipta dilindungi undang-undang.</p>
+                <div style="display: flex; gap: 1.25rem; font-size: 0.8rem;">
+                    <a href="http://localhost:8082/terms.html#terms">Syarat Layanan</a>
+                    <a href="http://localhost:8082/terms.html#privacy">Privasi</a>
+                    <a href="http://localhost:8082/terms.html#security">Keamanan</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
 </body>
 </html>

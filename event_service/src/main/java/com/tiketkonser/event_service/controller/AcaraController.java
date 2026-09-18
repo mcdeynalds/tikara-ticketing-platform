@@ -3,6 +3,7 @@ package com.tiketkonser.event_service.controller;
 import com.tiketkonser.event_service.payload.req.AcaraReq;
 import com.tiketkonser.event_service.payload.res.AcaraRes;
 import com.tiketkonser.event_service.payload.res.OrganizerAnalyticsRes;
+import com.tiketkonser.event_service.payload.res.OrganizerEventDetailRes;
 import com.tiketkonser.event_service.payload.res.PageResponse;
 import com.tiketkonser.event_service.service.AcaraService;
 import jakarta.validation.Valid;
@@ -13,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 @RestController
@@ -78,7 +80,7 @@ public class AcaraController {
         return ResponseEntity.ok(acaraService.changeStatus(id, newStatus, authentication));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:[0-9]+}")
     public ResponseEntity<AcaraRes> getById(@PathVariable Long id, Authentication authentication) {
         return ResponseEntity.ok(acaraService.getById(id, authentication));
     }
@@ -122,5 +124,43 @@ public class AcaraController {
             @PathVariable Long id,
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
         return ResponseEntity.ok(acaraService.uploadFlyerPdf(id, file));
+    }
+
+    @GetMapping("/pending-review")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PageResponse<AcaraRes>> getPendingReview(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication) {
+        return ResponseEntity.ok(acaraService.getPendingReview(page, size, authentication));
+    }
+
+    @PatchMapping("/{id}/moderate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AcaraRes> moderateEvent(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body,
+            Authentication authentication) {
+        String action = body != null ? body.get("action") : "APPROVE";
+        String catatan = body != null ? body.get("catatan") : "";
+        return ResponseEntity.ok(acaraService.moderateEvent(id, action, catatan, authentication));
+    }
+
+    @PatchMapping("/{id}/resubmit")
+    @PreAuthorize("hasAnyRole('PENYELENGGARA', 'ADMIN')")
+    public ResponseEntity<AcaraRes> resubmitEvent(
+            @PathVariable Long id,
+            Authentication authentication) {
+        return ResponseEntity.ok(acaraService.resubmitEvent(id, authentication));
+    }
+
+    @GetMapping("/{id}/detail-organizer")
+    @PreAuthorize("hasAnyRole('PENYELENGGARA', 'ADMIN')")
+    public ResponseEntity<OrganizerEventDetailRes> getEventDetailForOrganizer(
+            @PathVariable Long id,
+            Authentication authentication,
+            HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        return ResponseEntity.ok(acaraService.getEventDetailForOrganizer(id, authentication, authHeader));
     }
 }

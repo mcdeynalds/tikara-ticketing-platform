@@ -33,4 +33,11 @@ public class InventoryController {
         kategoriTiketService.confirmStok(request);
         return ResponseEntity.ok(Map.of("message", "Stok tiket berhasil dikonfirmasi terjual"));
     }
+
+    @PostMapping("/return")
+    public ResponseEntity<Map<String, String>> returnStok(@Valid @RequestBody HoldTiketReq request) {
+        kategoriTiketService.refundStok(request.getKategoriTiketId(), request.getJumlah());
+        return ResponseEntity.ok(Map.of("message", "Stok tiket berhasil dikembalikan"));
+    }
+
 }

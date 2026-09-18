@@ -1,6 +1,7 @@
 package com.tiketkonser.user_service.payload.req;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import java.time.LocalDate;
 
@@ -10,9 +11,11 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class UpdateProfilReq {
 
+    @Size(min = 3, max = 60, message = "Nama harus antara 3 hingga 60 karakter")
     @JsonAlias({"namaLengkap", "fullName", "name"})
     private String nama;
 
+    @Size(min = 3, max = 60, message = "Nama harus antara 3 hingga 60 karakter")
     private String namaLengkap;
 
     @JsonAlias({"phone", "telepon", "phoneNumber"})

@@ -24,7 +24,7 @@ public class Pemesanan {
     private Long id;
 
     @Column(name = "pengguna_id", nullable = false)
-    private Long penggunaId; // Referensi ID ke user-service
+    private Long penggunaId;
 
     @Column(name = "nomor_pesanan", nullable = false, unique = true)
     private String nomorPesanan;
@@ -48,7 +48,7 @@ public class Pemesanan {
     private BigDecimal totalHarga;
 
     @Column(name = "status", nullable = false)
-    private String status; // PENDING, PAID, EXPIRED, CANCELLED
+    private String status;
 
     @Column(name = "tenggat_pembayaran", nullable = false)
     private LocalDateTime tenggatPembayaran;

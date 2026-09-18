@@ -131,4 +131,19 @@ public class KategoriTiketServiceImpl implements KategoriTiketService {
         kt.setUpdatedAt(LocalDateTime.now());
         kategoriTiketRepository.save(kt);
     }
+
+    @Override
+    @Transactional
+    public void refundStok(Long kategoriTiketId, int qty) {
+        KategoriTiket kt = kategoriTiketRepository.findById(kategoriTiketId)
+                .orElseThrow(() -> new NotFoundException("Kategori tiket tidak ditemukan"));
+        int currentTerjual = kt.getTerjual();
+        kt.setTerjual(Math.max(0, currentTerjual - qty));
+        if ("SOLD_OUT".equalsIgnoreCase(kt.getStatus()) && kt.getTerjual() < kt.getKuota()) {
+            kt.setStatus("AVAILABLE");
+        }
+        kt.setUpdatedAt(LocalDateTime.now());
+        kategoriTiketRepository.save(kt);
+    }
+
 }

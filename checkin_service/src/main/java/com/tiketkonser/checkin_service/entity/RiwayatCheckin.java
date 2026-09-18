@@ -21,22 +21,22 @@ public class RiwayatCheckin {
     private Long id;
 
     @Column(name = "acara_id", nullable = false)
-    private Long acaraId; // Referensi ID ke event-service
+    private Long acaraId; 
 
     @Column(name = "tiket_id", nullable = false)
-    private Long tiketId; // Referensi ID ke ticket-service
+    private Long tiketId; 
 
     @Column(name = "kode_qr", nullable = false)
     private String kodeQr;
 
     @Column(name = "petugas_id", nullable = false)
-    private Long petugasId; // Referensi ID ke user-service
-
+    private Long petugasId; 
+    
     @Column(name = "lokasi_gate", nullable = false)
     private String lokasiGate;
 
     @Column(name = "status_checkin", nullable = false)
-    private String statusCheckin; // SUCCESS, FAILED_ALREADY_USED, INVALID_QR
+    private String statusCheckin; 
 
     @Column(name = "waktu_checkin", nullable = false)
     private LocalDateTime waktuCheckin;
