@@ -14,6 +14,7 @@ The platform is organized into **8 independent services** covering authenticatio
 Key technical implementations include **JWT-based authentication, role-based access control (RBAC), two-phase ticket inventory reservation, QR-based ticket validation, PDF e-ticket generation, and REST API integration**.
 
 The project demonstrates backend development, relational database design, service-oriented architecture, and the implementation of business logic across multiple services.
+
 ---
 
 ## Daftar Isi
