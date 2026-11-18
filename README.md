@@ -7,10 +7,13 @@
 [![Security](https://img.shields.io/badge/Security-Spring%20Security%206%20%7C%20JWT-red.svg?style=flat-square)](#autentikasi--otorisasi)
 [![OpenAPI](https://img.shields.io/badge/Docs-OpenAPI%203%20%7C%20Swagger-green.svg?style=flat-square)](#dokumentasi-api)
 
-**TIKARA** adalah platform tiket konser musik, festival, dan acara *live entertainment* berskala enterprise yang dirancang menggunakan arsitektur **microservices**. Platform ini dibangun untuk mengatasi tantangan kritis pada sistem tiket dengan lonjakan transaksi tinggi, pencegahan tiket palsu dan penggunaan ganda melalui validasi kode QR kriptografis, pembersihan otomatis reservasi tiket yang kedaluwarsa (*scheduled janitor*), penguncian kuota dua tahap (*two-phase inventory hold*), penerbitan e-tiket PDF A4 resmi, serta pemisahan hak akses berbasis peran (*Role-Based Access Control* / RBAC).
+TIKARA is an academic full-stack event ticketing project built with **Java 17, Spring Boot, and PostgreSQL**, using a microservices architecture.
 
-TIKARA membagi ekosistem tiket menjadi **8 (delapan) microservice otonom** berbasis Java 17 dan Spring Boot 3.4.3. Setiap microservice memiliki basis data PostgreSQL terpisah yang menerapkan pola arsitektur **Database-per-Service** serta menyajikan antarmuka web mandiri (*Web Views*) berbasis HTML5, Vanilla CSS3 modern, dan JavaScript.
+The platform is organized into **8 independent services** covering authentication, event management, ticket inventory, ordering, promotions, notifications, check-in, and administration.
 
+Key technical implementations include **JWT-based authentication, role-based access control (RBAC), two-phase ticket inventory reservation, QR-based ticket validation, PDF e-ticket generation, and REST API integration**.
+
+The project demonstrates backend development, relational database design, service-oriented architecture, and the implementation of business logic across multiple services.
 ---
 
 ## Daftar Isi
