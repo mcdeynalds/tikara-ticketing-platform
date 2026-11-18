@@ -1017,8 +1017,8 @@ Konfigurasi aplikasi dapat disesuaikan pada berkas `application.properties` masi
 |---|---|---|---|:---:|
 | `SPRING_DATASOURCE_URL` | Semua Layanan | `jdbc:postgresql://localhost:5432/db_<service>` | URL koneksi JDBC database | Ya |
 | `SPRING_DATASOURCE_USERNAME` | Semua Layanan | `postgres` | Username koneksi database | Ya |
-| `SPRING_DATASOURCE_PASSWORD` | Semua Layanan | `postgres` | Kata sandi database | Ya |
-| `JWT_SECRET` | Semua Layanan | `9a8b7c6d5e4f...` (256-bit hex) | Kunci rahasia tanda tangan JWT | Ya |
+| `SPRING_DATASOURCE_PASSWORD` | Semua Layanan | Tidak ada (wajib dikonfigurasi) | Password koneksi PostgreSQL | Ya |
+| `JWT_SECRET` | Semua Layanan | Tidak ada (wajib dibuat sendiri) | Kunci rahasia untuk menandatangani JWT | Ya |
 | `JWT_EXPIRATION` | User Service | `86400000` (24 jam) | Masa berlaku access token (ms) | Tidak |
 | `SPRING_MAIL_HOST` | User, Ticket | `smtp.gmail.com` | Host server SMTP email | Ya |
 | `SPRING_MAIL_PORT` | User, Ticket | `587` | Port koneksi SMTP | Tidak |
@@ -1064,19 +1064,19 @@ Setelah layanan aktif, buka browser di [http://localhost:8082/](http://localhost
 
 ---
 
-## Akun Demo & Kredensial Pengujian
+## Akun Demo & Pengujian Role
 
-Berikut adalah kredensial akun uji coba yang sudah terdaftar di database untuk menguji masing-masing hak akses:
+TIKARA menyediakan tiga peran pengguna untuk menguji autentikasi, otorisasi, dan alur bisnis sistem.
 
-| Peran (*Role*) | Email Demo Terdaftar | Kata Sandi (*Password*) | Lingkup Hak Akses & Fitur yang Dapat Diuji |
-|---|---|---|---|
-| **Administrator** (`ADMIN`) | `deapriliart@gmail.com` | `Password123!` | Moderasi proposal acara (setujui/tolak), tata kelola kode promo diskon, Executive Realtime Metrics Dashboard, audit log sistem |
-| **Penyelenggara** (`PENYELENGGARA`) | `organizer.test@gmail.com`<br>*(atau `deafriliart@gmail.com` / `deyamiinfo@gmail.com`)* | `Password123!` | Pengajuan acara baru, upload poster/flyer, atur kategori tier & kuota tiket, dashboard analitik omzet acara, terminal scan gate check-in |
-| **Pembeli** (`PEMBELI`) | `buditest@gmail.com`<br>*(atau `siti.test@gmail.com` / daftar mandiri)* | `Password123!` | Jelajah katalog konser, pesan tiket, klaim kupon promo checkout, simulasi bayar, unduh PDF A4 resmi, transfer tiket |
+| Role | Hak Akses & Fitur Pengujian |
+|---|---|
+| **Administrator (ADMIN)** | Moderasi acara, manajemen promo, executive dashboard, audit log, dan laporan penjualan. |
+| **Penyelenggara (PENYELENGGARA)** | Pengajuan acara, pengelolaan kategori dan kuota tiket, analitik penjualan, serta pemindaian QR check-in. |
+| **Pembeli (PEMBELI)** | Pencarian acara, pemesanan tiket, penggunaan kupon, simulasi pembayaran, unduh e-ticket PDF, dan transfer tiket. |
 
-> [!TIP]
-> Pengguna baru juga dapat mendaftar secara mandiri (*self-service*) di `http://localhost:8081/register.html`. Formulir pendaftaran menyediakan pilihan peran apakah ingin mendaftar sebagai **PEMBELI** atau **PENYELENGGARA**. Pendaftaran peran **ADMIN** diproteksi secara ketat dari registrasi publik.
+> **Catatan Keamanan:** Kredensial akun pengujian tidak dipublikasikan dalam repository. Pengujian dilakukan menggunakan akun lokal dan konfigurasi lingkungan yang disiapkan secara terpisah.
 
+Pengguna baru dapat mendaftar melalui `http://localhost:8081/register.html` sebagai **PEMBELI** atau **PENYELENGGARA**. Pendaftaran **ADMIN** tidak tersedia melalui registrasi publik.
 
 ---
 
